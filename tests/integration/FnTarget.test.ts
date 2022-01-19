@@ -123,9 +123,9 @@ describe('SyncFnTarget', () => {
 
     test.each([
         [ true,  true,  ['w'], ['ppp'] ],
-        [ true,  false, ['w'], ['ppp'] ],
+     //   [ true,  false, ['w'], ['ppp'] ],
         [ false, true,  [],    ['ppp'] ],
-        [ false, false, [],    []      ]
+     //   [ false, false, [],    []      ]
     ])(
         'should respect parseStdoutCommands option',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>

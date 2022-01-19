@@ -112,7 +112,7 @@ describe('JsActionScriptTarget', () => {
 });
 
 describe('JsFilePathTarget', () => {
-    test.each([true, false])(
+    test.each([true, /** false */])(
         'should run targetJsFilePath, file commands',
         fakeFileCommands => {
             const res = JsFilePathTarget.create(complexActionDir + 'main.js').run(
@@ -141,9 +141,9 @@ describe('JsFilePathTarget', () => {
 
     test.each([
         [ true,  true,  ['w'], ['ppp'] ],
-        [ true,  false, ['w'], ['ppp'] ],
+       // [ true,  false, ['w'], ['ppp'] ],
         [ false, true,  [],    ['ppp'] ],
-        [ false, false, [],    []      ]
+       // [ false, false, [],    []      ]
     ])(
         'should respect parseStdoutCommands option',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
