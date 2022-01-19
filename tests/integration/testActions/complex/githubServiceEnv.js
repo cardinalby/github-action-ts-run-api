@@ -3,4 +3,4 @@ const fs = require("fs-extra");
 const path = require("path");
 const impl = require('./githubServiceEnvImpl').run;
 
-impl(github, fs, path);
+impl(github.context, fs, path);

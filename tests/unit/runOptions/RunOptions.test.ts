@@ -67,7 +67,7 @@ describe('RunOptions', () => {
             expect(options.env.data.XXX).toEqual('yyy');
             expect(options.env.data.AAA).toEqual('bbb');
             expect(options.env.data.CCC).toEqual('ddd');
-            options.updateEnv({CCC: undefined});
+            options.setEnv({CCC: undefined});
             expect(options.env.data.AAA).toEqual('bbb');
             expect(options.env.data.CCC).toEqual(undefined);
         }

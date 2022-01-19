@@ -10,6 +10,7 @@ import fs from "fs-extra";
 import {GithubContextStore} from "../../src/stores/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
 import {getRunnerOs} from "../../src/utils/platformProps";
+import {getNewGithubContext} from "../utils/getNewGithubContext";
 
 const printStdout = process.env.CI === undefined;
 const complexActionDir = 'tests/integration/testActions/complex/';
@@ -61,8 +62,7 @@ describe('multitarget', () => {
     const serviceEnvTestTargets: SyncRunTargetInterface[] = [
         RunTarget.jsFile(complexActionDir + 'githubServiceEnv.js'),
         RunTarget.syncFn(() => {
-            const github = require("@actions/github");
-            githubServiceEnvImplImpl(github, fs, path);
+            githubServiceEnvImplImpl(getNewGithubContext(), fs, path);
         })
     ];
 

@@ -4,11 +4,6 @@ import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
 import {JsActionScriptTarget} from "../../src/actionRunner/jsFile/runTarget/JsActionScriptTarget";
 import {JsFilePathTarget} from "../../src/actionRunner/jsFile/runTarget/JsFilePathTarget";
-import fs from "fs-extra";
-import assert from "assert";
-import {GithubContextStore} from "../../src/stores/GithubContextStore";
-import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
-import {getRunnerOs} from "../../src/utils/platformProps";
 
 const printStdout = process.env.CI === undefined;
 const complexActionDir = 'tests/integration/testActions/complex/';

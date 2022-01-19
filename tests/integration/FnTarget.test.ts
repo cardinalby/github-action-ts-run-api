@@ -9,35 +9,40 @@ import {AsyncFnTarget} from "../../src/actionRunner/fn/runTarget/AsyncFnTarget";
 import * as path from "path";
 import {GithubContextStore} from "../../src/stores/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
+import {getNewGithubContext} from "../utils/getNewGithubContext";
 
 const printStdout = process.env.CI === undefined;
 
 describe('SyncFnTarget', () => {
     it('should restore process envs and exitCode', () => {
-        process.env.AAA = 'aaa';
-        const initialProcessCwd = process.cwd();
-        const res = SyncFnTarget.create(() => {
-            core.debug(process.env.CCC || '');
-            process.env.BBB = 'bbb';
-            process.env.AAA = 'ccc';
-            process.exitCode = 1;
-            process.chdir(path.join(process.cwd(), 'tests'));
-            return 32;
-        }).run(RunOptions.create({
-            env: {CCC: 'x'},
-            shouldPrintStdout: printStdout
-        }));
-        expect(process.cwd()).toEqual(initialProcessCwd);
-        expect(process.env.AAA).toEqual('aaa');
-        expect(process.exitCode).toBeUndefined();
-        expect(process.env.BBB).toBeUndefined();
-        expect(process.env.CCC).toBeUndefined();
-        expect(res.commands.debugs).toEqual(['x']);
-        expect(res.exitCode).toEqual(1);
-        expect(res.fnResult).toEqual(32);
-        expect(res.error).toBeUndefined();
-        expect(res.isTimedOut).toEqual(false);
-        expect(res.isSuccess).toEqual(false);
+        const envBackup = ProcessEnvVarsBackup.safeSet({AAA: 'aaa'});
+        try {
+            const initialProcessCwd = process.cwd();
+            const res = SyncFnTarget.create(() => {
+                core.debug(process.env.CCC || '');
+                process.env.BBB = 'bbb';
+                process.env.AAA = 'ccc';
+                process.exitCode = 1;
+                process.chdir(path.join(process.cwd(), 'tests'));
+                return 32;
+            }).run(RunOptions.create({
+                env: {CCC: 'x'},
+                shouldPrintStdout: printStdout
+            }));
+            expect(process.cwd()).toEqual(initialProcessCwd);
+            expect(process.env.AAA).toEqual('aaa');
+            expect(process.exitCode).toBeUndefined();
+            expect(process.env.BBB).toBeUndefined();
+            expect(process.env.CCC).toBeUndefined();
+            expect(res.commands.debugs).toEqual(['x']);
+            expect(res.exitCode).toEqual(1);
+            expect(res.fnResult).toEqual(32);
+            expect(res.error).toBeUndefined();
+            expect(res.isTimedOut).toEqual(false);
+            expect(res.isSuccess).toEqual(false);
+        } finally {
+            envBackup.restore();
+        }
     });
 
     it('should parse stdout commands', () => {
@@ -78,7 +83,8 @@ describe('SyncFnTarget', () => {
     it('should set github service envs', async () => {
         const options = RunOptions.create().setShouldPrintStdout(printStdout);
         const res = await AsyncFnTarget.create(async () => {
-            const context = (await import("@actions/github")).context;
+
+            const context = getNewGithubContext();
             expect(context.runNumber).toEqual(8);
             expect(context.ref).toEqual('tag/myTag');
             expect(context.repo.owner).toEqual('ownerrr');
@@ -93,7 +99,7 @@ describe('SyncFnTarget', () => {
     it('should fake github service envs', async () => {
         const options = RunOptions.create().setShouldPrintStdout(printStdout);
         const res = await AsyncFnTarget.create(async () => {
-            const context = (await import("@actions/github")).context;
+            const context = getNewGithubContext();
             expect(context.workflow).toEqual(GithubContextStore.WORKFLOW_DEFAULT);
             expect(context.runId).toBeGreaterThan(0);
             expect(context.runNumber).toEqual(GithubContextStore.RUN_NUMBER_DEFAULT);
