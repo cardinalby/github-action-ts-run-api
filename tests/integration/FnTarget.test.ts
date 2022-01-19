@@ -297,7 +297,7 @@ describe('AsyncFnTarget', () => {
         expect(process.env.BBB).toEqual('bbb');
         expect(process.env.CCC).toEqual('x');
         const res = await resPromise;
-        expect(duration.measureMs()).toBeGreaterThan(30);
+        expect(duration.measureMs()).toBeGreaterThanOrEqual(30);
         expect(process.env.AAA).toEqual('aaa');
         expect(process.exitCode).toBeUndefined();
         expect(process.env.BBB).toBeUndefined();
