@@ -25,7 +25,7 @@ export class FakeTempDir {
     delete() {
         if (this._createdTmp !== undefined) {
             // this._createdTmp.removeCallback() fails if dir is not empty
-            fs.rmSync(this._createdTmp.name, { recursive: true, force: true });
+            fs.removeSync(this._createdTmp.name);
             this._createdTmp = undefined;
         }
     }
