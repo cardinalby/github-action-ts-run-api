@@ -1,0 +1,25 @@
+name: 'stdoutCommandsTestAction'
+description: 'stdoutCommandsTestAction'
+inputs:
+  sendStdoutCommands:
+    description: 'send stdout commands'
+    required: false
+    default: 'true'
+  sendFileCommands:
+    description: 'send file commands'
+    required: true
+  failAtTheEnd:
+    description: 'fail at the end'
+    required: true
+    default: 'false'
+  delayMs:
+    description: 'sleep for ms'
+    required: false
+    default: ''
+  setState:
+    description: 'value to set to "my_state"'
+    required: false
+runs:
+  using: 'node16'
+  main: 'main.js'
+  post: 'post.js'

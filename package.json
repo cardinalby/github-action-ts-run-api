@@ -24,8 +24,11 @@
   "dependencies": {
     "fs-extra": "^10.0.0",
     "yaml": "^1.10.2",
+    "jsonschema": "^1.4.0",
     "intercept-stdout": "^0.1.2",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "realistic-structured-clone": "^2.0.3",
+    "@actions/github": "*"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
