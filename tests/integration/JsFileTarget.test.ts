@@ -1,9 +1,9 @@
-import {performance} from "perf_hooks";
 import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
 import {JsActionScriptTarget} from "../../src/actionRunner/jsFile/runTarget/JsActionScriptTarget";
 import {JsFilePathTarget} from "../../src/actionRunner/jsFile/runTarget/JsFilePathTarget";
+import {Duration} from "../../src/utils/Duration";
 
 const printStdout = process.env.CI === undefined;
 const complexActionDir = 'tests/integration/testActions/complex/';
@@ -42,9 +42,9 @@ describe('JsActionScriptTarget', () => {
             .setTimeoutMs(400)
             .setShouldPrintStdout(printStdout);
         const target = JsActionScriptTarget.createMain(complexActionActionYml);
-        const startTime = performance.now();
+        const duration = Duration.startMeasuring();
         const res = target.run(options);
-        const executionMs = performance.now() - startTime;
+        const executionMs = duration.measureMs();
         if (!inspector.url()) {
             expect(executionMs).toBeLessThan(500);
             expect(executionMs).toBeGreaterThanOrEqual(400);

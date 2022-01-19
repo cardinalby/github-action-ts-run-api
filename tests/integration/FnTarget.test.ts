@@ -10,6 +10,7 @@ import * as path from "path";
 import {GithubContextStore} from "../../src/stores/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
 import {getNewGithubContext} from "../utils/getNewGithubContext";
+import {Duration} from "../../src/utils/Duration";
 
 const printStdout = process.env.CI === undefined;
 
@@ -285,7 +286,7 @@ describe('AsyncFnTarget', () => {
             process.exitCode = 1;
             return 32;
         })
-        const startTime = performance.now();
+        const duration = Duration.startMeasuring();
         const resPromise = target.run(RunOptions.create({
             env: {CCC: 'x'},
             timeoutMs: 1200,
@@ -296,7 +297,7 @@ describe('AsyncFnTarget', () => {
         expect(process.env.BBB).toEqual('bbb');
         expect(process.env.CCC).toEqual('x');
         const res = await resPromise;
-        expect(performance.now() - startTime).toBeGreaterThan(30);
+        expect(duration.measureMs()).toBeGreaterThan(30);
         expect(process.env.AAA).toEqual('aaa');
         expect(process.exitCode).toBeUndefined();
         expect(process.env.BBB).toBeUndefined();
