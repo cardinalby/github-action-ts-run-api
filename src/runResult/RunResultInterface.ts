@@ -1,8 +1,8 @@
-import {CommandsStoreInterface} from "../stores/CommandsStoreInterface";
+import {ParsedCommandsInterface} from "../stores/ParsedCommandsInterface";
 
 export interface RunResultInterface {
     exitCode: number|undefined;
-    commands: CommandsStoreInterface;
+    commands: ParsedCommandsInterface;
     stdout: string;
     error: Error|undefined;
     isTimedOut: boolean;

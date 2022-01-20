@@ -1,12 +1,12 @@
 import {AbstractRunResult} from "../../runResult/AbstractRunResult";
-import {CommandsStoreInterface} from "../../stores/CommandsStoreInterface";
+import {ParsedCommandsInterface} from "../../stores/ParsedCommandsInterface";
 import {SpawnSyncReturns} from "child_process";
 import {FakeTempDir} from "../../githubServiceFiles/FakeTempDir";
 
 export class JsFileRunResult extends AbstractRunResult
 {
     constructor(
-        commands: CommandsStoreInterface,
+        commands: ParsedCommandsInterface,
         error: Error|any|undefined,
         exitCode: number|undefined,
         stdout: string,

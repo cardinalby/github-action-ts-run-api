@@ -2,6 +2,7 @@ import {StringKeyValueObj} from "../types/StringKeyValueObj";
 import {EnvInterface} from "../types/EnvInterface";
 import {GithubContextInterface} from "../types/GithubContextInterface";
 import {GithubServiceEnvInterface} from "../types/GithubServiceEnvInterface";
+import {FakeFileOptionsInterface} from "./FakeFileOptionsInterface";
 
 export interface InitRunOptionsInterface {
     /** @default {{}} */
@@ -16,10 +17,8 @@ export interface InitRunOptionsInterface {
     githubContext?: GithubContextInterface,
     /** @default {{}} */
     githubServiceEnv?: GithubServiceEnvInterface,
-    /** @default {true} */
-    shouldFakeServiceFiles?: boolean;
-    /** @default {{ fake: true, cleanUp: true }} */
-    shouldFakeTempDir?: { fake: boolean, cleanUp: boolean };
+    /** @default {{unsetCommandFilesEnvs: true, fakeCommandFiles: true, fakeTempDir: true, cleanUpTempDir: true}} */
+    fakeFileOptions?: Partial<FakeFileOptionsInterface>,
     /** @default {true} */
     shouldParseStdout?: boolean;
     /** @default {false} */

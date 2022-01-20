@@ -1,5 +1,5 @@
 import {RunResultInterface} from "./RunResultInterface";
-import {CommandsStoreInterface} from "../stores/CommandsStoreInterface";
+import {ParsedCommandsInterface} from "../stores/ParsedCommandsInterface";
 import {FakeTempDir} from "../githubServiceFiles/FakeTempDir";
 
 export abstract class AbstractRunResult implements RunResultInterface
@@ -7,7 +7,7 @@ export abstract class AbstractRunResult implements RunResultInterface
     readonly isSuccess: boolean;
 
     protected constructor(
-        public readonly commands: CommandsStoreInterface,
+        public readonly commands: ParsedCommandsInterface,
         public readonly error: Error|any|undefined,
         public readonly isTimedOut: boolean,
         public readonly exitCode: number|undefined,

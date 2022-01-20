@@ -64,4 +64,16 @@ export interface GithubServiceEnvInterface {
      * For more information, see "About GitHub-hosted runners".
      */
     RUNNER_TOOL_CACHE?: string;
+
+    /**
+     * Path to env command file used for exporting envs to workflow
+     * If set, overwrites options.fakeFileOptions.unsetCommandFilesEnvs
+     */
+    GITHUB_ENV?: string
+
+    /**
+     * Path to path command file used for modifying PATH variable in workflow
+     * If set, overwrites options.fakeFileOptions.unsetCommandFilesEnvs
+     */
+    GITHUB_PATH?: string
 }

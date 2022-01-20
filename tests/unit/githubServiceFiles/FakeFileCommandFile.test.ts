@@ -1,10 +1,10 @@
-import {FakeGithubServiceFile} from "../../../src/githubServiceFiles/FakeGithubServiceFile";
+import {FakeFile} from "../../../src/githubServiceFiles/FakeFile";
 import {GithubServiceFileName} from "../../../src/githubServiceFiles/GithubServiceFileName";
 import * as fs from "fs";
 
 describe('FakeFileCommandFile', () => {
     it('should clean up', () => {
-        const file = FakeGithubServiceFile.create(GithubServiceFileName.ENV);
+        const file = FakeFile.create(GithubServiceFileName.ENV);
         try {
             expect(file.name).toEqual(GithubServiceFileName.ENV);
             expect(fs.existsSync(file.filePath)).toEqual(true);

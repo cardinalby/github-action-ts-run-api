@@ -124,9 +124,9 @@ describe('SyncFnTarget', () => {
 
     test.each([
         [ true,  true,  ['w'], ['ppp'] ],
-     //   [ true,  false, ['w'], ['ppp'] ],
+        [ true,  false, ['w'], ['ppp'] ],
         [ false, true,  [],    ['ppp'] ],
-     //   [ false, false, [],    []      ]
+        [ false, false, [],    []      ]
     ])(
         'should respect parseStdoutCommands option',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
@@ -137,7 +137,7 @@ describe('SyncFnTarget', () => {
                 return 4;
             }).run(RunOptions.create()
                 .setShouldParseStdout(parseStdoutCommands)
-                .setShouldFakeServiceFiles(fakeFileCommands)
+                .setFakeFileOptions({fakeCommandFiles: fakeFileCommands})
                 .setShouldPrintStdout(printStdout)
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
@@ -213,7 +213,7 @@ describe('SyncFnTarget', () => {
             core.exportVariable('my_env_var2', 'my_env_var_value2');
         }).run(
             RunOptions.create()
-                .setShouldFakeServiceFiles(false)
+                .setFakeFileOptions({fakeCommandFiles: false})
                 .setShouldPrintStdout(printStdout)
         );
         envBackup.restore();

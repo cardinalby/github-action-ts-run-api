@@ -1,5 +1,5 @@
 import {spawnSync} from "child_process";
-import {AbstractJsFileTarget} from "../runTarget/AbstractJsFileTarget";
+import {AbstractJsFileTarget} from "./AbstractJsFileTarget";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
 

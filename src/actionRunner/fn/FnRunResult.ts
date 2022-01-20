@@ -1,5 +1,6 @@
 import {AbstractRunResult} from "../../runResult/AbstractRunResult";
-import {ExecutionEffects} from "./helpers/FnExecutionEnvironment";
+import {FnExecutionEffects} from "./executionEnvironment/FnExecutionEnvironment";
+import {CommandsStore} from "../../stores/CommandsStore";
 
 export class FnRunResult<R> extends AbstractRunResult
 {
@@ -7,10 +8,10 @@ export class FnRunResult<R> extends AbstractRunResult
         public readonly fnResult: R|undefined,
         error: any,
         isTimedOut: boolean,
-        executionEffects: ExecutionEffects,
+        executionEffects: FnExecutionEffects,
     ) {
         super(
-            executionEffects.commands,
+            CommandsStore.create(executionEffects.stdoutCommands, executionEffects.fileCommands).data,
             error,
             isTimedOut,
             executionEffects.exitCode,

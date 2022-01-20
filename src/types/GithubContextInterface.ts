@@ -28,7 +28,6 @@ export interface GithubContextInterface {
     /** @description The name of the person or app that initiated the workflow. For example, octocat.*/
     actor?: string;
 
-    // TODO:
     /** @description The owner and repository name. For example, octocat/Hello-World.*/
     repository?: string;
 

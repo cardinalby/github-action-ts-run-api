@@ -8,18 +8,26 @@ import {GithubServiceEnvStore} from "../stores/GithubServiceEnvStore";
 import {GithubContextInterface} from "../types/GithubContextInterface";
 import {GithubServiceEnvInterface} from "../types/GithubServiceEnvInterface";
 import {InitRunOptionsInterface} from "./InitRunOptionsInterface";
+import {FakeFileOptionsStore} from "../stores/FakeFileOptionsStore";
+import {FakeFileOptionsInterface} from "./FakeFileOptionsInterface";
 
 export class RunOptions
 {
     static create(init: InitRunOptionsInterface = {}): RunOptions {
+        const defaultFakeFileOptions: FakeFileOptionsInterface = {
+            unsetCommandFilesEnvs: true,
+            fakeCommandFiles: true,
+            fakeTempDir: true,
+            cleanUpTempDir: true
+        }
+
         return new RunOptions(
             new InputsStore(init.inputs || {}),
             new EnvStore(init.env || {}),
             new StateStore(init.state || {}),
             new GithubContextStore(init.githubContext || {}),
             new GithubServiceEnvStore(init.githubServiceEnv || {}),
-            init.shouldFakeServiceFiles !== undefined ? init.shouldFakeServiceFiles : true,
-            init.shouldFakeTempDir !== undefined ? init.shouldFakeTempDir : {fake: true, cleanUp: true},
+            (new FakeFileOptionsStore(defaultFakeFileOptions)).apply(init.fakeFileOptions || {}),
             init.shouldParseStdout !== undefined ? init.shouldParseStdout : true,
             init.shouldPrintStdout !== undefined ? init.shouldPrintStdout : false,
             init.workingDir,
@@ -33,8 +41,7 @@ export class RunOptions
         public readonly state: StateStore,
         public readonly githubContext: GithubContextStore,
         public readonly githubServiceEnv: GithubServiceEnvStore,
-        public shouldFakeServiceFiles: boolean,
-        public shouldFakeTempDir: { fake: boolean, cleanUp: boolean },
+        public readonly fakeFileOptions: FakeFileOptionsStore,
         public shouldParseStdout: boolean,
         public shouldPrintStdout: boolean,
         public workingDir: string|undefined,
@@ -51,13 +58,10 @@ export class RunOptions
         return this;
     }
 
-    setShouldFakeServiceFiles(doFake: boolean): this {
-        this.shouldFakeServiceFiles = doFake;
-        return this;
-    }
-
-    setShouldFakeTempDir(doFake: boolean, cleanUp: boolean): this {
-        this.shouldFakeTempDir = {fake: doFake, cleanUp: cleanUp};
+    setFakeFileOptions(options: FakeFileOptionsInterface, update: false): this;
+    setFakeFileOptions(options: Partial<FakeFileOptionsInterface>, update?: true): this;
+    setFakeFileOptions(options: FakeFileOptionsInterface, update: boolean = true): this {
+        update ? this.fakeFileOptions.apply(options) : this.fakeFileOptions.setData(options);
         return this;
     }
 
@@ -112,11 +116,6 @@ export class RunOptions
     }
 
     validate(): this {
-        if (!this.shouldFakeServiceFiles && this.githubContext.data.payload !== undefined) {
-            throw new Error(
-                'If you set githubContext.payload is set, you should also set shouldFakeServiceFiles to true'
-            );
-        }
         return this;
     }
 
@@ -127,8 +126,7 @@ export class RunOptions
             this.state.clone(),
             this.githubContext.clone(),
             this.githubServiceEnv.clone(),
-            this.shouldFakeServiceFiles,
-            this.shouldFakeTempDir,
+            this.fakeFileOptions.clone(),
             this.shouldParseStdout,
             this.shouldPrintStdout,
             this.workingDir,

@@ -1,8 +1,8 @@
 import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {JsFileRunResult} from "../JsFileRunResult";
-import {ChildProcExecutionEnvironment} from "../helpers/ChildProcExecutionEnvironment";
-import {spawnChildProc} from "../helpers/spawnChildProc";
+import {ChildProcExecutionEnvironment} from "../executionEnvironment/ChildProcExecutionEnvironment";
+import {spawnChildProc} from "./spawnChildProc";
 import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
 import {CommandsStore} from "../../../stores/CommandsStore";
 import {ActionConfigStoreOptional} from "../../../stores/ActionConfigStore";
@@ -16,7 +16,7 @@ export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
     run(options: RunOptions): JsFileRunResult
     {
         const execEnvironment = ChildProcExecutionEnvironment.prepare(this, options.validate());
-        const spawnResult = spawnChildProc(this, options, execEnvironment.spawnEnv);
+        const spawnResult = spawnChildProc(this, options, execEnvironment.env);
         try {
             const stdoutBuffer = spawnResult.stdout;
             if (stdoutBuffer && options.shouldPrintStdout) {
@@ -27,12 +27,11 @@ export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
                 ? StdoutCommandsExtractor.extract(stdoutStr)
                 : new CommandsStore();
             const effects = execEnvironment.getEffects();
-            if (options.shouldFakeServiceFiles) {
-                commands.addedPaths = effects.addedPaths;
-                commands.exportedVars = effects.exportedVars;
+            if (options.fakeFileOptions.data.fakeCommandFiles) {
+                commands.apply(effects.fileCommands);
             }
             return new JsFileRunResult(
-                commands,
+                commands.data,
                 spawnResult.error,
                 spawnResult.status !== null ? spawnResult.status : undefined,
                 stdoutStr,

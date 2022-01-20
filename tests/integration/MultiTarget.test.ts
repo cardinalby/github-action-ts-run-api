@@ -29,7 +29,7 @@ describe('multitarget', () => {
                 RunOptions.create()
                     .addProcessEnv()
                     .setInputs({sendFileCommands: 'false'})
-                    .setShouldFakeServiceFiles(false)
+                    .setFakeFileOptions({fakeCommandFiles: false})
                     .setShouldPrintStdout(printStdout)
             );
             expect(res.commands.warnings).toEqual([path.resolve(process.cwd())]);
@@ -50,7 +50,7 @@ describe('multitarget', () => {
                 RunOptions.create()
                     .addProcessEnv()
                     .setInputs({sendFileCommands: 'false'})
-                    .setShouldFakeServiceFiles(false)
+                    .setFakeFileOptions({fakeCommandFiles: false})
                     .setShouldPrintStdout(printStdout)
             );
             expect(res.commands.warnings).toEqual([path.resolve(process.cwd())]);
@@ -83,7 +83,7 @@ describe('multitarget', () => {
                         }
                     })
                     .setGithubServiceEnv({GITHUB_REF_NAME: 'ttt'})
-                    .setShouldFakeTempDir(true, false)
+                    .setFakeFileOptions({cleanUpTempDir: false})
             );
             try {
                 expect(res.tempDir).not.toBeUndefined();

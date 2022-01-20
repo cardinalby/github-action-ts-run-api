@@ -1,5 +1,5 @@
-import {CommandsStoreInterface, EchoCommandMessage} from "./CommandsStoreInterface";
-import {StringKeyValueObj} from "../types/StringKeyValueObj";
+import {ParsedCommandsInterface} from "./ParsedCommandsInterface";
+import {AbstractStore} from "./AbstractStore";
 
 export enum StdoutCommandName {
     // noinspection SpellCheckingInspection,JSUnusedGlobalSymbols
@@ -23,17 +23,27 @@ export interface CommandInterface {
     message: string | undefined
 }
 
-export class CommandsStore implements CommandsStoreInterface {
-    warnings: string[] = [];
-    errors: string[] = [];
-    notices: string[] = [];
-    debugs: string[] = [];
-    savedState: StringKeyValueObj = {};
-    secrets: string[] = [];
-    outputs: StringKeyValueObj = {};
-    addedPaths: string[] = [];
-    exportedVars: StringKeyValueObj = {};
-    echo: EchoCommandMessage = undefined;
+export class CommandsStore extends AbstractStore<ParsedCommandsInterface> {
+    static create(...commands: Partial<ParsedCommandsInterface>[]) {
+        const store = new CommandsStore();
+        commands.forEach(cmd => store.apply(cmd));
+        return store;
+    }
+
+    constructor() {
+        super({
+            warnings: [],
+            errors: [],
+            notices: [],
+            debugs: [],
+            savedState: {},
+            secrets: [],
+            outputs: {},
+            addedPaths: [],
+            exportedVars: {},
+            echo: undefined
+        });
+    }
 
     addCommand(cmd: CommandInterface): this {
         if (cmd.message === undefined) {
@@ -41,42 +51,42 @@ export class CommandsStore implements CommandsStoreInterface {
         }
         switch (cmd.command) {
             case StdoutCommandName.ERROR:
-                this.errors.push(cmd.message);
+                this.data.errors.push(cmd.message);
                 break;
             case StdoutCommandName.WARNING:
-                this.warnings.push(cmd.message);
+                this.data.warnings.push(cmd.message);
                 break;
             case StdoutCommandName.NOTICE:
-                this.notices.push(cmd.message);
+                this.data.notices.push(cmd.message);
                 break;
             case StdoutCommandName.DEBUG:
-                this.debugs.push(cmd.message);
+                this.data.debugs.push(cmd.message);
                 break;
             case StdoutCommandName.SAVE_STATE: {
                 if (cmd.properties.name !== undefined) {
-                    this.savedState[cmd.properties.name] = cmd.message;
+                    this.data.savedState[cmd.properties.name] = cmd.message;
                 }
                 break;
             }
             case StdoutCommandName.ADD_MASK:
-                this.secrets.push(cmd.message);
+                this.data.secrets.push(cmd.message);
                 break;
             case StdoutCommandName.SET_OUTPUT:
                 if (cmd.properties.name !== undefined) {
-                    this.outputs[cmd.properties.name] = cmd.message;
+                    this.data.outputs[cmd.properties.name] = cmd.message;
                 }
                 break;
             case StdoutCommandName.ADD_PATH:
-                this.addedPaths.push(cmd.message);
+                this.data.addedPaths.push(cmd.message);
                 break;
             case StdoutCommandName.ECHO:
                 if (cmd.message === 'on' || cmd.message === 'off') {
-                    this.echo = cmd.message;
+                    this.data.echo = cmd.message;
                 }
                 break;
             case StdoutCommandName.SET_ENV:
                 if (cmd.properties.name !== undefined) {
-                    this.exportedVars[cmd.properties.name] = cmd.message;
+                    this.data.exportedVars[cmd.properties.name] = cmd.message;
                 }
                 break;
         }

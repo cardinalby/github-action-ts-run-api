@@ -16,7 +16,7 @@ describe('JsActionScriptTarget', () => {
                 .addProcessEnv()
                 .setEnv({MY_ENV_VAR: 'my_env_value'})
                 .setInputs({sendFileCommands: 'false', setState: 'stateVal'})
-                .setShouldFakeServiceFiles(false)
+                .setFakeFileOptions({fakeCommandFiles: false})
                 .setShouldPrintStdout(printStdout)
             );
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2']);
@@ -38,7 +38,7 @@ describe('JsActionScriptTarget', () => {
         const options = RunOptions.create()
             .addProcessEnv()
             .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'false', delayMs: '500'})
-            .setShouldFakeServiceFiles(false)
+            .setFakeFileOptions({fakeCommandFiles: false})
             .setTimeoutMs(400)
             .setShouldPrintStdout(printStdout);
         const target = JsActionScriptTarget.createMain(complexActionActionYml);
@@ -69,7 +69,7 @@ describe('JsActionScriptTarget', () => {
             RunOptions.create()
                 .addProcessEnv()
                 .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'true', failAtTheEnd: 'true'})
-                .setShouldFakeServiceFiles(true)
+                .setFakeFileOptions({fakeCommandFiles: false})
                 .setShouldPrintStdout(printStdout)
         );
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2', 'failed_msg']);
@@ -98,7 +98,7 @@ describe('JsActionScriptTarget', () => {
                 .addProcessEnv()
                 .setInputs({sendFileCommands: 'true'})
                 .setState({my_state: 'some%Val'})
-                .setShouldFakeServiceFiles(false)
+                .setFakeFileOptions({fakeCommandFiles: false})
                 .setShouldPrintStdout(printStdout)
         );
         expect(res.commands.warnings).toEqual([path.resolve(process.cwd())]);
@@ -112,14 +112,14 @@ describe('JsActionScriptTarget', () => {
 });
 
 describe('JsFilePathTarget', () => {
-    test.each([true, /** false */])(
+    test.each([true, false])(
         'should run targetJsFilePath, file commands',
         fakeFileCommands => {
             const res = JsFilePathTarget.create(complexActionDir + 'main.js').run(
                 RunOptions.create()
                     .addProcessEnv()
                     .setInputs({sendFileCommands: 'true', sendStdoutCommands: 'false', failAtTheEnd: 'false'})
-                    .setShouldFakeServiceFiles(fakeFileCommands)
+                    .setFakeFileOptions({fakeCommandFiles: fakeFileCommands})
                     .setShouldPrintStdout(printStdout)
             );
             expect(res.commands.errors).toEqual([]);
@@ -141,9 +141,9 @@ describe('JsFilePathTarget', () => {
 
     test.each([
         [ true,  true,  ['w'], ['ppp'] ],
-       // [ true,  false, ['w'], ['ppp'] ],
+        [ true,  false, ['w'], ['ppp'] ],
         [ false, true,  [],    ['ppp'] ],
-       // [ false, false, [],    []      ]
+        [ false, false, [],    []      ]
     ])(
         'should respect parseStdoutCommands option',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
@@ -152,7 +152,7 @@ describe('JsFilePathTarget', () => {
                 RunOptions.create()
                     .addProcessEnv()
                     .setShouldParseStdout(parseStdoutCommands)
-                    .setShouldFakeServiceFiles(fakeFileCommands)
+                    .setFakeFileOptions({fakeCommandFiles: fakeFileCommands})
                     .setShouldPrintStdout(printStdout)
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
@@ -175,7 +175,7 @@ describe('JsFilePathTarget', () => {
                     .addProcessEnv()
                     .setWorkingDir(workingDir)
                     .setInputs({sendFileCommands: 'false'})
-                    .setShouldFakeServiceFiles(false)
+                    .setFakeFileOptions({fakeCommandFiles: false})
                     .setShouldPrintStdout(printStdout)
             );
             expect(res.commands.warnings).toEqual([resultCwd]);

@@ -1,10 +1,13 @@
 import tmp from "tmp";
 import {GithubServiceFileName} from "./GithubServiceFileName";
-import {StringKeyValueObj} from "../types/StringKeyValueObj";
 
-export class FakeGithubServiceFile {
-    static create(name: GithubServiceFileName): FakeGithubServiceFile {
-        return new FakeGithubServiceFile(
+export class FakeFile {
+    static getFilePathEnvVariable(name: GithubServiceFileName): string {
+        return `GITHUB_${name}`;
+    }
+
+    static create(name: GithubServiceFileName): FakeFile {
+        return new FakeFile(
             tmp.fileSync({
                 prefix: name,
                 keep: true
@@ -18,11 +21,13 @@ export class FakeGithubServiceFile {
     protected constructor(
         createdTmp: tmp.FileResult,
         public readonly name: GithubServiceFileName,
-        public readonly filePath = createdTmp.name,
-        public readonly filePathEnvVariable: StringKeyValueObj =
-            {[`GITHUB_${name}`]: createdTmp.name}
+        public readonly filePath = createdTmp.name
     ) {
         this._createdTmp = createdTmp;
+    }
+
+    get filePathEnvVariable(): string {
+        return FakeFile.getFilePathEnvVariable(this.name);
     }
 
     delete() {

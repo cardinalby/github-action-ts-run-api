@@ -4,12 +4,12 @@ import {GithubEventName} from "../types/GithubEventName";
 import {AbstractStore} from "./AbstractStore";
 import {GithubContextEnvs} from "../types/GithubContextEnvs";
 import {filterObjectKeys} from "../utils/collections";
-import {FakeGithubServiceFile} from "../githubServiceFiles/FakeGithubServiceFile";
+import {FakeFile} from "../githubServiceFiles/FakeFile";
 import {GithubServiceFileName} from "../githubServiceFiles/GithubServiceFileName";
 import fs from "fs-extra";
 
 export interface ContextExportResult {
-    eventPayloadFile: FakeGithubServiceFile|undefined,
+    eventPayloadFile: FakeFile|undefined,
     envVariables: GithubContextEnvs
 }
 
@@ -64,11 +64,11 @@ export class GithubContextStore extends AbstractStore<GithubContextInterface> {
         }) as this;
     }
 
-    private createEventPayloadFile(): FakeGithubServiceFile|undefined {
+    private createEventPayloadFile(): FakeFile|undefined {
         if (this._data.payload === undefined) {
             return undefined;
         }
-        const file = FakeGithubServiceFile.create(GithubServiceFileName.EVENT_PATH);
+        const file = FakeFile.create(GithubServiceFileName.EVENT_PATH);
         fs.writeFileSync(file.filePath, JSON.stringify(this._data.payload));
         return file;
     }

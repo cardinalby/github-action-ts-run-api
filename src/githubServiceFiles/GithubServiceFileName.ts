@@ -4,6 +4,6 @@ export enum GithubServiceFileName {
     EVENT_PATH = 'EVENT_PATH'
 }
 
-export function getKnownFileCommandNames(): GithubServiceFileName[] {
+export function getFileCommandNames(): GithubServiceFileName[] {
     return [GithubServiceFileName.ENV, GithubServiceFileName.PATH];
 }
