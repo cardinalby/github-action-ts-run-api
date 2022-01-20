@@ -11,7 +11,7 @@ export class JsFileRunResult extends AbstractRunResult
         exitCode: number|undefined,
         stdout: string,
         tempDir: FakeTempDir|undefined,
-        public readonly spawnResult: SpawnSyncReturns<Buffer>,
+        public readonly spawnResult: SpawnSyncReturns<string>,
     ) {
         super(
             commands,
@@ -23,7 +23,7 @@ export class JsFileRunResult extends AbstractRunResult
         );
     }
 
-    private static isTimedOut(spawnResult: SpawnSyncReturns<Buffer>): boolean {
+    private static isTimedOut(spawnResult: SpawnSyncReturns<string>): boolean {
         return !!(spawnResult.error &&
             typeof spawnResult.error === 'object' &&
             (spawnResult.error as any)['code'] &&

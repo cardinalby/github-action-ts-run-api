@@ -13,7 +13,8 @@ export interface ActionConfigInterface {
     inputs?: ActionInputsConfigInterface;
     runs: {
         using: "node12"|"node16"|"composite"|"docker";
-        main: string;
+        image?: string;
+        main?: string;
         pre?: string;
         post?: string
     }

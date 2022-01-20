@@ -11,7 +11,7 @@ export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
     protected constructor(
         public readonly jsFilePath: string,
         public readonly actionConfig: ActionConfigStoreOptional,
-        public readonly actionYmlPath: string|undefined
+        public readonly actionYmlPath: string|undefined,
     ) {}
 
     run(options: RunOptions): JsFileRunResult
@@ -19,13 +19,11 @@ export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
         const execEnvironment = ChildProcExecutionEnvironment.prepare(this, options.validate());
         const spawnResult = spawnChildProc(this, options, execEnvironment.env);
         try {
-            const stdoutBuffer = spawnResult.stdout;
-            if (stdoutBuffer && options.shouldPrintStdout) {
-                process.stdout.write(stdoutBuffer);
+            if (spawnResult.stdout && options.shouldPrintStdout) {
+                process.stdout.write(spawnResult.stdout);
             }
-            const stdoutStr = stdoutBuffer ? stdoutBuffer.toString() : '';
-            const commands = stdoutStr && options.shouldParseStdout
-                ? StdoutCommandsExtractor.extract(stdoutStr)
+            const commands = spawnResult.stdout && options.shouldParseStdout
+                ? StdoutCommandsExtractor.extract(spawnResult.stdout)
                 : new CommandsStore();
             const effects = execEnvironment.getEffects();
             if (options.fakeFileOptions.data.fakeCommandFiles) {
@@ -35,7 +33,7 @@ export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
                 commands.data,
                 spawnResult.error,
                 spawnResult.status !== null ? spawnResult.status : undefined,
-                stdoutStr,
+                spawnResult.stdout,
                 effects.tempDir,
                 spawnResult
             );

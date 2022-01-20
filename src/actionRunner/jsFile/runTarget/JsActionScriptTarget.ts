@@ -40,6 +40,7 @@ export class JsActionScriptTarget extends AbstractJsFileTarget {
         filePathPrefix?: string
     ): AbstractJsFileTarget {
         const actionConfig = ActionConfigStore.create(actionConfigSource, true);
+        assert(actionConfig.data.runs.using.startsWith('node'), "Passed action config is not runs using node");
         let targetFilePath = actionConfig.data.runs[scriptName];
         assert(targetFilePath !== undefined, `Action config doesn't have "${scriptName}" key in "runs" section`);
         if (filePathPrefix === undefined) {

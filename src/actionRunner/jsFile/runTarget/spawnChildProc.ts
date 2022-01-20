@@ -14,6 +14,7 @@ export function spawnChildProc(
         {
             timeout: options.timeoutMs,
             env: spawnEnv,
-            cwd: options.workingDir
+            cwd: options.workingDir,
+            encoding: "utf8"
         });
 }
