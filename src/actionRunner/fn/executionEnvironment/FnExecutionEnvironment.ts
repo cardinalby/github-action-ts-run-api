@@ -23,6 +23,7 @@ export class FnExecutionEnvironment extends AbstractExecutionEnvironment {
         const result = new FnExecutionEnvironment(
             options,
             target.actionConfig,
+            target.actionYmlPath,
             saveProcessProps(),
             StdoutInterceptor.start(options.shouldPrintStdout)
         );
@@ -35,10 +36,11 @@ export class FnExecutionEnvironment extends AbstractExecutionEnvironment {
     protected constructor(
         options: RunOptions,
         actionConfig: ActionConfigStoreOptional|undefined,
+        actionYmlPath: string|undefined,
         public restoreProcessProps: RestoreProcessPropsFn,
         public stdoutInterceptor: StdoutInterceptor
     ) {
-        super(options, actionConfig);
+        super(options, actionConfig, actionYmlPath);
         this.shouldParseStdout = options.shouldParseStdout;
     }
 

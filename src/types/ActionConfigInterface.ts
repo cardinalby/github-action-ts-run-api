@@ -9,9 +9,10 @@ export interface ActionInputsConfigInterface {
 }
 
 export interface ActionConfigInterface {
+    name: string,
     inputs?: ActionInputsConfigInterface;
     runs: {
-        using: string;
+        using: "node12"|"node16"|"composite"|"docker";
         main: string;
         pre?: string;
         post?: string

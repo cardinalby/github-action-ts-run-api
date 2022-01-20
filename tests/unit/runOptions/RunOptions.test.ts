@@ -11,6 +11,7 @@ describe('RunOptions', () => {
             },
             githubContext: {payload: {action: 'f'}},
             githubServiceEnv: {CI: 'false'},
+            shouldFakeMinimalGithubRunnerEnv: true,
             shouldPrintStdout: true,
             timeoutMs: 123,
             env: {e1: 'v1'},
@@ -29,6 +30,7 @@ describe('RunOptions', () => {
             });
             expect(o.githubContext.data).toEqual({payload: {action: 'f'}});
             expect(o.githubServiceEnv.data).toEqual({CI: 'false'});
+            expect(o.shouldFakeMinimalGithubRunnerEnv).toEqual(true);
             expect(o.shouldPrintStdout).toEqual(true);
             expect(o.timeoutMs).toEqual(123);
             expect(o.env.data).toEqual({e1: 'v1'});
@@ -72,6 +74,7 @@ describe('RunOptions', () => {
         expect(options.state.data).toEqual({});
         expect(options.githubContext.data).toEqual({});
         expect(options.githubServiceEnv.data).toEqual({});
+        expect(options.shouldFakeMinimalGithubRunnerEnv).toEqual(false);
         expect(options.workingDir).toEqual(undefined);
         expect(options.fakeFileOptions.data).toEqual({
             fakeCommandFiles: true,

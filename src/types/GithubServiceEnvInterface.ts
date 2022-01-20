@@ -2,7 +2,6 @@ export type RunnerOs = 'Linux' | 'Windows' | 'macOS';
 export type RunnerArch = 'X86' | 'X64' | 'ARM' | 'ARM64';
 
 export interface GithubServiceEnvInterface {
-    [p: string]: string|undefined;
     /**
      * @description Always set to true.
      * @default: 'true'
@@ -14,6 +13,12 @@ export interface GithubServiceEnvInterface {
      * this variable to differentiate when tests are being run locally or by GitHub Actions.
      */
     GITHUB_ACTIONS?: string;
+
+    /**
+     * @description The path where your action is located. You can use this path to access files located in the
+     * same repository as your action. This variable is only supported in composite actions.
+     * */
+    GITHUB_ACTION_PATH?: string;
 
     /**
      * @description The GitHub workspace directory path, initially empty.

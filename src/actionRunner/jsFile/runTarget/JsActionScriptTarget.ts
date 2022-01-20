@@ -47,10 +47,18 @@ export class JsActionScriptTarget extends AbstractJsFileTarget {
             filePathPrefix = path.dirname(actionConfigSource);
         }
         targetFilePath = path.resolve(filePathPrefix, targetFilePath);
-        return new JsActionScriptTarget(targetFilePath, actionConfig);
+        return new JsActionScriptTarget(
+            targetFilePath,
+            actionConfig,
+            typeof actionConfigSource === 'string' ? actionConfigSource : undefined
+        );
     }
 
-    protected constructor(jsFilePath: string, actionConfig: ActionConfigStoreFilled) {
-        super(jsFilePath, actionConfig);
+    protected constructor(
+        jsFilePath: string,
+        actionConfig: ActionConfigStoreFilled,
+        actionYmlPath: string|undefined
+    ) {
+        super(jsFilePath, actionConfig, actionYmlPath);
     }
 }

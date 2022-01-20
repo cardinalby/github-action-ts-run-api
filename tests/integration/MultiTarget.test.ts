@@ -72,10 +72,8 @@ describe('multitarget', () => {
             const res = target.run(
                 RunOptions.create()
                     .addProcessEnv()
-                    .fakeMinimalGithubServiceEnv()
-                    .fakeMinimalGithubContext()
+                    .setShouldFakeMinimalGithubRunnerEnv(true)
                     .setGithubContext({
-                        serverUrl: 'https://my.com/',
                         payload: {
                             pull_request: {
                                 number: 12345
@@ -91,7 +89,7 @@ describe('multitarget', () => {
                 expect(fs.existsSync(res.tempDir.dirPath));
                 const out = <any>fs.readJSONSync(path.join(res.tempDir.dirPath, 'out.json'));
                 expect(out.pr_number).toEqual(12345);
-                expect(out.server_url).toEqual('https://my.com/');
+                expect(out.server_url).toEqual(GithubContextStore.SERVER_URL_DEFAULT);
                 expect(out.event_name).toEqual(GithubContextStore.EVENT_NAME_DEFAULT);
                 expect(out.github_actions_env).toEqual(GithubServiceEnvStore.GITHUB_ACTIONS_DEFAULT);
                 expect(out.github_ref_name_env).toEqual('ttt');

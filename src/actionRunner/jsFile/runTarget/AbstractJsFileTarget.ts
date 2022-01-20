@@ -10,7 +10,8 @@ import {ActionConfigStoreOptional} from "../../../stores/ActionConfigStore";
 export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
     protected constructor(
         public readonly jsFilePath: string,
-        public readonly actionConfig: ActionConfigStoreOptional
+        public readonly actionConfig: ActionConfigStoreOptional,
+        public readonly actionYmlPath: string|undefined
     ) {}
 
     run(options: RunOptions): JsFileRunResult

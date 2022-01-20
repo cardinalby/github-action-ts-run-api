@@ -1,6 +1,7 @@
 import tmp from "tmp";
 import {GithubServiceEnvInterface} from "../types/GithubServiceEnvInterface";
 import fs from "fs-extra";
+import {StringKeyValueObj} from "../types/StringKeyValueObj";
 
 export class FakeTempDir {
     static create(): FakeTempDir {
@@ -17,7 +18,8 @@ export class FakeTempDir {
     protected constructor(
         createdTmp: tmp.DirResult,
         public readonly dirPath = createdTmp.name,
-        public readonly dirPathEnvVariable: GithubServiceEnvInterface = { RUNNER_TEMP: createdTmp.name }
+        public readonly dirPathEnvVariable: GithubServiceEnvInterface & StringKeyValueObj =
+            { RUNNER_TEMP: createdTmp.name }
     ) {
         this._createdTmp = createdTmp;
     }

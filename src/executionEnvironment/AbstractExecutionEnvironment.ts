@@ -5,6 +5,7 @@ import {EnvStore} from "../stores/EnvStore";
 import {RunOptions} from "../runOptions/RunOptions";
 import {ActionConfigStoreOptional} from "../stores/ActionConfigStore";
 import {ExecutionEffectsInterface} from "./ExecutionEffectsInterface";
+import * as path from "path";
 
 export class AbstractExecutionEnvironment {
     public readonly fakeFiles: FakeFilesCollection;
@@ -12,7 +13,11 @@ export class AbstractExecutionEnvironment {
     public readonly cleanUpTempDir: boolean;
     public readonly env: EnvInterface;
 
-    protected constructor(options: RunOptions, actionConfig: ActionConfigStoreOptional|undefined) {
+    protected constructor(
+        options: RunOptions,
+        actionConfig: ActionConfigStoreOptional|undefined,
+        actionYmlPath: string|undefined
+    ) {
         const envStore = new EnvStore(options.env.data);
         if (actionConfig !== undefined) {
             envStore.apply(actionConfig.getDefaultInputs().toEnvVariables());
@@ -22,16 +27,31 @@ export class AbstractExecutionEnvironment {
         }
         envStore.apply(options.inputs.toEnvVariables());
         envStore.apply(options.state.toEnvVariables());
-        envStore.apply(options.githubServiceEnv.data);
+
+        let githubServiceEnv = options.githubServiceEnv;
+        if (options.shouldFakeMinimalGithubRunnerEnv) {
+            let actionYmlPathEnvValue = undefined;
+            if (actionConfig?.data?.runs?.using === 'composite' && actionYmlPath) {
+                actionYmlPathEnvValue = path.resolve(path.dirname(actionYmlPath));
+            }
+            githubServiceEnv = options.githubServiceEnv.clone().fakeMinimalRunnerEnv(actionYmlPathEnvValue);
+        }
+        envStore.apply(githubServiceEnv.data);
 
         this.fakeFiles = options.fakeFileOptions.data.fakeCommandFiles
             ? FakeFilesCollection.createCommandFiles()
             : new FakeFilesCollection();
-        const githubContextExport = options.githubContext.export();
+
+        const githubContext = options.shouldFakeMinimalGithubRunnerEnv
+            ? options.githubContext.clone().fakeMinimalRunnerContext(actionConfig?.data?.name)
+            : options.githubContext;
+
+        const githubContextExport = githubContext.export();
         if (githubContextExport.eventPayloadFile) {
             this.fakeFiles.add(githubContextExport.eventPayloadFile);
         }
         envStore.apply(githubContextExport.envVariables);
+
         envStore.apply(this.fakeFiles.getEnvVariables());
         if (options.fakeFileOptions.data.fakeTempDir) {
             this.tempDir = FakeTempDir.create();

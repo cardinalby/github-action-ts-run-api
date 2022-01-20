@@ -11,7 +11,11 @@ export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements As
     static create<R>(fn: () => Promise<R>, actionConfig?: ActionConfigInterface): AsyncFnTarget<R>;
     static create<R>(fn: () => Promise<R>, actionYmlPath?: string): AsyncFnTarget<R>;
     static create<R>(fn: () => Promise<R>, actionConfigSrc?: ActionConfigSource): AsyncFnTarget<R> {
-        return new AsyncFnTarget(fn, ActionConfigStore.create(actionConfigSrc, false));
+        return new AsyncFnTarget(
+            fn,
+            ActionConfigStore.create(actionConfigSrc, false),
+            typeof actionConfigSrc === 'string' ? actionConfigSrc : undefined
+        );
     }
 
     async run(options: RunOptions): Promise<FnRunResult<R>> {

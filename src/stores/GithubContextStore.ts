@@ -2,7 +2,7 @@ import structuredClone from "realistic-structured-clone";
 import {GithubContextInterface} from "../types/GithubContextInterface";
 import {GithubEventName} from "../types/GithubEventName";
 import {AbstractStore} from "./AbstractStore";
-import {GithubContextEnvs} from "../types/GithubContextEnvs";
+import {GithubContextEnvsInterface} from "../types/GithubContextEnvsInterface";
 import {filterObjectKeys} from "../utils/collections";
 import {FakeFile} from "../githubServiceFiles/FakeFile";
 import {GithubServiceFileName} from "../githubServiceFiles/GithubServiceFileName";
@@ -10,7 +10,8 @@ import fs from "fs-extra";
 
 export interface ContextExportResult {
     eventPayloadFile: FakeFile|undefined,
-    envVariables: GithubContextEnvs
+    envVariables: GithubContextEnvsInterface &
+        {[k: string]: GithubContextEnvsInterface[keyof GithubContextEnvsInterface]}
 }
 
 export class GithubContextStore extends AbstractStore<GithubContextInterface> {
@@ -23,7 +24,10 @@ export class GithubContextStore extends AbstractStore<GithubContextInterface> {
     static readonly API_URL_DEFAULT = 'https://api.github.com';
     static readonly GRAPHQL_URL_DEFAULT = 'https://api.github.com/graphql';
 
-    setDefaults(): this {
+    fakeMinimalRunnerContext(action?: string): this {
+        if (action !== undefined) {
+            this._data.action = action;
+        }
         this._data.workflow = GithubContextStore.WORKFLOW_DEFAULT;
         this._data.runId = Math.floor(Math.random() * 2147483646) + 1;
         this._data.runNumber = GithubContextStore.RUN_NUMBER_DEFAULT;
@@ -43,7 +47,6 @@ export class GithubContextStore extends AbstractStore<GithubContextInterface> {
             GITHUB_RUN_NUMBER: this._data.runNumber?.toString(),
             GITHUB_JOB: this._data.job,
             GITHUB_ACTION: this._data.action,
-            GITHUB_ACTION_PATH: this._data.actionPath,
             GITHUB_ACTOR: this._data.actor,
             GITHUB_REPOSITORY: this._data.repository,
             GITHUB_EVENT_NAME: this._data.eventName,

@@ -19,6 +19,8 @@ export interface InitRunOptionsInterface {
     githubServiceEnv?: GithubServiceEnvInterface,
     /** @default {{unsetCommandFilesEnvs: true, fakeCommandFiles: true, fakeTempDir: true, cleanUpTempDir: true}} */
     fakeFileOptions?: Partial<FakeFileOptionsInterface>,
+    /** @default {false} */
+    shouldFakeMinimalGithubRunnerEnv?: boolean;
     /** @default {true} */
     shouldParseStdout?: boolean;
     /** @default {false} */

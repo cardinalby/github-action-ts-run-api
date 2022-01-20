@@ -28,6 +28,7 @@ export class RunOptions
             new GithubContextStore(init.githubContext || {}),
             new GithubServiceEnvStore(init.githubServiceEnv || {}),
             (new FakeFileOptionsStore(defaultFakeFileOptions)).apply(init.fakeFileOptions || {}),
+            init.shouldFakeMinimalGithubRunnerEnv !== undefined ? init.shouldFakeMinimalGithubRunnerEnv : false,
             init.shouldParseStdout !== undefined ? init.shouldParseStdout : true,
             init.shouldPrintStdout !== undefined ? init.shouldPrintStdout : false,
             init.workingDir,
@@ -42,10 +43,11 @@ export class RunOptions
         public readonly githubContext: GithubContextStore,
         public readonly githubServiceEnv: GithubServiceEnvStore,
         public readonly fakeFileOptions: FakeFileOptionsStore,
+        public shouldFakeMinimalGithubRunnerEnv: boolean,
         public shouldParseStdout: boolean,
         public shouldPrintStdout: boolean,
         public workingDir: string|undefined,
-        public timeoutMs: number|undefined
+        public timeoutMs: number|undefined,
     ) {}
 
     addProcessEnv(): this {
@@ -80,18 +82,13 @@ export class RunOptions
         return this;
     }
 
-    fakeMinimalGithubContext(): this {
-        this.githubContext.setDefaults();
+    setShouldFakeMinimalGithubRunnerEnv(doFake: boolean): this {
+        this.shouldFakeMinimalGithubRunnerEnv = doFake;
         return this;
     }
 
     setGithubServiceEnv(githubEnv: GithubServiceEnvInterface, update: boolean = true): this {
         update ? this.githubServiceEnv.apply(githubEnv) : this.githubServiceEnv.setData(githubEnv);
-        return this;
-    }
-
-    fakeMinimalGithubServiceEnv(): this {
-        this.githubServiceEnv.setDefaults();
         return this;
     }
 
@@ -127,6 +124,7 @@ export class RunOptions
             this.githubContext.clone(),
             this.githubServiceEnv.clone(),
             this.fakeFileOptions.clone(),
+            this.shouldFakeMinimalGithubRunnerEnv,
             this.shouldParseStdout,
             this.shouldPrintStdout,
             this.workingDir,

@@ -9,7 +9,6 @@ export function spawnChildProc(
     spawnEnv: StringKeyValueObj
 ) {
     return spawnSync(
-        // TODO: add node version selection
         'node',
         [target.jsFilePath],
         {

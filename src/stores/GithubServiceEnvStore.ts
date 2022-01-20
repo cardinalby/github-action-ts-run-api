@@ -7,7 +7,10 @@ export class GithubServiceEnvStore extends AbstractStore<GithubServiceEnvInterfa
     static readonly GITHUB_ACTIONS_DEFAULT = 'true';
     static readonly RUNNER_NAME_DEFAULT = 'test-utils-runner';
 
-    setDefaults(): this {
+    fakeMinimalRunnerEnv(actionPath: string|undefined): this {
+        if (actionPath !== undefined) {
+            this._data.GITHUB_ACTION_PATH = actionPath;
+        }
         this._data.CI = GithubServiceEnvStore.CI_DEFAULT;
         this._data.GITHUB_ACTIONS = GithubServiceEnvStore.GITHUB_ACTIONS_DEFAULT;
         this._data.RUNNER_NAME = GithubServiceEnvStore.RUNNER_NAME_DEFAULT;

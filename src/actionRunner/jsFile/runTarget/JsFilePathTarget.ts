@@ -1,6 +1,10 @@
 import {AbstractJsFileTarget} from "./AbstractJsFileTarget";
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
-import {ActionConfigSource, ActionConfigStore, ActionConfigStoreOptional} from "../../../stores/ActionConfigStore";
+import {
+    ActionConfigSource,
+    ActionConfigStore,
+    ActionConfigStoreOptional
+} from "../../../stores/ActionConfigStore";
 
 export class JsFilePathTarget extends AbstractJsFileTarget {
     // noinspection JSUnusedGlobalSymbols
@@ -10,10 +14,18 @@ export class JsFilePathTarget extends AbstractJsFileTarget {
     // noinspection JSUnusedGlobalSymbols
     static create(jsFilePath: string, actionConfigSource?: ActionConfigSource): AbstractJsFileTarget {
         const actionConfig = ActionConfigStore.create(actionConfigSource, false);
-        return new JsFilePathTarget(jsFilePath, actionConfig);
+        return new JsFilePathTarget(
+            jsFilePath,
+            actionConfig,
+            typeof actionConfigSource === 'string' ? actionConfigSource : undefined
+        );
     }
 
-    protected constructor(jsFilePath: string, actionConfig: ActionConfigStoreOptional) {
-        super(jsFilePath, actionConfig);
+    protected constructor(
+        jsFilePath: string,
+        actionConfig: ActionConfigStoreOptional,
+        actionYmlPath: string|undefined
+    ) {
+        super(jsFilePath, actionConfig, actionYmlPath);
     }
 }

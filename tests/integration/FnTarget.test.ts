@@ -11,7 +11,12 @@ import {GithubContextStore} from "../../src/stores/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
 import {getNewGithubContext} from "../utils/getNewGithubContext";
 import {Duration} from "../../src/utils/Duration";
+import {EnvInterface} from "../../src/types/EnvInterface";
+import {Context} from "@actions/github/lib/context";
+import assert from "assert";
 
+const complexActionDir = 'tests/integration/testActions/complex/';
+const complexActionActionYml = complexActionDir + 'action.yml';
 const printStdout = process.env.CI === undefined;
 
 describe('SyncFnTarget', () => {
@@ -99,27 +104,33 @@ describe('SyncFnTarget', () => {
 
     it('should fake github service envs', async () => {
         const options = RunOptions.create().setShouldPrintStdout(printStdout);
+        let fnEnv: EnvInterface = {};
+        let fnContext: Context|undefined;
         const res = await AsyncFnTarget.create(async () => {
-            const context = getNewGithubContext();
-            expect(context.workflow).toEqual(GithubContextStore.WORKFLOW_DEFAULT);
-            expect(context.runId).toBeGreaterThan(0);
-            expect(context.runNumber).toEqual(GithubContextStore.RUN_NUMBER_DEFAULT);
-            expect(context.job).toEqual(GithubContextStore.JOB_DEFAULT);
-            expect(context.actor).toEqual(GithubContextStore.ACTOR_DEFAULT);
-            expect(context.eventName).toEqual(GithubContextStore.EVENT_NAME_DEFAULT);
-            expect(context.serverUrl).toEqual(GithubContextStore.SERVER_URL_DEFAULT);
-            expect(context.apiUrl).toEqual(GithubContextStore.API_URL_DEFAULT);
-            expect(context.graphqlUrl).toEqual(GithubContextStore.GRAPHQL_URL_DEFAULT);
-            expect(process.env.CI).toEqual(GithubServiceEnvStore.CI_DEFAULT);
-            expect(process.env.GITHUB_ACTIONS).toEqual(GithubServiceEnvStore.GITHUB_ACTIONS_DEFAULT);
-            expect(process.env.RUNNER_NAME).toEqual(GithubServiceEnvStore.RUNNER_NAME_DEFAULT);
-            expect(process.env.RUNNER_OS).toMatch(/^Linux|Windows|macOS$/);
-            expect(process.env.RUNNER_ARCH).toMatch(/^X86|X64|ARM|ARM64$/);
-        }).run(options
-            .fakeMinimalGithubContext()
-            .fakeMinimalGithubServiceEnv()
+            fnContext = getNewGithubContext();
+            fnEnv = process.env;
+        }, complexActionActionYml).run(options
+            .setShouldFakeMinimalGithubRunnerEnv(true)
         );
         expect(res.isSuccess).toEqual(true);
+        expect(fnContext).not.toBeUndefined();
+        assert(fnContext);
+        expect(fnContext.action).toEqual('stdoutCommandsTestAction');
+        expect(fnContext.workflow).toEqual(GithubContextStore.WORKFLOW_DEFAULT);
+        expect(fnContext.runId).toBeGreaterThan(0);
+        expect(fnContext.runNumber).toEqual(GithubContextStore.RUN_NUMBER_DEFAULT);
+        expect(fnContext.job).toEqual(GithubContextStore.JOB_DEFAULT);
+        expect(fnContext.actor).toEqual(GithubContextStore.ACTOR_DEFAULT);
+        expect(fnContext.eventName).toEqual(GithubContextStore.EVENT_NAME_DEFAULT);
+        expect(fnContext.serverUrl).toEqual(GithubContextStore.SERVER_URL_DEFAULT);
+        expect(fnContext.apiUrl).toEqual(GithubContextStore.API_URL_DEFAULT);
+        expect(fnContext.graphqlUrl).toEqual(GithubContextStore.GRAPHQL_URL_DEFAULT);
+        expect(fnEnv.GITHUB_ACTION_PATH).toEqual(undefined);
+        expect(fnEnv.CI).toEqual(GithubServiceEnvStore.CI_DEFAULT);
+        expect(fnEnv.GITHUB_ACTIONS).toEqual(GithubServiceEnvStore.GITHUB_ACTIONS_DEFAULT);
+        expect(fnEnv.RUNNER_NAME).toEqual(GithubServiceEnvStore.RUNNER_NAME_DEFAULT);
+        expect(fnEnv.RUNNER_OS).toMatch(/^Linux|Windows|macOS$/);
+        expect(fnEnv.RUNNER_ARCH).toMatch(/^X86|X64|ARM|ARM64$/);
     });
 
     test.each([

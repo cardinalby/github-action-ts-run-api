@@ -4,6 +4,7 @@ export abstract class AbstractFnTarget<R> {
     protected constructor(
         public readonly fn: () => R,
         public readonly actionConfig: ActionConfigStoreOptional,
+        public readonly actionYmlPath: string|undefined
     ) {}
 
     clone(): this {

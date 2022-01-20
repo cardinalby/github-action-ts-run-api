@@ -11,7 +11,11 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
     static create<R>(fn: () => R, actionConfig?: ActionConfigInterface): SyncFnTarget<R>;
     static create<R>(fn: () => R, actionYmlPath?: string): SyncFnTarget<R>;
     static create<R>(fn: () => R, actionConfigSrc?: ActionConfigSource): SyncFnTarget<R> {
-        return new SyncFnTarget(fn, ActionConfigStore.create(actionConfigSrc, false));
+        return new SyncFnTarget(
+            fn,
+            ActionConfigStore.create(actionConfigSrc, false),
+            typeof actionConfigSrc === 'string' ? actionConfigSrc : undefined
+        );
     }
 
     run(options: RunOptions): FnRunResult<R>

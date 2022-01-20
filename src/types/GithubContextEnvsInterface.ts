@@ -1,6 +1,4 @@
-export interface GithubContextEnvs {
-    [p: string]: string|undefined;
-
+export interface GithubContextEnvsInterface {
     /** @description The name of the workflow.*/
     GITHUB_WORKFLOW?: string;
 
@@ -15,9 +13,6 @@ export interface GithubContextEnvs {
 
     /** @description The unique identifier (id) of the action.*/
     GITHUB_ACTION?: string;
-
-    /** @description The path where your action is located. You can use this path to access files located in the same repository as your action. This variable is only supported in composite actions.*/
-    GITHUB_ACTION_PATH?: string;
 
     /** @description The name of the person or app that initiated the workflow. For example, octocat.*/
     GITHUB_ACTOR?: string;

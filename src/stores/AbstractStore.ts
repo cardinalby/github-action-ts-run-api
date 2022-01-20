@@ -7,7 +7,7 @@ export class AbstractStore<T extends {}, CH = Partial<T>> {
         return new (<any>this.constructor)({...this._data});
     }
 
-    get data(): T {
+    get data(): T & {[p: string]: T[keyof T]} {
         return this._data;
     }
 

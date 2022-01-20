@@ -14,16 +14,11 @@ export interface GithubContextInterface {
     /** @description The job_id of the current job.*/
     job?: string;
 
-    // TODO:
     /**
      * @description The unique identifier (id) of the action.
      * @default action id from action.yml file or config if set in target
      **/
     action?: string;
-
-    // TODO:
-    /** @description The path where your action is located. You can use this path to access files located in the same repository as your action. This variable is only supported in composite actions.*/
-    actionPath?: string;
 
     /** @description The name of the person or app that initiated the workflow. For example, octocat.*/
     actor?: string;
