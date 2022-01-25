@@ -4,15 +4,15 @@ import {
     ActionConfigSource,
     ActionConfigStore,
     ActionConfigStoreOptional
-} from "../../../stores/ActionConfigStore";
+} from "../../../runOptions/ActionConfigStore";
 
-export class JsFilePathTarget extends AbstractJsFileTarget {
+export class JsFilePathTarget extends AbstractJsFileTarget<ActionConfigInterface|undefined> {
     // noinspection JSUnusedGlobalSymbols
-    static create(jsFilePath: string, actionConfig?: ActionConfigInterface): AbstractJsFileTarget;
+    static create(jsFilePath: string, actionConfig?: ActionConfigInterface): JsFilePathTarget;
     // noinspection JSUnusedGlobalSymbols
-    static create(jsFilePath: string, actionYmlPath?: string): AbstractJsFileTarget;
+    static create(jsFilePath: string, actionYmlPath?: string): JsFilePathTarget;
     // noinspection JSUnusedGlobalSymbols
-    static create(jsFilePath: string, actionConfigSource?: ActionConfigSource): AbstractJsFileTarget {
+    static create(jsFilePath: string, actionConfigSource?: ActionConfigSource): JsFilePathTarget {
         const actionConfig = ActionConfigStore.create(actionConfigSource, false);
         return new JsFilePathTarget(
             jsFilePath,
@@ -27,5 +27,13 @@ export class JsFilePathTarget extends AbstractJsFileTarget {
         actionYmlPath: string|undefined
     ) {
         super(jsFilePath, actionConfig, actionYmlPath);
+    }
+
+    clone(): this {
+        return new JsFilePathTarget(
+            this.jsFilePath,
+            this.actionConfig.clone(),
+            this.actionYmlPath
+        ) as this;
     }
 }

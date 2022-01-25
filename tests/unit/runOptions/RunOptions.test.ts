@@ -1,18 +1,22 @@
 import {RunOptions} from "../../../src/runOptions/RunOptions";
 import {ProcessEnvVarsBackup} from "../../utils/ProcessEnvVarsBackup";
+import {FakeFsOptionsInterface} from "../../../src/runOptions/FakeFsOptionsInterface";
+import {OutputOptionsInterface} from "../../../src/runOptions/OutputOptionsInterface";
 
 describe('RunOptions', () => {
     it('should create from obj and clone', () => {
         const options = RunOptions.create({
-            fakeFileOptions: {
+            fakeFsOptions: {
                 fakeCommandFiles: false,
-                unsetCommandFilesEnvs: false,
-                fakeTempDir: false
+                rmFakedTempDirAfterRun: false,
+                rmFakedWorkspaceDirAfterRun: false
             },
             githubContext: {payload: {action: 'f'}},
             githubServiceEnv: {CI: 'false'},
             shouldFakeMinimalGithubRunnerEnv: true,
-            shouldPrintStdout: true,
+            outputOptions: {
+                parseStdoutCommands: false
+            },
             timeoutMs: 123,
             env: {e1: 'v1'},
             inputs: {i1: 'v2'},
@@ -22,44 +26,57 @@ describe('RunOptions', () => {
         const cloned = options.clone();
         expect(options).not.toBe(cloned);
         for (let o of [options, cloned]) {
-            expect(o.fakeFileOptions.data).toEqual({
+            expect(o.fakeFsOptions.data).toEqual({
                 fakeCommandFiles: false,
-                unsetCommandFilesEnvs: false,
-                fakeTempDir: false,
-                cleanUpTempDir: true
-            });
+                rmFakedTempDirAfterRun: false,
+                rmFakedWorkspaceDirAfterRun: false
+            } as FakeFsOptionsInterface);
             expect(o.githubContext.data).toEqual({payload: {action: 'f'}});
             expect(o.githubServiceEnv.data).toEqual({CI: 'false'});
             expect(o.shouldFakeMinimalGithubRunnerEnv).toEqual(true);
-            expect(o.shouldPrintStdout).toEqual(true);
+            expect(o.outputOptions.data).toEqual({
+                parseStdoutCommands: false,
+                printStdout: undefined,
+                printStderr: true,
+                printRunnerDebug: false
+            } as OutputOptionsInterface);
             expect(o.timeoutMs).toEqual(123);
             expect(o.env.data).toEqual({e1: 'v1'});
             expect(o.inputs.data).toEqual({i1: 'v2'});
             expect(o.workingDir).toEqual('123');
             expect(o.state.data).toEqual({s1: 'v3'});
-            expect(o.shouldParseStdout).toEqual(true);
         }
-        cloned.env.apply({e1: "x1"});
-        cloned.inputs.apply({i1: "x2"});
-        cloned.state.apply({s1: "x3"});
-        cloned.githubContext.apply({payload: {action: 'x4'}});
-        cloned.githubServiceEnv.apply({CI: "x5"});
-        cloned.fakeFileOptions.apply({fakeTempDir: true});
-        expect(cloned.fakeFileOptions.data).toEqual({
+        cloned.setEnv({e1: "x1"});
+        cloned.setInputs({i1: "x2"});
+        cloned.setState({s1: "x3"});
+        cloned.setGithubContext({payload: {action: 'x4'}});
+        cloned.setGithubServiceEnv({CI: "x5"});
+        cloned.setFakeFsOptions({rmFakedTempDirAfterRun: true});
+        cloned.setOutputOptions({
+            printStderr: true,
+            printStdout: false,
+            parseStdoutCommands: true,
+            printRunnerDebug: false
+        }, false);
+        expect(cloned.fakeFsOptions.data).toEqual({
             fakeCommandFiles: false,
-            unsetCommandFilesEnvs: false,
-            fakeTempDir: true,
-            cleanUpTempDir: true
-        });
+            rmFakedTempDirAfterRun: true,
+            rmFakedWorkspaceDirAfterRun: false
+        } as FakeFsOptionsInterface);
         expect(options.env.data).toEqual({e1: 'v1'});
         expect(options.inputs.data).toEqual({i1: 'v2'});
         expect(options.state.data).toEqual({s1: 'v3'});
-        expect(options.fakeFileOptions.data).toEqual({
+        expect(options.outputOptions.data).toEqual({
+            parseStdoutCommands: false,
+            printStdout: undefined,
+            printStderr: true,
+            printRunnerDebug: false
+        } as OutputOptionsInterface);
+        expect(options.fakeFsOptions.data).toEqual({
             fakeCommandFiles: false,
-            unsetCommandFilesEnvs: false,
-            fakeTempDir: false,
-            cleanUpTempDir: true
-        });
+            rmFakedTempDirAfterRun: false,
+            rmFakedWorkspaceDirAfterRun: false
+        } as FakeFsOptionsInterface);
         expect(options.githubContext.data).toEqual({payload: {action: 'f'}});
         expect(options.githubServiceEnv.data).toEqual({CI: 'false'});
     });
@@ -67,7 +84,12 @@ describe('RunOptions', () => {
     it('should set defaults', () => {
         const options = RunOptions.create();
 
-        expect(options.shouldPrintStdout).toEqual(false);
+        expect(options.outputOptions.data).toEqual({
+            printStderr: true,
+            printStdout: undefined,
+            parseStdoutCommands: true,
+            printRunnerDebug: false
+        } as OutputOptionsInterface);
         expect(options.timeoutMs).toEqual(undefined);
         expect(options.env.data).toEqual({});
         expect(options.inputs.data).toEqual({});
@@ -76,13 +98,12 @@ describe('RunOptions', () => {
         expect(options.githubServiceEnv.data).toEqual({});
         expect(options.shouldFakeMinimalGithubRunnerEnv).toEqual(false);
         expect(options.workingDir).toEqual(undefined);
-        expect(options.fakeFileOptions.data).toEqual({
+        expect(options.fakeFsOptions.data).toEqual({
             fakeCommandFiles: true,
-            unsetCommandFilesEnvs: true,
-            fakeTempDir: true,
-            cleanUpTempDir: true
-        });
-        expect(options.shouldParseStdout).toEqual(true);
+            rmFakedTempDirAfterRun: true,
+            rmFakedWorkspaceDirAfterRun: true
+        } as FakeFsOptionsInterface);
+        expect(options.outputOptions.data.parseStdoutCommands).toEqual(true);
     });
 
     it('should modify env', () => {
@@ -103,29 +124,29 @@ describe('RunOptions', () => {
         }
     });
 
-    it('should set fakeFileOptions', () => {
+    it('should set fakeFsOptions', () => {
         const options = RunOptions.create();
-        options.setFakeFileOptions({
+        options.setFakeFsOptions({
             fakeCommandFiles: false,
-            cleanUpTempDir: false,
-            unsetCommandFilesEnvs: false,
-            fakeTempDir: false
+            rmFakedTempDirAfterRun: false,
+            rmFakedWorkspaceDirAfterRun: false,
+            tmpRootDir: 'ad'
         }, false)
-        expect(options.fakeFileOptions.data).toEqual({
+        expect(options.fakeFsOptions.data).toEqual({
             fakeCommandFiles: false,
-            cleanUpTempDir: false,
-            unsetCommandFilesEnvs: false,
-            fakeTempDir: false
-        })
-        options.setFakeFileOptions({
-            unsetCommandFilesEnvs: true,
-            fakeTempDir: true
+            rmFakedTempDirAfterRun: false,
+            rmFakedWorkspaceDirAfterRun: false,
+            tmpRootDir: 'ad'
+        } as FakeFsOptionsInterface)
+        options.setFakeFsOptions({
+            fakeCommandFiles: true,
+            rmFakedTempDirAfterRun: true,
         });
-        expect(options.fakeFileOptions.data).toEqual({
-            fakeCommandFiles: false,
-            cleanUpTempDir: false,
-            unsetCommandFilesEnvs: true,
-            fakeTempDir: true
-        })
+        expect(options.fakeFsOptions.data).toEqual({
+            fakeCommandFiles: true,
+            rmFakedTempDirAfterRun: true,
+            rmFakedWorkspaceDirAfterRun: false,
+            tmpRootDir: 'ad'
+        } as FakeFsOptionsInterface)
     });
 });

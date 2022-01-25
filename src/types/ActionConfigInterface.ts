@@ -16,7 +16,8 @@ export interface ActionConfigInterface {
         image?: string;
         main?: string;
         pre?: string;
-        post?: string
+        post?: string;
+        args?: string[]
     }
     [key: string]: any;
 }

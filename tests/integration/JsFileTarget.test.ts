@@ -5,7 +5,6 @@ import {JsActionScriptTarget} from "../../src/actionRunner/jsFile/runTarget/JsAc
 import {JsFilePathTarget} from "../../src/actionRunner/jsFile/runTarget/JsFilePathTarget";
 import {Duration} from "../../src/utils/Duration";
 
-const printStdout = process.env.CI === undefined;
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
@@ -16,8 +15,7 @@ describe('JsActionScriptTarget', () => {
                 .addProcessEnv()
                 .setEnv({MY_ENV_VAR: 'my_env_value'})
                 .setInputs({sendFileCommands: 'false', setState: 'stateVal'})
-                .setFakeFileOptions({fakeCommandFiles: false})
-                .setShouldPrintStdout(printStdout)
+                .setFakeFsOptions({fakeCommandFiles: false})
             );
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2']);
         expect(res.commands.warnings).toEqual(["warning\rmsg"]);
@@ -38,9 +36,8 @@ describe('JsActionScriptTarget', () => {
         const options = RunOptions.create()
             .addProcessEnv()
             .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'false', delayMs: '500'})
-            .setFakeFileOptions({fakeCommandFiles: false})
+            .setFakeFsOptions({fakeCommandFiles: false})
             .setTimeoutMs(400)
-            .setShouldPrintStdout(printStdout);
         const target = JsActionScriptTarget.createMain(complexActionActionYml);
         const duration = Duration.startMeasuring();
         const res = target.run(options);
@@ -69,8 +66,7 @@ describe('JsActionScriptTarget', () => {
             RunOptions.create()
                 .addProcessEnv()
                 .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'true', failAtTheEnd: 'true'})
-                .setFakeFileOptions({fakeCommandFiles: false})
-                .setShouldPrintStdout(printStdout)
+                .setFakeFsOptions({fakeCommandFiles: false})
         );
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2', 'failed_msg']);
         expect(res.commands.warnings).toEqual(["warning\rmsg"]);
@@ -98,8 +94,7 @@ describe('JsActionScriptTarget', () => {
                 .addProcessEnv()
                 .setInputs({sendFileCommands: 'true'})
                 .setState({my_state: 'some%Val'})
-                .setFakeFileOptions({fakeCommandFiles: false})
-                .setShouldPrintStdout(printStdout)
+                .setFakeFsOptions({fakeCommandFiles: false})
         );
         expect(res.commands.warnings).toEqual([path.resolve(process.cwd())]);
         expect(res.commands.debugs).toEqual(['post_script_debug']);
@@ -119,8 +114,7 @@ describe('JsFilePathTarget', () => {
                 RunOptions.create()
                     .addProcessEnv()
                     .setInputs({sendFileCommands: 'true', sendStdoutCommands: 'false', failAtTheEnd: 'false'})
-                    .setFakeFileOptions({fakeCommandFiles: fakeFileCommands})
-                    .setShouldPrintStdout(printStdout)
+                    .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
             );
             expect(res.commands.errors).toEqual([]);
             expect(res.commands.warnings).toEqual([]);
@@ -145,15 +139,14 @@ describe('JsFilePathTarget', () => {
         [ false, true,  [],    ['ppp'] ],
         [ false, false, [],    []      ]
     ])(
-        'should respect parseStdoutCommands option',
+        'should respect parseStdoutCommands: %s, fakeFileCommands: %s options',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
         {
             const res = JsFilePathTarget.create(complexActionDir + 'parseStdCommandsTest.js').run(
                 RunOptions.create()
                     .addProcessEnv()
-                    .setShouldParseStdout(parseStdoutCommands)
-                    .setFakeFileOptions({fakeCommandFiles: fakeFileCommands})
-                    .setShouldPrintStdout(printStdout)
+                    .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
+                    .setOutputOptions({parseStdoutCommands: parseStdoutCommands})
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
             expect(res.commands.addedPaths).toEqual(expectedPath);
@@ -175,8 +168,7 @@ describe('JsFilePathTarget', () => {
                     .addProcessEnv()
                     .setWorkingDir(workingDir)
                     .setInputs({sendFileCommands: 'false'})
-                    .setFakeFileOptions({fakeCommandFiles: false})
-                    .setShouldPrintStdout(printStdout)
+                    .setFakeFsOptions({fakeCommandFiles: false})
             );
             expect(res.commands.warnings).toEqual([resultCwd]);
             expect(res.error).toBeUndefined();

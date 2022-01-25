@@ -1,0 +1,15 @@
+name: 'tttteeeessstt'
+description: 'ls'
+author: 'me'
+inputs:
+    input1:
+        required: false
+        description: "i1"
+outputs:
+    output1:
+        description: 'o1'
+runs:
+    using: 'docker'
+    image: 'Dockerfile'
+    args:
+        - ${{ inputs.input1 }}

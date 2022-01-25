@@ -7,17 +7,19 @@ import {SyncFnTarget} from "../../src/actionRunner/fn/runTarget/SyncFnTarget";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import {AsyncFnTarget} from "../../src/actionRunner/fn/runTarget/AsyncFnTarget";
 import * as path from "path";
-import {GithubContextStore} from "../../src/stores/GithubContextStore";
-import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
-import {getNewGithubContext} from "../utils/getNewGithubContext";
+import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
+import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
+import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
 import {Duration} from "../../src/utils/Duration";
 import {EnvInterface} from "../../src/types/EnvInterface";
 import {Context} from "@actions/github/lib/context";
 import assert from "assert";
+import fs from "fs-extra";
+import tmp from "tmp";
+import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
-const printStdout = process.env.CI === undefined;
 
 describe('SyncFnTarget', () => {
     it('should restore process envs and exitCode', () => {
@@ -32,8 +34,7 @@ describe('SyncFnTarget', () => {
                 process.chdir(path.join(process.cwd(), 'tests'));
                 return 32;
             }).run(RunOptions.create({
-                env: {CCC: 'x'},
-                shouldPrintStdout: printStdout
+                env: {CCC: 'x'}
             }));
             expect(process.cwd()).toEqual(initialProcessCwd);
             expect(process.env.AAA).toEqual('aaa');
@@ -52,7 +53,7 @@ describe('SyncFnTarget', () => {
     });
 
     it('should parse stdout commands', () => {
-        const options = RunOptions.create().setShouldPrintStdout(printStdout);
+        const options = RunOptions.create();
         const res = SyncFnTarget.create(() => {
             core.error('err%msg1');
             core.error('err%msg2');
@@ -87,7 +88,7 @@ describe('SyncFnTarget', () => {
     });
 
     it('should set github service envs', async () => {
-        const options = RunOptions.create().setShouldPrintStdout(printStdout);
+        const options = RunOptions.create();
         const res = await AsyncFnTarget.create(async () => {
 
             const context = getNewGithubContext();
@@ -103,7 +104,7 @@ describe('SyncFnTarget', () => {
     });
 
     it('should fake github service envs', async () => {
-        const options = RunOptions.create().setShouldPrintStdout(printStdout);
+        const options = RunOptions.create();
         let fnEnv: EnvInterface = {};
         let fnContext: Context|undefined;
         const res = await AsyncFnTarget.create(async () => {
@@ -134,26 +135,34 @@ describe('SyncFnTarget', () => {
     });
 
     test.each([
-        [ true,  true,  ['w'], ['ppp'] ],
-        [ true,  false, ['w'], ['ppp'] ],
-        [ false, true,  [],    ['ppp'] ],
-        [ false, false, [],    []      ]
+        [ true,  true,  ['w'], ['ppp'], {v1: '1\n1', v2: '2\n2', v3: '3', v4: '4'} ],
+        [ true,  false, ['w'], ['ppp'], {v1: '1\n1', v2: '2\n2', v3: '3', v4: '4'} ],
+        [ false, true,  [],    ['ppp'], {v1: '1\n1', v2: '2\n2', v3: '3', v4: '4'} ],
+        [ false, false, [],    [],      {}]
     ])(
         'should respect parseStdoutCommands option',
-        (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
+        (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath, expectedExportedVars) =>
         {
             const res = SyncFnTarget.create(() => {
                 core.warning('w');
                 core.addPath('ppp');
+                core.exportVariable('v1', '1\n1');
+                if (process.env.GITHUB_ENV) {
+                    fs.appendFileSync(process.env.GITHUB_ENV, ['v2<<ddd', '2\n2', 'ddd' + os.EOL].join(os.EOL));
+                    fs.appendFileSync(process.env.GITHUB_ENV, 'v4=4' + os.EOL);
+                } else {
+                    core.exportVariable('v2', '2\n2');
+                    core.exportVariable('v4', '4');
+                }
+                core.exportVariable('v3', '3');
                 return 4;
             }).run(RunOptions.create()
-                .setShouldParseStdout(parseStdoutCommands)
-                .setFakeFileOptions({fakeCommandFiles: fakeFileCommands})
-                .setShouldPrintStdout(printStdout)
+                .setOutputOptions({parseStdoutCommands: parseStdoutCommands})
+                .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
             expect(res.commands.addedPaths).toEqual(expectedPath);
-            expect(res.commands.exportedVars).toEqual({});
+            expect(res.commands.exportedVars).toEqual(expectedExportedVars);
             expect(res.exitCode).toBeUndefined();
             expect(res.fnResult).toEqual(4);
             expect(res.error).toBeUndefined();
@@ -196,7 +205,7 @@ describe('SyncFnTarget', () => {
                 input1: 'val1',
                 input2: 'true',
             })
-            .setShouldPrintStdout(printStdout);
+            ;
         const res = SyncFnTarget.create(() => {
             expect(core.getInput('INPUT1')).toEqual('val1');
             expect(core.getBooleanInput('input2')).toEqual(true);
@@ -212,53 +221,100 @@ describe('SyncFnTarget', () => {
         expect(res.isSuccess).toEqual(true);
     });
 
-    it('should parse deprecated commands from stdout', () => {
-        const envBackup = ProcessEnvVarsBackup.safeSet({
-            GITHUB_PATH: '',
-            GITHUB_ENV: ''
-        });
-        const res = SyncFnTarget.create(() => {
-            core.addPath('my_path1');
-            core.addPath('my_path2');
-            core.exportVariable('my_env_var1', 'my_env_var_value1');
-            core.exportVariable('my_env_var2', 'my_env_var_value2');
-        }).run(
-            RunOptions.create()
-                .setFakeFileOptions({fakeCommandFiles: false})
-                .setShouldPrintStdout(printStdout)
-        );
-        envBackup.restore();
-        const commands = res.commands;
-        expect(commands.addedPaths).toEqual(['my_path1', 'my_path2']);
-        expect(commands.exportedVars).toEqual({
-            'my_env_var1': 'my_env_var_value1',
-            'my_env_var2': 'my_env_var_value2'
-        });
-        expect(res.exitCode).toBeUndefined();
-        expect(res.fnResult).toBeUndefined();
-        expect(res.error).toBeUndefined();
-        expect(res.isTimedOut).toEqual(false);
-        expect(res.isSuccess).toEqual(true);
+    test.each([
+        [ true,  true , undefined, undefined ],
+        [ true,  false, undefined, undefined ],
+        [ false, true , undefined, undefined ],
+        [ false, false, undefined, undefined ],
+        [ true,  true , tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ],
+        [ true,  false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ],
+        [ false, true , tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ],
+        [ false, false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ]
+    ])(
+        'should handle runner dirs: %s, %s, %s, %s',
+        (cleanUpTemp, cleanUpWorkspace, wsExternalDir, tempExternalDir) => {
+            let wsFilePath: string;
+            let tempFilePath: string;
+
+            const res = SyncFnTarget.create(() => {
+                expect(
+                    process.env.GITHUB_WORKSPACE !== undefined && fs.existsSync(process.env.GITHUB_WORKSPACE)
+                ).toEqual(true);
+                wsFilePath = path.join(process.env.GITHUB_WORKSPACE as string, 'w.txt');
+                fs.writeFileSync(wsFilePath, 'ws');
+                expect(
+                    process.env.RUNNER_TEMP !== undefined && fs.existsSync(process.env.RUNNER_TEMP)
+                ).toEqual(true);
+                tempFilePath = path.join(process.env.RUNNER_TEMP as string, 't.txt');
+                fs.writeFileSync(tempFilePath, 'temp');
+            }).run(RunOptions.create()
+                .setFakeFsOptions({
+                    rmFakedWorkspaceDirAfterRun: cleanUpWorkspace,
+                    rmFakedTempDirAfterRun: cleanUpTemp
+                })
+                .setTempDir(tempExternalDir)
+                .setWorkspaceDir(wsExternalDir)
+            );
+            try {
+                expect(res.isSuccess).toEqual(true);
+                wsExternalDir && expect(res.workspaceDirPath).toEqual(wsExternalDir);
+
+                let tempWorkspaceDir: string|undefined = undefined;
+                if (!cleanUpWorkspace || wsExternalDir) {
+                    tempWorkspaceDir = res.workspaceDirPath;
+                    expect(res.workspaceDirPath &&
+                        fs.readFileSync(path.join(res.workspaceDirPath, 'w.txt')).toString()
+                    ).toEqual('ws');
+                } else {
+                    expect(res.workspaceDirPath).toBeUndefined();
+                }
+
+                tempExternalDir && expect(res.tempDirPath).toEqual(tempExternalDir);
+                let tempTempDir: string|undefined = undefined;
+                if (!cleanUpTemp || tempExternalDir) {
+                    tempTempDir = res.tempDirPath;
+                    expect(res.tempDirPath &&
+                        fs.readFileSync(path.join(res.tempDirPath, 't.txt')).toString()
+                    ).toEqual('temp');
+                } else {
+                    expect(res.tempDirPath).toBeUndefined();
+                }
+
+                res.cleanUpFakedDirs();
+
+                if (!tempExternalDir && !cleanUpTemp && tempTempDir) {
+                    expect(fs.existsSync(tempTempDir)).toEqual(false);
+                    expect(res.tempDirPath).toBeUndefined();
+                }
+                if (!wsExternalDir && !cleanUpWorkspace && tempWorkspaceDir) {
+                    expect(fs.existsSync(tempWorkspaceDir)).toEqual(false);
+                    expect(res.workspaceDirPath).toBeUndefined();
+                }
+            } finally {
+                for (let d of [tempExternalDir, wsExternalDir, res.workspaceDirPath, res.tempDirPath]) {
+                    if (d && fs.existsSync(d)) {
+                        fs.removeSync(d);
+                    }
+                }
+            }
     });
 
-    it('should parse file commands', () => {
-        const res = SyncFnTarget.create(() => {
-            core.addPath('my_path1');
-            core.addPath('my_path2');
-            core.exportVariable('my_env_var1', 'my_env_%var_value1');
-            core.exportVariable('my_env_var2', "my_env_\nvar_value2");
-        }).run(RunOptions.create().setShouldPrintStdout(printStdout));
-        const commands = res.commands;
-        expect(commands.addedPaths).toEqual(['my_path1', 'my_path2']);
-        expect(commands.exportedVars).toEqual({
-            'my_env_var1': 'my_env_%var_value1',
-            'my_env_var2': "my_env_\nvar_value2"
-        });
-        expect(res.exitCode).toBeUndefined();
-        expect(res.fnResult).toBeUndefined();
-        expect(res.error).toBeUndefined();
-        expect(res.isTimedOut).toEqual(false);
-        expect(res.isSuccess).toEqual(true);
+    it('should delete all global faked dirs', () => {
+        const res = SyncFnTarget.create(() => {}).run(RunOptions.create()
+            .setFakeFsOptions({rmFakedWorkspaceDirAfterRun: false, rmFakedTempDirAfterRun: false})
+        );
+        const res2 = SyncFnTarget.create(() => {}).run(RunOptions.create()
+            .setFakeFsOptions({rmFakedWorkspaceDirAfterRun: false, rmFakedTempDirAfterRun: false})
+        );
+        expect(res.tempDirPath && fs.existsSync(res.tempDirPath)).toEqual(true);
+        expect(res.workspaceDirPath && fs.existsSync(res.workspaceDirPath)).toEqual(true);
+        expect(res2.tempDirPath && fs.existsSync(res2.tempDirPath)).toEqual(true);
+        expect(res2.workspaceDirPath && fs.existsSync(res2.workspaceDirPath)).toEqual(true);
+        deleteAllFakedDirs();
+        expect(res.tempDirPath).toEqual(undefined);
+        expect(res.workspaceDirPath).toEqual(undefined);
+        expect(res2.tempDirPath).toEqual(undefined);
+        expect(res2.workspaceDirPath).toEqual(undefined);
     });
 
     it('should handle fn error', () => {
@@ -268,7 +324,7 @@ describe('SyncFnTarget', () => {
             core.warning('warning_msg');
             core.addPath('my_path1');
             throw new Error('abc');
-        }).run(RunOptions.create().setShouldPrintStdout(printStdout));
+        }).run(RunOptions.create());
         const commands = res.commands;
         expect(commands.errors).toEqual(['err%msg1', 'err%msg2']);
         expect(commands.warnings).toEqual(["warning_msg"]);
@@ -300,8 +356,7 @@ describe('AsyncFnTarget', () => {
         const duration = Duration.startMeasuring();
         const resPromise = target.run(RunOptions.create({
             env: {CCC: 'x'},
-            timeoutMs: 1200,
-            shouldPrintStdout: printStdout
+            timeoutMs: 1200
         }));
         expect(process.env.AAA).toEqual('ccc');
         expect(process.exitCode).toBeUndefined();
@@ -329,7 +384,7 @@ describe('AsyncFnTarget', () => {
             core.warning('warning_msg');
             core.addPath('my_path1');
             throw new Error('abc');
-        }).run(RunOptions.create().setShouldPrintStdout(printStdout));
+        }).run(RunOptions.create());
         const commands = res.commands;
         expect(commands.errors).toEqual(['err%msg1', 'err%msg2']);
         expect(commands.warnings).toEqual(["warning_msg"]);
@@ -349,7 +404,6 @@ describe('AsyncFnTarget', () => {
             return 5;
         }).run(RunOptions.create()
             .setTimeoutMs(100)
-            .setShouldPrintStdout(printStdout)
         );
         expect(res.commands.warnings).toEqual(["warning_msg"]);
         expect(res.exitCode).toBeUndefined();

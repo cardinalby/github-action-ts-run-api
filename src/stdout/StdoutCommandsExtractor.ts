@@ -1,4 +1,4 @@
-import {CommandsStore, CommandInterface} from "../stores/CommandsStore";
+import {CommandsStore, CommandInterface} from "../runResult/CommandsStore";
 import {unescapeCommandValue, unescapePropertyValue} from "../utils/commandsEscaping";
 
 export class StdoutCommandsExtractor {

@@ -1,37 +1,45 @@
-import {EnvStore} from "../stores/EnvStore";
-import {InputsStore} from "../stores/InputsStore";
-import {StateStore} from "../stores/StateStore";
+import {EnvStore} from "./EnvStore";
+import {InputsStore} from "./InputsStore";
+import {StateStore} from "./StateStore";
 import {StringKeyValueObj} from "../types/StringKeyValueObj";
 import {EnvInterface} from "../types/EnvInterface";
-import {GithubContextStore} from "../stores/GithubContextStore";
-import {GithubServiceEnvStore} from "../stores/GithubServiceEnvStore";
+import {GithubContextStore} from "./GithubContextStore";
+import {GithubServiceEnvStore} from "./GithubServiceEnvStore";
 import {GithubContextInterface} from "../types/GithubContextInterface";
 import {GithubServiceEnvInterface} from "../types/GithubServiceEnvInterface";
 import {InitRunOptionsInterface} from "./InitRunOptionsInterface";
-import {FakeFileOptionsStore} from "../stores/FakeFileOptionsStore";
-import {FakeFileOptionsInterface} from "./FakeFileOptionsInterface";
+import {FakeFsOptionsStore} from "./FakeFsOptionsStore";
+import {FakeFsOptionsInterface} from "./FakeFsOptionsInterface";
+import {OutputOptionsInterface} from "./OutputOptionsInterface";
+import {OutputOptionsStore} from "./OutputOptionsStore";
 
 export class RunOptions
 {
     static create(init: InitRunOptionsInterface = {}): RunOptions {
-        const defaultFakeFileOptions: FakeFileOptionsInterface = {
-            unsetCommandFilesEnvs: true,
+        const defaultFakeFsOptions: FakeFsOptionsInterface = {
+            tmpRootDir: undefined,
             fakeCommandFiles: true,
-            fakeTempDir: true,
-            cleanUpTempDir: true
+            rmFakedTempDirAfterRun: true,
+            rmFakedWorkspaceDirAfterRun: true
         }
-
+        const defaultOutputHandlingOptions: OutputOptionsInterface = {
+            parseStdoutCommands: true,
+            printStderr: true,
+            printStdout: undefined,
+            printRunnerDebug: false
+        }
         return new RunOptions(
             new InputsStore(init.inputs || {}),
             new EnvStore(init.env || {}),
             new StateStore(init.state || {}),
             new GithubContextStore(init.githubContext || {}),
             new GithubServiceEnvStore(init.githubServiceEnv || {}),
-            (new FakeFileOptionsStore(defaultFakeFileOptions)).apply(init.fakeFileOptions || {}),
+            (new FakeFsOptionsStore(defaultFakeFsOptions)).apply(init.fakeFsOptions || {}),
+            (new OutputOptionsStore(defaultOutputHandlingOptions)).apply(init.outputOptions || {}),
             init.shouldFakeMinimalGithubRunnerEnv !== undefined ? init.shouldFakeMinimalGithubRunnerEnv : false,
-            init.shouldParseStdout !== undefined ? init.shouldParseStdout : true,
-            init.shouldPrintStdout !== undefined ? init.shouldPrintStdout : false,
             init.workingDir,
+            init.workspaceDir,
+            init.tempDir,
             init.timeoutMs
         );
     }
@@ -42,11 +50,12 @@ export class RunOptions
         public readonly state: StateStore,
         public readonly githubContext: GithubContextStore,
         public readonly githubServiceEnv: GithubServiceEnvStore,
-        public readonly fakeFileOptions: FakeFileOptionsStore,
+        public readonly fakeFsOptions: FakeFsOptionsStore,
+        public readonly outputOptions: OutputOptionsStore,
         public shouldFakeMinimalGithubRunnerEnv: boolean,
-        public shouldParseStdout: boolean,
-        public shouldPrintStdout: boolean,
         public workingDir: string|undefined,
+        public workspaceDir: string|undefined,
+        public tempDir: string|undefined,
         public timeoutMs: number|undefined,
     ) {}
 
@@ -60,10 +69,10 @@ export class RunOptions
         return this;
     }
 
-    setFakeFileOptions(options: FakeFileOptionsInterface, update: false): this;
-    setFakeFileOptions(options: Partial<FakeFileOptionsInterface>, update?: true): this;
-    setFakeFileOptions(options: FakeFileOptionsInterface, update: boolean = true): this {
-        update ? this.fakeFileOptions.apply(options) : this.fakeFileOptions.setData(options);
+    setFakeFsOptions(options: FakeFsOptionsInterface, update: false): this;
+    setFakeFsOptions(options: Partial<FakeFsOptionsInterface>, update?: true): this;
+    setFakeFsOptions(options: FakeFsOptionsInterface, update: boolean = true): this {
+        update ? this.fakeFsOptions.apply(options) : this.fakeFsOptions.setData(options);
         return this;
     }
 
@@ -82,6 +91,13 @@ export class RunOptions
         return this;
     }
 
+    setOutputOptions(options: OutputOptionsInterface, update: false): this;
+    setOutputOptions(options: Partial<OutputOptionsInterface>, update?: true): this;
+    setOutputOptions(options: OutputOptionsInterface, update: boolean = true): this {
+        update ? this.outputOptions.apply(options) : this.outputOptions.setData(options);
+        return this;
+    }
+
     setShouldFakeMinimalGithubRunnerEnv(doFake: boolean): this {
         this.shouldFakeMinimalGithubRunnerEnv = doFake;
         return this;
@@ -92,22 +108,22 @@ export class RunOptions
         return this;
     }
 
-    setShouldParseStdout(doParse: boolean): this {
-        this.shouldParseStdout = doParse;
-        return this;
-    }
-
-    setShouldPrintStdout(doSuppress: boolean): this {
-        this.shouldPrintStdout = doSuppress;
-        return this;
-    }
-
     setWorkingDir(dirPath: string|undefined): this {
         this.workingDir = dirPath;
         return this;
     }
 
-    setTimeoutMs(timeoutMs: number): this {
+    setWorkspaceDir(dirPath: string|undefined): this {
+        this.workspaceDir = dirPath;
+        return this;
+    }
+
+    setTempDir(dirPath: string|undefined): this {
+        this.tempDir = dirPath;
+        return this;
+    }
+
+    setTimeoutMs(timeoutMs: number|undefined): this {
         this.timeoutMs = timeoutMs;
         return this;
     }
@@ -123,11 +139,12 @@ export class RunOptions
             this.state.clone(),
             this.githubContext.clone(),
             this.githubServiceEnv.clone(),
-            this.fakeFileOptions.clone(),
+            this.fakeFsOptions.clone(),
+            this.outputOptions.clone(),
             this.shouldFakeMinimalGithubRunnerEnv,
-            this.shouldParseStdout,
-            this.shouldPrintStdout,
             this.workingDir,
+            this.workspaceDir,
+            this.tempDir,
             this.timeoutMs
         );
     }

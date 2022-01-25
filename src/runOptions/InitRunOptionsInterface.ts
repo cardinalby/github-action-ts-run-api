@@ -2,7 +2,8 @@ import {StringKeyValueObj} from "../types/StringKeyValueObj";
 import {EnvInterface} from "../types/EnvInterface";
 import {GithubContextInterface} from "../types/GithubContextInterface";
 import {GithubServiceEnvInterface} from "../types/GithubServiceEnvInterface";
-import {FakeFileOptionsInterface} from "./FakeFileOptionsInterface";
+import {FakeFsOptionsInterface} from "./FakeFsOptionsInterface";
+import {OutputOptionsInterface} from "./OutputOptionsInterface";
 
 export interface InitRunOptionsInterface {
     /** @default {{}} */
@@ -17,16 +18,18 @@ export interface InitRunOptionsInterface {
     githubContext?: GithubContextInterface,
     /** @default {{}} */
     githubServiceEnv?: GithubServiceEnvInterface,
-    /** @default {{unsetCommandFilesEnvs: true, fakeCommandFiles: true, fakeTempDir: true, cleanUpTempDir: true}} */
-    fakeFileOptions?: Partial<FakeFileOptionsInterface>,
+    /** @default {{tmpRootDir: undefined, fakeCommandFiles: true, rmFakedTempDirAfterRub: true, rmFakedWorkspaceDirAfterRun: true}} */
+    fakeFsOptions?: Partial<FakeFsOptionsInterface>,
+    /** @default {{parseStdoutCommands: true, printStderr: true, printStdout: undefined, printRunnerDebug: false }} */
+    outputOptions?: Partial<OutputOptionsInterface>,
     /** @default {false} */
     shouldFakeMinimalGithubRunnerEnv?: boolean;
-    /** @default {true} */
-    shouldParseStdout?: boolean;
-    /** @default {false} */
-    shouldPrintStdout?: boolean;
     /** @default {undefined} */
     workingDir?: string|undefined;
+    /** @default {undefined} */
+    workspaceDir?: string|undefined;
+    /** @default {undefined} */
+    tempDir?: string|undefined;
     /** @default {undefined} */
     timeoutMs?: number|undefined;
 }

@@ -7,16 +7,15 @@ import {SyncRunTargetInterface} from "../../src/runTarget/SyncRunTargetInterface
 import {AsyncRunTargetInterface} from "../../src/runTarget/AsyncRunTargetInterface";
 import assert from "assert";
 import fs from "fs-extra";
-import {GithubContextStore} from "../../src/stores/GithubContextStore";
-import {GithubServiceEnvStore} from "../../src/stores/GithubServiceEnvStore";
+import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
+import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {getRunnerOs} from "../../src/utils/platformProps";
-import {getNewGithubContext} from "../utils/getNewGithubContext";
+import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
 
-const printStdout = process.env.CI === undefined;
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
-describe('multitarget', () => {
+describe('MultiTarget', () => {
     const syncTargets: SyncRunTargetInterface[] = [
         RunTarget.postJsScript(complexActionActionYml),
         RunTarget.syncFn(syncPostRun, complexActionActionYml)
@@ -29,8 +28,7 @@ describe('multitarget', () => {
                 RunOptions.create()
                     .addProcessEnv()
                     .setInputs({sendFileCommands: 'false'})
-                    .setFakeFileOptions({fakeCommandFiles: false})
-                    .setShouldPrintStdout(printStdout)
+                    .setFakeFsOptions({fakeCommandFiles: false})
             );
             expect(res.commands.warnings).toEqual([path.resolve(process.cwd())]);
             expect(res.error).toBeUndefined();
@@ -50,8 +48,7 @@ describe('multitarget', () => {
                 RunOptions.create()
                     .addProcessEnv()
                     .setInputs({sendFileCommands: 'false'})
-                    .setFakeFileOptions({fakeCommandFiles: false})
-                    .setShouldPrintStdout(printStdout)
+                    .setFakeFsOptions({fakeCommandFiles: false})
             );
             expect(res.commands.warnings).toEqual([path.resolve(process.cwd())]);
             expect(res.error).toBeUndefined();
@@ -81,13 +78,14 @@ describe('multitarget', () => {
                         }
                     })
                     .setGithubServiceEnv({GITHUB_REF_NAME: 'ttt'})
-                    .setFakeFileOptions({cleanUpTempDir: false})
+                    .setFakeFsOptions({rmFakedTempDirAfterRun: false})
             );
+            const tempDirPath = res.tempDirPath;
             try {
-                expect(res.tempDir).not.toBeUndefined();
-                assert(res.tempDir);
-                expect(fs.existsSync(res.tempDir.dirPath));
-                const out = <any>fs.readJSONSync(path.join(res.tempDir.dirPath, 'out.json'));
+                expect(tempDirPath).not.toBeUndefined();
+                assert(tempDirPath);
+                expect(fs.existsSync(tempDirPath));
+                const out = <any>fs.readJSONSync(path.join(tempDirPath, 'out.json'));
                 expect(out.pr_number).toEqual(12345);
                 expect(out.server_url).toEqual(GithubContextStore.SERVER_URL_DEFAULT);
                 expect(out.event_name).toEqual(GithubContextStore.EVENT_NAME_DEFAULT);
@@ -95,7 +93,9 @@ describe('multitarget', () => {
                 expect(out.github_ref_name_env).toEqual('ttt');
                 expect(out.runner_os).toEqual(getRunnerOs());
             } finally {
-                res.tempDir?.delete();
+                res.cleanUpFakedDirs();
+                tempDirPath && expect(fs.existsSync(tempDirPath)).toEqual(false);
+                expect(res.tempDirPath).toBeUndefined();
             }
         });
 });

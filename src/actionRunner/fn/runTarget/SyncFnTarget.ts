@@ -2,10 +2,9 @@ import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 import {AbstractFnTarget} from "./AbstractFnTarget";
 import {FnRunResult} from "../FnRunResult";
 import {RunOptions} from "../../../runOptions/RunOptions";
-import {FnExecutionEnvironment} from "../executionEnvironment/FnExecutionEnvironment";
 import {runSyncFn} from "./runFn";
 import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
-import {ActionConfigSource, ActionConfigStore} from "../../../stores/ActionConfigStore";
+import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
 
 export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTargetInterface {
     static create<R>(fn: () => R, actionConfig?: ActionConfigInterface): SyncFnTarget<R>;
@@ -20,13 +19,17 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
 
     run(options: RunOptions): FnRunResult<R>
     {
-        const execEnvironment = FnExecutionEnvironment.prepare(this, options.validate());
+        const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut} = runSyncFn(this.fn, options.timeoutMs);
         try {
-            const effects = execEnvironment.getEffects();
+            const effects = runMilieu.getEffects(options.outputOptions.data.parseStdoutCommands);
             return new FnRunResult(fnResult, error, timedOut, effects);
         } finally {
-            execEnvironment.restore();
+            runMilieu.restore();
         }
+    }
+
+    clone(): this {
+        return (new SyncFnTarget(this.fn, this.actionConfig.clone(), this.actionYmlPath)) as this;
     }
 }

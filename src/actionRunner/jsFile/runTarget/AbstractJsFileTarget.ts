@@ -1,32 +1,38 @@
 import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {JsFileRunResult} from "../JsFileRunResult";
-import {ChildProcExecutionEnvironment} from "../executionEnvironment/ChildProcExecutionEnvironment";
 import {spawnChildProc} from "./spawnChildProc";
 import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
-import {CommandsStore} from "../../../stores/CommandsStore";
-import {ActionConfigStoreOptional} from "../../../stores/ActionConfigStore";
+import {CommandsStore} from "../../../runResult/CommandsStore";
+import {ActionConfigStore} from "../../../runOptions/ActionConfigStore";
+import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
+import {BaseRunMilieuComponentsFactory} from "../../../runMilieu/BaseRunMilieuComponentsFactory";
+import {ChildProcRunMilieuFactory} from "../runMilieu/ChildProcRunMilieuFactory";
+import os from "os";
+import {SpawnProc} from "../../../utils/spawnProc";
 
-export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
+export abstract class AbstractJsFileTarget<AC extends ActionConfigInterface|undefined> implements SyncRunTargetInterface {
     protected constructor(
         public readonly jsFilePath: string,
-        public readonly actionConfig: ActionConfigStoreOptional,
+        public readonly actionConfig: ActionConfigStore<AC>,
         public readonly actionYmlPath: string|undefined,
     ) {}
 
     run(options: RunOptions): JsFileRunResult
     {
-        const execEnvironment = ChildProcExecutionEnvironment.prepare(this, options.validate());
-        const spawnResult = spawnChildProc(this, options, execEnvironment.env);
+        const runMilieu = (new ChildProcRunMilieuFactory(
+            new BaseRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
+        )).createMilieu(options.validate());
+        const spawnResult = spawnChildProc(this.jsFilePath, options, runMilieu.env);
         try {
-            if (spawnResult.stdout && options.shouldPrintStdout) {
-                process.stdout.write(spawnResult.stdout);
-            }
-            const commands = spawnResult.stdout && options.shouldParseStdout
+            SpawnProc.printOutput(
+                spawnResult, options.outputOptions.shouldPrintStdout, options.outputOptions.data.printStderr
+            );
+            const commands = spawnResult.stdout && options.outputOptions.data.parseStdoutCommands
                 ? StdoutCommandsExtractor.extract(spawnResult.stdout)
                 : new CommandsStore();
-            const effects = execEnvironment.getEffects();
-            if (options.fakeFileOptions.data.fakeCommandFiles) {
+            const effects = runMilieu.getEffects(os.EOL);
+            if (options.fakeFsOptions.data.fakeCommandFiles) {
                 commands.apply(effects.fileCommands);
             }
             return new JsFileRunResult(
@@ -34,18 +40,15 @@ export abstract class AbstractJsFileTarget implements SyncRunTargetInterface {
                 spawnResult.error,
                 spawnResult.status !== null ? spawnResult.status : undefined,
                 spawnResult.stdout,
-                effects.tempDir,
+                spawnResult.stderr,
+                effects.runnerDirs.data.temp,
+                effects.runnerDirs.data.workspace,
                 spawnResult
             );
         } finally {
-            execEnvironment.restore();
+            runMilieu.restore();
         }
     }
 
-    clone(): this {
-        return new (<any>this.constructor)(
-            this.jsFilePath,
-            this.actionConfig.clone()
-        ) as this;
-    }
+    abstract clone(): this;
 }

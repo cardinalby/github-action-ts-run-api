@@ -1,7 +1,8 @@
 import {AbstractRunResult} from "../../runResult/AbstractRunResult";
-import {ParsedCommandsInterface} from "../../stores/ParsedCommandsInterface";
+import {ParsedCommandsInterface} from "../../runResult/ParsedCommandsInterface";
 import {SpawnSyncReturns} from "child_process";
-import {FakeTempDir} from "../../githubServiceFiles/FakeTempDir";
+import {RunnerDirInterface} from "../../githubServiceFiles/runnerDir/RunnerDirInterface";
+import {SpawnProc} from "../../utils/spawnProc";
 
 export class JsFileRunResult extends AbstractRunResult
 {
@@ -9,24 +10,21 @@ export class JsFileRunResult extends AbstractRunResult
         commands: ParsedCommandsInterface,
         error: Error|any|undefined,
         exitCode: number|undefined,
-        stdout: string,
-        tempDir: FakeTempDir|undefined,
+        stdout: string|undefined,
+        stderr: string|undefined,
+        tempDir: RunnerDirInterface,
+        workspaceDir: RunnerDirInterface,
         public readonly spawnResult: SpawnSyncReturns<string>,
     ) {
         super(
             commands,
             error,
-            JsFileRunResult.isTimedOut(spawnResult),
+            SpawnProc.isTimedOut(spawnResult),
             exitCode,
             stdout,
-            tempDir
+            stderr,
+            tempDir,
+            workspaceDir
         );
-    }
-
-    private static isTimedOut(spawnResult: SpawnSyncReturns<string>): boolean {
-        return !!(spawnResult.error &&
-            typeof spawnResult.error === 'object' &&
-            (spawnResult.error as any)['code'] &&
-            (spawnResult.error as any)['code'] === 'ETIMEDOUT');
     }
 }

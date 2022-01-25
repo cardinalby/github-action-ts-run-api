@@ -1,6 +1,7 @@
 import {RunResultInterface} from "./RunResultInterface";
-import {ParsedCommandsInterface} from "../stores/ParsedCommandsInterface";
-import {FakeTempDir} from "../githubServiceFiles/FakeTempDir";
+import {ParsedCommandsInterface} from "./ParsedCommandsInterface";
+import {FakeRunnerDir} from "../githubServiceFiles/runnerDir/FakeRunnerDir";
+import {OptionalRunnerDirInterface} from "../githubServiceFiles/runnerDir/RunnerDirInterface";
 
 export abstract class AbstractRunResult implements RunResultInterface
 {
@@ -11,9 +12,29 @@ export abstract class AbstractRunResult implements RunResultInterface
         public readonly error: Error|any|undefined,
         public readonly isTimedOut: boolean,
         public readonly exitCode: number|undefined,
-        public readonly stdout: string,
-        public readonly tempDir: FakeTempDir|undefined
+        public readonly stdout: string|undefined,
+        public readonly stderr: string|undefined,
+        private readonly tempDir: OptionalRunnerDirInterface,
+        private readonly workspaceDir: OptionalRunnerDirInterface
     ) {
         this.isSuccess = (this.exitCode === 0 || this.exitCode === undefined) && this.error === undefined;
+    }
+
+    get tempDirPath(): string|undefined {
+        return this.tempDir.existingDirPath;
+    }
+
+    get workspaceDirPath(): string|undefined {
+        return this.workspaceDir.existingDirPath;
+    }
+
+    cleanUpFakedDirs(): this {
+        if (this.tempDir instanceof FakeRunnerDir) {
+            this.tempDir.delete();
+        }
+        if (this.workspaceDir instanceof FakeRunnerDir) {
+            this.workspaceDir.delete();
+        }
+        return this;
     }
 }

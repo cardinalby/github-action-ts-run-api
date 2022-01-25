@@ -1,6 +1,6 @@
 import {AbstractRunResult} from "../runResult/AbstractRunResult";
 import {RunOptions} from "../runOptions/RunOptions";
-import {ActionConfigStoreOptional} from "../stores/ActionConfigStore";
+import {ActionConfigStoreOptional} from "../runOptions/ActionConfigStore";
 
 export interface SyncRunTargetInterface {
     run(options: RunOptions): AbstractRunResult;

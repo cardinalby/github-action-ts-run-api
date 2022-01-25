@@ -1,4 +1,8 @@
-import {ActionConfigStoreOptional} from "../../../stores/ActionConfigStore";
+import {ActionConfigStoreOptional} from "../../../runOptions/ActionConfigStore";
+import {FnRunMilieu} from "../runMilieu/FnRunMilieu";
+import {FnRunMilieuFactory} from "../runMilieu/FnRunMilieuFactory";
+import {BaseRunMilieuComponentsFactory} from "../../../runMilieu/BaseRunMilieuComponentsFactory";
+import {RunOptions} from "../../../runOptions/RunOptions";
 
 export abstract class AbstractFnTarget<R> {
     protected constructor(
@@ -7,7 +11,11 @@ export abstract class AbstractFnTarget<R> {
         public readonly actionYmlPath: string|undefined
     ) {}
 
-    clone(): this {
-        return new (<any>this.constructor)(this.fn, this.actionConfig.clone());
+    abstract clone(): this;
+
+    protected createMilieu(options: RunOptions): FnRunMilieu {
+        return (new FnRunMilieuFactory(
+            new BaseRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
+        )).createMilieu(options.validate());
     }
 }
