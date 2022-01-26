@@ -55,7 +55,7 @@ export namespace DockerCli {
         args.push('--workdir', workdir);
         Object.entries(volumes).forEach(entry => {
             if (entry[1] !== undefined) {
-                args.push('-v', `/${entry[0]}:${entry[1]}`);
+                args.push('-v', `${entry[0]}:${entry[1]}`);
             }
         });
         Object.entries(env).forEach(entry => {

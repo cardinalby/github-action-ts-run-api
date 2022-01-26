@@ -9,7 +9,7 @@ if [ "$INPUT_ACTION" == "fail" ]; then
   exit 2
 fi
 if [ "$INPUT_ACTION" == "user_out" ]; then
-  echo "::set-output name=user_out::$(id -u)_$(id -g)"
+  echo "::set-output name=user_out::$(id -u):$(id -g)"
 fi
 
 echo "::set-output name=out2::$INPUT_INPUT2"

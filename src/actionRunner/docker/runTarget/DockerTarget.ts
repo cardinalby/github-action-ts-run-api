@@ -29,9 +29,15 @@ function debugSpawnError(spawnRes: SpawnSyncReturns<string>) {
 }
 
 let userInfo: UserInfo<string>|undefined;
-function getCurrentUserForRun(): string {
+export function getCurrentUserForRun(): string|undefined {
+    if (os.platform() !== 'linux') {
+        return undefined;
+    }
     if (userInfo === undefined) {
         userInfo = os.userInfo();
+    }
+    if (userInfo.uid < 0 || userInfo.gid < 0) {
+        return undefined;
     }
     return `${userInfo.uid}:${userInfo.gid}`;
 }
@@ -41,7 +47,7 @@ export class DockerTarget {
 
     static createFromActionYml(
         actionYmlPath: string,
-        dockerOptions: DockerTargetOptions = { runUnderCurrentUser: true }
+        dockerOptions: DockerTargetOptions = { runUnderCurrentLinuxUser: true }
     ): DockerTarget {
         const actionConfig = ActionConfigStore.fromFile(actionYmlPath);
         assert(actionConfig.data.runs.using.startsWith('docker'), "Passed action config is not runs using docker");
@@ -54,7 +60,7 @@ export class DockerTarget {
             containerArgs,
             dockerFilePath,
             undefined,
-            dockerOptions.runUnderCurrentUser ? getCurrentUserForRun() : undefined
+            dockerOptions.runUnderCurrentLinuxUser ? getCurrentUserForRun() : undefined
         );
     }
 

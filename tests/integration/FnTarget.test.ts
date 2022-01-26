@@ -13,7 +13,6 @@ import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
 import {Duration} from "../../src/utils/Duration";
 import {EnvInterface} from "../../src/types/EnvInterface";
 import {Context} from "@actions/github/lib/context";
-import assert from "assert";
 import fs from "fs-extra";
 import tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
@@ -106,7 +105,7 @@ describe('SyncFnTarget', () => {
     it('should fake github service envs', async () => {
         const options = RunOptions.create();
         let fnEnv: EnvInterface = {};
-        let fnContext: Context|undefined;
+        let fnContext: Context = new Context();
         const res = await AsyncFnTarget.create(async () => {
             fnContext = getNewGithubContext();
             fnEnv = process.env;
@@ -115,7 +114,6 @@ describe('SyncFnTarget', () => {
         );
         expect(res.isSuccess).toEqual(true);
         expect(fnContext).not.toBeUndefined();
-        assert(fnContext);
         expect(fnContext.action).toEqual('stdoutCommandsTestAction');
         expect(fnContext.workflow).toEqual(GithubContextStore.WORKFLOW_DEFAULT);
         expect(fnContext.runId).toBeGreaterThan(0);
@@ -140,7 +138,7 @@ describe('SyncFnTarget', () => {
         [ false, true,  [],    ['ppp'], {v1: '1\n1', v2: '2\n2', v3: '3', v4: '4'} ],
         [ false, false, [],    [],      {}]
     ])(
-        'should respect parseStdoutCommands option',
+        'should respect parseStdoutCommands: %s, fakeFileCommands: %s',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath, expectedExportedVars) =>
         {
             const res = SyncFnTarget.create(() => {

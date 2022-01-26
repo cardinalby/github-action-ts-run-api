@@ -100,12 +100,12 @@ export class DockerRunMilieuComponentsFactory implements DockerRunMilieuComponen
                     `File ${name} has path = "${file.filePath}" that is not in "${dirPath}" dir`
                 );
                 return [
-                file.filePathEnvVariable,
-                path.join(
-                    DockerRunMilieuComponentsFactory.DIRS_MOUNTING_POINTS[dirName],
-                    path.basename(file.filePath)
-                )
-            ]}
+                    file.filePathEnvVariable,
+                    path.posix.join(
+                        DockerRunMilieuComponentsFactory.DIRS_MOUNTING_POINTS[dirName],
+                        path.basename(file.filePath)
+                    )
+                ]}
         ));
     }
 

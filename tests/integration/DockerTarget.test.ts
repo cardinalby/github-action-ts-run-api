@@ -7,7 +7,7 @@ import tmp from "tmp";
 import fs from "fs-extra";
 import path from "path";
 import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
-import os from "os";
+import * as os from "os";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
@@ -31,7 +31,7 @@ describe('DockerTarget', () => {
         [false, true, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name],
         [false, false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name],
     ])(
-        'should handle runner dirs',
+        'should handle cleanUpTmp: %s, cleanUpWorkspace: %s, wsExternalDir: %s, tempExternalDir: %s',
         (cleanUpTmp, cleanUpWorkspace, wsExternalDir, tempExternalDir) => {
             const res = target.run(RunOptions.create()
                 .setFakeFsOptions({rmFakedTempDirAfterRun: cleanUpTmp, rmFakedWorkspaceDirAfterRun: cleanUpWorkspace})
@@ -69,7 +69,7 @@ describe('DockerTarget', () => {
     test.each([
         undefined, '/github/home'
     ])(
-        'should handle inputs and outputs',
+        'should handle inputs and outputs, workingDir: %s',
         workDir => {
             const res = target.run(RunOptions.create()
                 .setInputs({input1: 'abc', input2: 'def'})
@@ -95,7 +95,7 @@ describe('DockerTarget', () => {
         [900, 'sleep', false, true],
         [undefined, undefined, true, false],
     ])(
-        'should respect timeout',
+        'should respect %s timeout',
         (timeoutMs, actionInput, expectSuccess, expectTimedOut) => {
             const res = target.run(RunOptions.create()
                 .setOutputOptions({printRunnerDebug: timeoutMs === undefined})
@@ -106,20 +106,22 @@ describe('DockerTarget', () => {
             expect(res.isTimedOut).toEqual(expectTimedOut);
         });
 
-    test.each([
-        true, false
-    ])(
-        'should run with runUnderCurrentUser: %s',
-        runUnderCurrentUser => {
+    const runUnderCurrentLinuxUserCases = [false];
+    if (os.platform() === 'linux') {
+        runUnderCurrentLinuxUserCases.push(true);
+    }
+    test.each(runUnderCurrentLinuxUserCases)(
+        'should run with runUnderCurrentLinuxUser: %s',
+        runUnderCurrentLinuxUser => {
             const res = DockerTarget.createFromActionYml(
-                dockerActionYml, { runUnderCurrentUser }
+                dockerActionYml, { runUnderCurrentLinuxUser: runUnderCurrentLinuxUser }
             ).run(RunOptions.create()
                 .setInputs({input1: 'abc', action: 'user_out'})
             );
             expect(res.isSuccess).toEqual(true);
-            const expectedUser = runUnderCurrentUser
-                ? `${os.userInfo().uid}_${os.userInfo().gid}`
-                : '0_0';
+            const expectedUser = runUnderCurrentLinuxUser
+                ? `${os.userInfo().uid}:${os.userInfo().gid}`
+                : '0:0';
             expect(res.commands.outputs.user_out).toEqual(expectedUser);
         });
 
