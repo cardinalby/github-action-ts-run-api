@@ -7,13 +7,52 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  ubuntuTest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node: [ '12', '14', '16' ]
     steps:
       - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
+
+  windowsTest:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
+
+  macosTest:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install docker
+        run: |
+          mkdir -p ~/.docker/machine/cache
+          curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
+          brew install docker docker-machine
+          docker-machine create --driver virtualbox default
+          docker-machine env default
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
