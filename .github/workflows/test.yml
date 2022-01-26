@@ -33,13 +33,15 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 16
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Build
         run: npm run build
       - name: Test
+        env:
+          SKIP_DOCKER_TARGET_TEST: true
         run: npm run test
 
   macosTest:
@@ -56,11 +58,13 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 16
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Build
         run: npm run build
       - name: Test
-        run: npm run test
+        run: |
+          eval "$(docker-machine env default)"
+          npm run test

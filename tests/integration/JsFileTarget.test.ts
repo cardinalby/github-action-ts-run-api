@@ -1,3 +1,5 @@
+// noinspection ES6PreferShortImport
+
 import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";

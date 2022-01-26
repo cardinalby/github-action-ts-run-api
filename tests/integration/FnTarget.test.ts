@@ -1,3 +1,5 @@
+// noinspection ES6PreferShortImport
+
 import * as core from "@actions/core";
 import * as os from "os";
 import {ProcessEnvVarsBackup} from "../utils/ProcessEnvVarsBackup";

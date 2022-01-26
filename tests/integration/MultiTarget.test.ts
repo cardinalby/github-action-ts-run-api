@@ -1,3 +1,5 @@
+// noinspection ES6PreferShortImport
+
 import * as path from "path";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import {RunTarget} from "../../src/runTarget/RunTarget";

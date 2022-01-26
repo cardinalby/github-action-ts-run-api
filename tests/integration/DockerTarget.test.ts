@@ -1,3 +1,5 @@
+// noinspection ES6PreferShortImport
+
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import {DockerTarget} from "../../src/actionRunner/docker/runTarget/DockerTarget";
 import {
@@ -15,7 +17,7 @@ const dockerActionYml = dockerActionDir + 'action.yml';
 describe('DockerTarget', () => {
     const target = DockerTarget.createFromActionYml(dockerActionYml);
 
-    if (!DockerCli.isInstalled()) {
+    if (!DockerCli.isInstalled() && process.env.SKIP_DOCKER_TARGET_TEST === 'true') {
         test.only('Docker is not installed, skip tests', () => {
             expect(target.actionConfig.data.name).toEqual('tttteeeessstt');
         })
