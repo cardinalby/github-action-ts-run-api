@@ -3,19 +3,23 @@ import {Duration} from "../../../utils/Duration";
 export class TimeoutDetector {
     static start(timeoutMs: number|undefined): TimeoutDetector {
         return new TimeoutDetector(
-            timeoutMs ? Duration.startMeasuring() : undefined,
+            Duration.startMeasuring(),
             timeoutMs
         );
     }
 
-    private constructor(
-        public readonly duration: Duration|undefined,
+    public constructor(
+        public readonly duration: Duration,
         public readonly timeoutMs: number|undefined
     ) {}
 
-    isTimedOut(): boolean {
-        return this.duration && this.timeoutMs
-            ? this.duration.measureMs() > this.timeoutMs
-            : false;
+    measure(): {durationMs: number, timedOut: boolean } {
+        const durationMs = this.duration.measureMs();
+        return {
+            durationMs,
+            timedOut: this.timeoutMs
+                ? this.duration.measureMs() > this.timeoutMs
+                : false
+        }
     }
 }

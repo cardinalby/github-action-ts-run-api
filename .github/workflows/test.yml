@@ -25,12 +25,14 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
+        env:
+          SKIP_DOCKER_TARGET_TEST: ${{ matrix.node-version == '16' && 'false' || 'true' }}
 
   windowsTest:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -48,14 +50,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install docker
-        run: |
-          mkdir -p ~/.docker/machine/cache
-          curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-          brew install docker docker-machine
-          docker-machine create --driver virtualbox default
-          docker-machine env default
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 16

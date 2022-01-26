@@ -12,6 +12,7 @@ export class DockerRunResult extends AbstractRunResult
         exitCode: number|undefined,
         stdout: string|undefined,
         stderr: string|undefined,
+        durationMs: number,
         tempDir: OptionalRunnerDirInterface,
         workspaceDir: OptionalRunnerDirInterface,
         public readonly buildSpawnResult: SpawnSyncReturns<string>|undefined,
@@ -21,6 +22,7 @@ export class DockerRunResult extends AbstractRunResult
         super(
             commands,
             error,
+            durationMs,
             spawnResult ? SpawnProc.isTimedOut(spawnResult) : false,
             exitCode,
             stdout,

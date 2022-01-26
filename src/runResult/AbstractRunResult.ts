@@ -10,12 +10,13 @@ export abstract class AbstractRunResult implements RunResultInterface
     protected constructor(
         public readonly commands: ParsedCommandsInterface,
         public readonly error: Error|any|undefined,
+        public readonly durationMs: number,
         public readonly isTimedOut: boolean,
         public readonly exitCode: number|undefined,
         public readonly stdout: string|undefined,
         public readonly stderr: string|undefined,
         private readonly tempDir: OptionalRunnerDirInterface,
-        private readonly workspaceDir: OptionalRunnerDirInterface
+        private readonly workspaceDir: OptionalRunnerDirInterface,
     ) {
         this.isSuccess = (this.exitCode === 0 || this.exitCode === undefined) && this.error === undefined;
     }

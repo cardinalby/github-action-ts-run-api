@@ -10,6 +10,7 @@ import {BaseRunMilieuComponentsFactory} from "../../../runMilieu/BaseRunMilieuCo
 import {ChildProcRunMilieuFactory} from "../runMilieu/ChildProcRunMilieuFactory";
 import os from "os";
 import {SpawnProc} from "../../../utils/spawnProc";
+import {Duration} from "../../../utils/Duration";
 
 export abstract class AbstractJsFileTarget<AC extends ActionConfigInterface|undefined> implements SyncRunTargetInterface {
     protected constructor(
@@ -23,7 +24,9 @@ export abstract class AbstractJsFileTarget<AC extends ActionConfigInterface|unde
         const runMilieu = (new ChildProcRunMilieuFactory(
             new BaseRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
         )).createMilieu(options.validate());
+        const duration = Duration.startMeasuring();
         const spawnResult = spawnChildProc(this.jsFilePath, options, runMilieu.env);
+        const durationMs = duration.measureMs();
         try {
             SpawnProc.printOutput(
                 spawnResult, options.outputOptions.shouldPrintStdout, options.outputOptions.data.printStderr
@@ -41,6 +44,7 @@ export abstract class AbstractJsFileTarget<AC extends ActionConfigInterface|unde
                 spawnResult.status !== null ? spawnResult.status : undefined,
                 spawnResult.stdout,
                 spawnResult.stderr,
+                durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
                 spawnResult

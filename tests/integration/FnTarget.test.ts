@@ -12,7 +12,6 @@ import * as path from "path";
 import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
-import {Duration} from "../../src/utils/Duration";
 import {EnvInterface} from "../../src/types/EnvInterface";
 import {Context} from "@actions/github/lib/context";
 import fs from "fs-extra";
@@ -353,7 +352,6 @@ describe('AsyncFnTarget', () => {
             process.exitCode = 1;
             return 32;
         })
-        const duration = Duration.startMeasuring();
         const resPromise = target.run(RunOptions.create({
             env: {CCC: 'x'},
             timeoutMs: 1200
@@ -363,7 +361,7 @@ describe('AsyncFnTarget', () => {
         expect(process.env.BBB).toEqual('bbb');
         expect(process.env.CCC).toEqual('x');
         const res = await resPromise;
-        expect(duration.measureMs()).toBeGreaterThanOrEqual(30);
+        expect(res.durationMs).toBeGreaterThanOrEqual(30);
         expect(process.env.AAA).toEqual('aaa');
         expect(process.exitCode).toBeUndefined();
         expect(process.env.BBB).toBeUndefined();

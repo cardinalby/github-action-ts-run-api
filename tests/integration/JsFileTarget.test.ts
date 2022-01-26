@@ -5,7 +5,6 @@ import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
 import {JsActionScriptTarget} from "../../src/actionRunner/jsFile/runTarget/JsActionScriptTarget";
 import {JsFilePathTarget} from "../../src/actionRunner/jsFile/runTarget/JsFilePathTarget";
-import {Duration} from "../../src/utils/Duration";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
@@ -41,12 +40,10 @@ describe('JsActionScriptTarget', () => {
             .setFakeFsOptions({fakeCommandFiles: false})
             .setTimeoutMs(400)
         const target = JsActionScriptTarget.createMain(complexActionActionYml);
-        const duration = Duration.startMeasuring();
         const res = target.run(options);
-        const executionMs = duration.measureMs();
         if (!inspector.url()) {
-            expect(executionMs).toBeLessThan(500);
-            expect(executionMs).toBeGreaterThanOrEqual(400);
+            expect(res.durationMs).toBeLessThan(500);
+            expect(res.durationMs).toBeGreaterThanOrEqual(400);
         }
         expect(res.commands.errors).toEqual([]);
         expect(res.commands.warnings).toEqual([]);

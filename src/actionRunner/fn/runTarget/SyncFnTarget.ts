@@ -20,10 +20,10 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
     run(options: RunOptions): FnRunResult<R>
     {
         const runMilieu = this.createMilieu(options.validate());
-        const {fnResult, error, timedOut} = runSyncFn(this.fn, options.timeoutMs);
+        const {fnResult, error, timedOut, durationMs} = runSyncFn(this.fn, options.timeoutMs);
         try {
             const effects = runMilieu.getEffects(options.outputOptions.data.parseStdoutCommands);
-            return new FnRunResult(fnResult, error, timedOut, effects);
+            return new FnRunResult(fnResult, error, durationMs, timedOut, effects);
         } finally {
             runMilieu.restore();
         }

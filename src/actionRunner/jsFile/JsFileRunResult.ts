@@ -12,6 +12,7 @@ export class JsFileRunResult extends AbstractRunResult
         exitCode: number|undefined,
         stdout: string|undefined,
         stderr: string|undefined,
+        durationMs: number,
         tempDir: RunnerDirInterface,
         workspaceDir: RunnerDirInterface,
         public readonly spawnResult: SpawnSyncReturns<string>,
@@ -19,6 +20,7 @@ export class JsFileRunResult extends AbstractRunResult
         super(
             commands,
             error,
+            durationMs,
             SpawnProc.isTimedOut(spawnResult),
             exitCode,
             stdout,

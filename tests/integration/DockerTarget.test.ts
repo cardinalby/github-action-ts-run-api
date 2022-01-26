@@ -17,7 +17,7 @@ const dockerActionYml = dockerActionDir + 'action.yml';
 describe('DockerTarget', () => {
     const target = DockerTarget.createFromActionYml(dockerActionYml);
 
-    if (!DockerCli.isInstalled() && process.env.SKIP_DOCKER_TARGET_TEST === 'true') {
+    if (!DockerCli.isInstalled() || process.env.SKIP_DOCKER_TARGET_TEST === 'true') {
         test.only('Docker is not installed, skip tests', () => {
             expect(target.actionConfig.data.name).toEqual('tttteeeessstt');
         })
@@ -104,6 +104,9 @@ describe('DockerTarget', () => {
                 .setInputs({action: actionInput})
                 .setTimeoutMs(timeoutMs)
             );
+            if (actionInput === 'sleep') {
+                expect(res.durationMs).toBeGreaterThanOrEqual(1000);
+            }
             expect(res.isSuccess).toEqual(expectSuccess);
             expect(res.isTimedOut).toEqual(expectTimedOut);
         });

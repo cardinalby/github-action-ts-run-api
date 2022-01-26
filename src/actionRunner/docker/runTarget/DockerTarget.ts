@@ -18,6 +18,7 @@ import {SpawnProc} from "../../../utils/spawnProc";
 import * as os from "os";
 import {DockerTargetOptions} from "./DockerTargetOptions";
 import {UserInfo} from "os";
+import {Duration} from "../../../utils/Duration";
 
 function debugSpawnError(spawnRes: SpawnSyncReturns<string>) {
     if (spawnRes.error) {
@@ -95,6 +96,7 @@ export class DockerTarget {
     {
         let buildSpawnResult: SpawnSyncReturns<string>|undefined = undefined;
         if (!this.imageId) {
+            const buildDuration = Duration.startMeasuring();
             buildSpawnResult = this.build(options.outputOptions.data.printRunnerDebug);
             if (buildSpawnResult.error || buildSpawnResult.status !== 0) {
                 return new DockerRunResult(
@@ -106,6 +108,7 @@ export class DockerTarget {
                         : undefined,
                     undefined,
                     undefined,
+                    buildDuration.measureMs(),
                     options.tempDir
                         ? new ExternalRunnerDir(options.tempDir)
                         : { existingDirPath: undefined },
@@ -128,6 +131,7 @@ export class DockerTarget {
             ? effectiveInputs.data[arg.inputName] || ''
             : arg
         );
+        const duration = Duration.startMeasuring();
         const spawnResult = DockerCli.run(
             this.imageId,
             runMilieu.env,
@@ -138,6 +142,7 @@ export class DockerTarget {
             options.timeoutMs,
             options.outputOptions.data.printRunnerDebug
         );
+        const durationMs = duration.measureMs();
         try {
             if (spawnResult.stderr && !options.outputOptions.data.printStderr) {
                 debugSpawnError(spawnResult);
@@ -160,6 +165,7 @@ export class DockerTarget {
                 spawnResult.status !== null ? spawnResult.status : undefined,
                 spawnResult.stdout,
                 spawnResult.stderr,
+                durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
                 buildSpawnResult,

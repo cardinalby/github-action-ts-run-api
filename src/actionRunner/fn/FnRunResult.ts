@@ -7,12 +7,14 @@ export class FnRunResult<R> extends AbstractRunResult
     constructor(
         public readonly fnResult: R|undefined,
         error: any,
+        durationMs: number,
         isTimedOut: boolean,
         executionEffects: FnExecutionEffectsInterface,
     ) {
         super(
             CommandsStore.create(executionEffects.stdoutCommands, executionEffects.fileCommands).data,
             error,
+            durationMs,
             isTimedOut,
             executionEffects.exitCode,
             executionEffects.stdout,
