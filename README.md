@@ -37,6 +37,13 @@ isolating its environment (process env, exitCode and working dir), intercepting 
 * Reading outputs, saved state, warnings, errors, notices and secrets from intercepted stdout
 * Reading exported vars, added paths from faked file commands
 
+## Installation
+
+Install for use in tests
+```
+npm i github-action-ts-run-api --save-dev
+```
+
 ## Documentation
 
 Read detailed docs to learn all features:

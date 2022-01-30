@@ -40,7 +40,7 @@ describe('JsActionScriptTarget', () => {
         const res = target.run(options);
         if (!inspector.url()) {
             expect(res.durationMs).toBeLessThan(500);
-            expect(res.durationMs).toBeGreaterThanOrEqual(400);
+            expect(res.durationMs).toBeGreaterThanOrEqual(350);
         }
         expect(res.commands.errors).toEqual([]);
         expect(res.commands.warnings).toEqual([]);
