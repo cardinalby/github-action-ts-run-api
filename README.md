@@ -178,3 +178,11 @@ console.log(
     res.isTimedOut
 );
 ```
+
+## More examples
+
+### Integration tests in this repo:
+
+* [Docker target test](./tests/integration/DockerTarget.test.ts)
+* [JS file target test](./tests/integration/JsFileTarget.test.ts)
+* [Function target test](./tests/integration/FnTarget.test.ts)
