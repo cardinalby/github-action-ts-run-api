@@ -1,7 +1,8 @@
-import {AbstractRunResult} from "../runResult/AbstractRunResult";
 import {RunOptions} from "../runOptions/RunOptions";
+import {RunResultInterface} from "../runResult/RunResultInterface";
+import {RunTargetInterface} from "./RunTargetInterface";
 
-export interface AsyncRunTargetInterface {
-    run(options: RunOptions): Promise<AbstractRunResult>;
-    clone(): this;
+export interface AsyncRunTargetInterface extends RunTargetInterface {
+    run(options: RunOptions): Promise<RunResultInterface>;
+    isAsync: true;
 }

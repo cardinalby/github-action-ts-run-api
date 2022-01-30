@@ -7,12 +7,13 @@ export function spawnChildProc(
     options: RunOptions,
     spawnEnv: StringKeyValueObj
 ) {
+    const resultEnv = {...spawnEnv, PATH: process.env.PATH};
     return spawnSync(
         'node',
         [jsFilePath],
         {
             timeout: options.timeoutMs,
-            env: spawnEnv,
+            env: resultEnv,
             cwd: options.workingDir,
             encoding: "utf8"
         });

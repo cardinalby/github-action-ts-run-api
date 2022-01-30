@@ -26,7 +26,7 @@ jobs:
       - name: Test
         run: npm run test
         env:
-          SKIP_DOCKER_TARGET_TEST: ${{ matrix.node-version == '16' && 'false' || 'true' }}
+          SKIP_DOCKER_TARGET_TEST: ${{ matrix.node == '16' && 'false' || 'true' }}
 
   windowsTest:
     runs-on: windows-latest

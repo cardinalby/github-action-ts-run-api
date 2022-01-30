@@ -1,6 +1,7 @@
 export interface OutputOptionsInterface {
     /**
      * @default {true}
+     * If `false` commands will not be parsed from stdout
      */
     parseStdoutCommands: boolean;
 
@@ -13,11 +14,13 @@ export interface OutputOptionsInterface {
 
     /**
      * @default {true}
+     * Print action stderr to process stderr
      */
     printStderr: boolean;
 
     /**
      * @default {false}
+     * Print additional debug information
      */
     printRunnerDebug: boolean;
 }

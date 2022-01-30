@@ -17,6 +17,8 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
         );
     }
 
+    public isAsync: false = false;
+
     run(options: RunOptions): FnRunResult<R>
     {
         const runMilieu = this.createMilieu(options.validate());

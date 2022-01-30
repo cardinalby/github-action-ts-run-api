@@ -4,7 +4,6 @@ export type RunnerArch = 'X86' | 'X64' | 'ARM' | 'ARM64';
 export interface GithubServiceEnvInterface {
     /**
      * @description Always set to true.
-     * @default: 'true'
      */
     CI?: string;
 

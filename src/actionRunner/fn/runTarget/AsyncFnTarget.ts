@@ -17,6 +17,8 @@ export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements As
         );
     }
 
+    public isAsync: true = true;
+
     async run(options: RunOptions): Promise<FnRunResult<R>> {
         const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut, durationMs} = await runAsyncFn(this.fn, options.timeoutMs);

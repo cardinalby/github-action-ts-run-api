@@ -9,8 +9,6 @@ export interface InitRunOptionsInterface {
     /** @default {{}} */
     inputs?: StringKeyValueObj;
     /** @default {{}} */
-    context?: StringKeyValueObj;
-    /** @default {{}} */
     env?: EnvInterface;
     /** @default {{}} */
     state?: StringKeyValueObj;
@@ -22,7 +20,14 @@ export interface InitRunOptionsInterface {
     fakeFsOptions?: Partial<FakeFsOptionsInterface>,
     /** @default {{parseStdoutCommands: true, printStderr: true, printStdout: undefined, printRunnerDebug: false }} */
     outputOptions?: Partial<OutputOptionsInterface>,
-    /** @default {false} */
+    /**
+     * true: add process.env of the current process to target's env
+     * false: do not add
+     * undefined: do not add, except JS file target if debugger is attached (to enable you debugging a child proc)
+     * @default {undefined}
+     **/
+    shouldAddProcessEnv?: boolean|undefined;
+    /** @default {true} */
     shouldFakeMinimalGithubRunnerEnv?: boolean;
     /** @default {undefined} */
     workingDir?: string|undefined;

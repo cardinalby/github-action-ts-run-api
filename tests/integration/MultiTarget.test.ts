@@ -19,7 +19,7 @@ const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('MultiTarget', () => {
     const syncTargets: SyncRunTargetInterface[] = [
-        RunTarget.postJsScript(complexActionActionYml),
+        RunTarget.postJs(complexActionActionYml),
         RunTarget.syncFn(syncPostRun, complexActionActionYml)
     ];
 
@@ -28,7 +28,6 @@ describe('MultiTarget', () => {
         target => {
             const res = target.run(
                 RunOptions.create()
-                    .addProcessEnv()
                     .setInputs({sendFileCommands: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: false})
             );
@@ -39,7 +38,7 @@ describe('MultiTarget', () => {
         });
 
     const mixedTargets: (SyncRunTargetInterface|AsyncRunTargetInterface)[] = [
-        RunTarget.postJsScript(complexActionActionYml),
+        RunTarget.postJs(complexActionActionYml),
         RunTarget.asyncFn(asyncPostRun, complexActionActionYml)
     ];
 
@@ -48,7 +47,6 @@ describe('MultiTarget', () => {
         async target => {
             const res = await target.run(
                 RunOptions.create()
-                    .addProcessEnv()
                     .setInputs({sendFileCommands: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: false})
             );
@@ -70,7 +68,6 @@ describe('MultiTarget', () => {
         async target => {
             const res = target.run(
                 RunOptions.create()
-                    .addProcessEnv()
                     .setShouldFakeMinimalGithubRunnerEnv(true)
                     .setGithubContext({
                         payload: {

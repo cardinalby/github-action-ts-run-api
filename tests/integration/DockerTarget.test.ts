@@ -1,7 +1,6 @@
 // noinspection ES6PreferShortImport
 
 import {RunOptions} from "../../src/runOptions/RunOptions";
-import {DockerTarget} from "../../src/actionRunner/docker/runTarget/DockerTarget";
 import {
     DockerRunMilieuComponentsFactory
 } from "../../src/actionRunner/docker/runMilieu/DockerRunMilieuComponentsFactory";
@@ -10,12 +9,13 @@ import fs from "fs-extra";
 import path from "path";
 import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
 import * as os from "os";
+import {RunTarget} from "../../src";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
 
 describe('DockerTarget', () => {
-    const target = DockerTarget.createFromActionYml(dockerActionYml);
+    const target = RunTarget.docker(dockerActionYml);
 
     if (!DockerCli.isInstalled() || process.env.SKIP_DOCKER_TARGET_TEST === 'true') {
         test.only('Docker is not installed, skip tests', () => {
@@ -24,17 +24,23 @@ describe('DockerTarget', () => {
     }
 
     test.each([
-        [true, true, undefined, undefined],
-        [true, false, undefined, undefined],
-        [false, true, undefined, undefined],
-        [true, false, undefined, undefined],
-        [true, true, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name],
-        [true, false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name],
-        [false, true, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name],
-        [false, false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name],
+        [true,  true,   undefined, undefined],
+        [true,  false,  undefined, undefined],
+        [false, true,   undefined, undefined],
+        [true,  false,  undefined, undefined],
+        [true,  true,   'tmp',     'tmp'],
+        [true,  false,  'tmp',     'tmp'],
+        [false, true,   'tmp',     'tmp'],
+        [false, false,  'tmp',     'tmp'],
     ])(
         'should handle cleanUpTmp: %s, cleanUpWorkspace: %s, wsExternalDir: %s, tempExternalDir: %s',
         (cleanUpTmp, cleanUpWorkspace, wsExternalDir, tempExternalDir) => {
+            if (wsExternalDir === 'tmp') {
+                wsExternalDir = tmp.dirSync({keep: true}).name;
+            }
+            if (tempExternalDir === 'tmp') {
+                tempExternalDir = tmp.dirSync({keep: true}).name;
+            }
             const res = target.run(RunOptions.create()
                 .setFakeFsOptions({rmFakedTempDirAfterRun: cleanUpTmp, rmFakedWorkspaceDirAfterRun: cleanUpWorkspace})
                 .setWorkspaceDir(wsExternalDir)
@@ -118,7 +124,7 @@ describe('DockerTarget', () => {
     test.each(runUnderCurrentLinuxUserCases)(
         'should run with runUnderCurrentLinuxUser: %s',
         runUnderCurrentLinuxUser => {
-            const res = DockerTarget.createFromActionYml(
+            const res = RunTarget.docker(
                 dockerActionYml, { runUnderCurrentLinuxUser: runUnderCurrentLinuxUser }
             ).run(RunOptions.create()
                 .setInputs({input1: 'abc', action: 'user_out'})
@@ -131,8 +137,8 @@ describe('DockerTarget', () => {
         });
 
     it('should handle build error', () => {
-        const res = DockerTarget
-            .createFromActionYml('tests/integration/testActions/dockerActionInvalid/action.yml')
+        const res = RunTarget
+            .docker('tests/integration/testActions/dockerActionInvalid/action.yml')
             .run(RunOptions.create().setOutputOptions({printRunnerDebug: false}));
         expect(res.error).not.toBeUndefined();
         expect(res.exitCode).not.toEqual(0);

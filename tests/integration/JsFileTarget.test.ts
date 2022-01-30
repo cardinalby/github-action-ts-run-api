@@ -3,17 +3,15 @@
 import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
-import {JsActionScriptTarget} from "../../src/actionRunner/jsFile/runTarget/JsActionScriptTarget";
-import {JsFilePathTarget} from "../../src/actionRunner/jsFile/runTarget/JsFilePathTarget";
+import {RunTarget} from "../../src";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('JsActionScriptTarget', () => {
     it('should run main script', () => {
-        const res = JsActionScriptTarget.createMain(complexActionActionYml)
+        const res = RunTarget.mainJs(complexActionActionYml)
             .run(RunOptions.create()
-                .addProcessEnv()
                 .setEnv({MY_ENV_VAR: 'my_env_value'})
                 .setInputs({sendFileCommands: 'false', setState: 'stateVal'})
                 .setFakeFsOptions({fakeCommandFiles: false})
@@ -35,11 +33,10 @@ describe('JsActionScriptTarget', () => {
 
     it('should respect timeout', () => {
         const options = RunOptions.create()
-            .addProcessEnv()
             .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'false', delayMs: '500'})
             .setFakeFsOptions({fakeCommandFiles: false})
             .setTimeoutMs(400)
-        const target = JsActionScriptTarget.createMain(complexActionActionYml);
+        const target = RunTarget.mainJs(complexActionActionYml);
         const res = target.run(options);
         if (!inspector.url()) {
             expect(res.durationMs).toBeLessThan(500);
@@ -61,9 +58,8 @@ describe('JsActionScriptTarget', () => {
     });
 
     it('should handle fail', () => {
-        const res = JsActionScriptTarget.createMain(complexActionActionYml).run(
+        const res = RunTarget.mainJs(complexActionActionYml).run(
             RunOptions.create()
-                .addProcessEnv()
                 .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'true', failAtTheEnd: 'true'})
                 .setFakeFsOptions({fakeCommandFiles: false})
         );
@@ -88,9 +84,10 @@ describe('JsActionScriptTarget', () => {
     });
 
     it('should run post script', () => {
-        const res = JsActionScriptTarget.createPost(complexActionActionYml).run(
+        const res = RunTarget.postJs(complexActionActionYml).run(
             RunOptions.create()
-                .addProcessEnv()
+                .setEnv({NODE_PATH: process.env.NODE_PATH})
+                .setOutputOptions({printRunnerDebug: true})
                 .setInputs({sendFileCommands: 'true'})
                 .setState({my_state: 'some%Val'})
                 .setFakeFsOptions({fakeCommandFiles: false})
@@ -109,9 +106,8 @@ describe('JsFilePathTarget', () => {
     test.each([true, false])(
         'should run targetJsFilePath, file commands',
         fakeFileCommands => {
-            const res = JsFilePathTarget.create(complexActionDir + 'main.js').run(
+            const res = RunTarget.jsFile(complexActionDir + 'main.js').run(
                 RunOptions.create()
-                    .addProcessEnv()
                     .setInputs({sendFileCommands: 'true', sendStdoutCommands: 'false', failAtTheEnd: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
             );
@@ -141,9 +137,8 @@ describe('JsFilePathTarget', () => {
         'should respect parseStdoutCommands: %s, fakeFileCommands: %s options',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
         {
-            const res = JsFilePathTarget.create(complexActionDir + 'parseStdCommandsTest.js').run(
+            const res = RunTarget.jsFile(complexActionDir + 'parseStdCommandsTest.js').run(
                 RunOptions.create()
-                    .addProcessEnv()
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
                     .setOutputOptions({parseStdoutCommands: parseStdoutCommands})
             );
@@ -162,9 +157,8 @@ describe('JsFilePathTarget', () => {
     ])(
         'should set working directory',
         (workingDir, resultCwd, jsFilePath) => {
-            const res = JsFilePathTarget.create(jsFilePath).run(
+            const res = RunTarget.jsFile(jsFilePath).run(
                 RunOptions.create()
-                    .addProcessEnv()
                     .setWorkingDir(workingDir)
                     .setInputs({sendFileCommands: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: false})

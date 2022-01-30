@@ -1,7 +1,6 @@
 // noinspection ES6PreferShortImport
 
 import {RunOptions} from "../../../src/runOptions/RunOptions";
-import {ProcessEnvVarsBackup} from "../../utils/ProcessEnvVarsBackup";
 import {FakeFsOptionsInterface} from "../../../src/runOptions/FakeFsOptionsInterface";
 import {OutputOptionsInterface} from "../../../src/runOptions/OutputOptionsInterface";
 
@@ -15,6 +14,7 @@ describe('RunOptions', () => {
             },
             githubContext: {payload: {action: 'f'}},
             githubServiceEnv: {CI: 'false'},
+            shouldAddProcessEnv: false,
             shouldFakeMinimalGithubRunnerEnv: true,
             outputOptions: {
                 parseStdoutCommands: false
@@ -35,6 +35,7 @@ describe('RunOptions', () => {
             } as FakeFsOptionsInterface);
             expect(o.githubContext.data).toEqual({payload: {action: 'f'}});
             expect(o.githubServiceEnv.data).toEqual({CI: 'false'});
+            expect(o.shouldAddProcessEnv).toEqual(false);
             expect(o.shouldFakeMinimalGithubRunnerEnv).toEqual(true);
             expect(o.outputOptions.data).toEqual({
                 parseStdoutCommands: false,
@@ -48,11 +49,13 @@ describe('RunOptions', () => {
             expect(o.workingDir).toEqual('123');
             expect(o.state.data).toEqual({s1: 'v3'});
         }
+
         cloned.setEnv({e1: "x1"});
-        cloned.setInputs({i1: "x2"});
+        cloned.setInputs({i2: "x2"});
         cloned.setState({s1: "x3"});
         cloned.setGithubContext({payload: {action: 'x4'}});
-        cloned.setGithubServiceEnv({CI: "x5"});
+        cloned.setGithubServiceEnv({GITHUB_HEAD_REF: "x5"});
+        cloned.setShouldAddProcessEnv(true);
         cloned.setFakeFsOptions({rmFakedTempDirAfterRun: true});
         cloned.setOutputOptions({
             printStderr: true,
@@ -60,11 +63,26 @@ describe('RunOptions', () => {
             parseStdoutCommands: true,
             printRunnerDebug: false
         }, false);
+
         expect(cloned.fakeFsOptions.data).toEqual({
             fakeCommandFiles: false,
             rmFakedTempDirAfterRun: true,
             rmFakedWorkspaceDirAfterRun: false
         } as FakeFsOptionsInterface);
+        expect(cloned.env.data).toEqual({e1: "x1"});
+        expect(cloned.inputs.data).toEqual({i1: "v2", i2: 'x2'});
+        expect(cloned.state.data).toEqual({s1: "x3"});
+        expect(cloned.githubContext.data).toEqual({payload: {action: 'x4'}});
+        expect(cloned.githubServiceEnv.data).toEqual({CI: 'false', GITHUB_HEAD_REF: "x5"});
+        expect(cloned.shouldAddProcessEnv).toEqual(true);
+        expect(cloned.outputOptions.data).toEqual({
+            printStderr: true,
+            printStdout: false,
+            parseStdoutCommands: true,
+            printRunnerDebug: false
+        });
+
+        expect(options.shouldAddProcessEnv).toEqual(false);
         expect(options.env.data).toEqual({e1: 'v1'});
         expect(options.inputs.data).toEqual({i1: 'v2'});
         expect(options.state.data).toEqual({s1: 'v3'});
@@ -98,7 +116,7 @@ describe('RunOptions', () => {
         expect(options.state.data).toEqual({});
         expect(options.githubContext.data).toEqual({});
         expect(options.githubServiceEnv.data).toEqual({});
-        expect(options.shouldFakeMinimalGithubRunnerEnv).toEqual(false);
+        expect(options.shouldFakeMinimalGithubRunnerEnv).toEqual(true);
         expect(options.workingDir).toEqual(undefined);
         expect(options.fakeFsOptions.data).toEqual({
             fakeCommandFiles: true,
@@ -106,24 +124,6 @@ describe('RunOptions', () => {
             rmFakedWorkspaceDirAfterRun: true
         } as FakeFsOptionsInterface);
         expect(options.outputOptions.data.parseStdoutCommands).toEqual(true);
-    });
-
-    it('should modify env', () => {
-        const options = RunOptions.create();
-        const backup = ProcessEnvVarsBackup.safeSet({AAA: 'bbb', CCC: 'ddd'});
-        try {
-            options.setEnv({XXX: 'yyy'})
-            options.addProcessEnv();
-            expect(options.env.data.XXX).toEqual('yyy');
-            expect(options.env.data.AAA).toEqual('bbb');
-            expect(options.env.data.CCC).toEqual('ddd');
-            options.setEnv({CCC: undefined});
-            expect(options.env.data.AAA).toEqual('bbb');
-            expect(options.env.data.CCC).toEqual(undefined);
-        }
-        finally {
-            backup.restore();
-        }
     });
 
     it('should set fakeFsOptions', () => {

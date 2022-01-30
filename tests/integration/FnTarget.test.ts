@@ -4,19 +4,16 @@ import * as core from "@actions/core";
 import * as os from "os";
 import {ProcessEnvVarsBackup} from "../utils/ProcessEnvVarsBackup";
 import {ActionConfigInterface} from "../../src/types/ActionConfigInterface";
-import {setOutput} from "@actions/core";
-import {SyncFnTarget} from "../../src/actionRunner/fn/runTarget/SyncFnTarget";
 import {RunOptions} from "../../src/runOptions/RunOptions";
-import {AsyncFnTarget} from "../../src/actionRunner/fn/runTarget/AsyncFnTarget";
 import * as path from "path";
 import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
-import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
 import {EnvInterface} from "../../src/types/EnvInterface";
 import {Context} from "@actions/github/lib/context";
 import fs from "fs-extra";
 import tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
+import {RunTarget} from "../../src";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
@@ -26,7 +23,7 @@ describe('SyncFnTarget', () => {
         const envBackup = ProcessEnvVarsBackup.safeSet({AAA: 'aaa'});
         try {
             const initialProcessCwd = process.cwd();
-            const res = SyncFnTarget.create(() => {
+            const res = RunTarget.syncFn(() => {
                 core.debug(process.env.CCC || '');
                 process.env.BBB = 'bbb';
                 process.env.AAA = 'ccc';
@@ -54,7 +51,7 @@ describe('SyncFnTarget', () => {
 
     it('should parse stdout commands', () => {
         const options = RunOptions.create();
-        const res = SyncFnTarget.create(() => {
+        const res = RunTarget.syncFn(() => {
             core.error('err%msg1');
             core.error('err%msg2');
             core.warning('warning\rmsg');
@@ -87,28 +84,32 @@ describe('SyncFnTarget', () => {
         expect(res.isSuccess).toEqual(true);
     });
 
-    it('should set github service envs', async () => {
+    test.each([5, 6])('should set github service envs', async runNumber => {
+        jest.resetModules();
         const options = RunOptions.create();
-        const res = await AsyncFnTarget.create(async () => {
-
-            const context = getNewGithubContext();
-            expect(context.runNumber).toEqual(8);
-            expect(context.ref).toEqual('tag/myTag');
-            expect(context.repo.owner).toEqual('ownerrr');
-            expect(context.repo.repo).toEqual('repooo');
+        let fnContext: Context = new Context();
+        let fnRepo: any = undefined;
+        const res = await RunTarget.asyncFn(async () => {
+            fnContext = require('@actions/github').context;
+            fnRepo = fnContext.repo;
         }).run(options
             .setGithubServiceEnv({CI: 'false', GITHUB_REF_TYPE: 'tag'})
-            .setGithubContext({runNumber: 8, ref: 'tag/myTag', repository: 'ownerrr/repooo'})
+            .setGithubContext({runNumber: runNumber, ref: 'tag/myTag', repository: 'ownerrr/repooo'})
         );
         expect(res.isSuccess).toEqual(true);
+        expect(fnContext.runNumber).toEqual(runNumber);
+        expect(fnContext.ref).toEqual('tag/myTag');
+        expect(fnRepo.owner).toEqual('ownerrr');
+        expect(fnRepo.repo).toEqual('repooo');
     });
 
     it('should fake github service envs', async () => {
+        jest.resetModules();
         const options = RunOptions.create();
         let fnEnv: EnvInterface = {};
         let fnContext: Context = new Context();
-        const res = await AsyncFnTarget.create(async () => {
-            fnContext = getNewGithubContext();
+        const res = await RunTarget.asyncFn(async () => {
+            fnContext = require('@actions/github').context;
             fnEnv = process.env;
         }, complexActionActionYml).run(options
             .setShouldFakeMinimalGithubRunnerEnv(true)
@@ -142,7 +143,7 @@ describe('SyncFnTarget', () => {
         'should respect parseStdoutCommands: %s, fakeFileCommands: %s',
         (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath, expectedExportedVars) =>
         {
-            const res = SyncFnTarget.create(() => {
+            const res = RunTarget.syncFn(() => {
                 core.warning('w');
                 core.addPath('ppp');
                 core.exportVariable('v1', '1\n1');
@@ -205,12 +206,12 @@ describe('SyncFnTarget', () => {
                 input2: 'true',
             })
             ;
-        const res = SyncFnTarget.create(() => {
+        const res = RunTarget.syncFn(() => {
             expect(core.getInput('INPUT1')).toEqual('val1');
             expect(core.getBooleanInput('input2')).toEqual(true);
             expect(core.getInput('input3')).toEqual('default3');
             expect(core.getInput('input4')).toEqual('');
-            setOutput('out1', 'val1');
+            core.setOutput('out1', 'val1');
         }, actionConfig).run(options);
         expect(res.commands.outputs.out1).toEqual('val1');
         expect(res.exitCode).toBeUndefined();
@@ -225,17 +226,24 @@ describe('SyncFnTarget', () => {
         [ true,  false, undefined, undefined ],
         [ false, true , undefined, undefined ],
         [ false, false, undefined, undefined ],
-        [ true,  true , tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ],
-        [ true,  false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ],
-        [ false, true , tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ],
-        [ false, false, tmp.dirSync({keep: true}).name, tmp.dirSync({keep: true}).name ]
+        [ true,  true , 'tmp', 'tmp' ],
+        [ true,  false, 'tmp', 'tmp' ],
+        [ false, true , 'tmp', 'tmp' ],
+        [ false, false, 'tmp', 'tmp' ]
     ])(
-        'should handle runner dirs: %s, %s, %s, %s',
+        'should handle cleanUpTemp: %s, cleanUpWorkspace: %s, wsExternalDir: %s, tempExternalDir: %s',
         (cleanUpTemp, cleanUpWorkspace, wsExternalDir, tempExternalDir) => {
+            if (wsExternalDir === 'tmp') {
+                wsExternalDir = tmp.dirSync({keep: true}).name;
+            }
+            if (tempExternalDir === 'tmp') {
+                tempExternalDir = tmp.dirSync({keep: true}).name;
+            }
+
             let wsFilePath: string;
             let tempFilePath: string;
 
-            const res = SyncFnTarget.create(() => {
+            const res = RunTarget.syncFn(() => {
                 expect(
                     process.env.GITHUB_WORKSPACE !== undefined && fs.existsSync(process.env.GITHUB_WORKSPACE)
                 ).toEqual(true);
@@ -299,10 +307,10 @@ describe('SyncFnTarget', () => {
     });
 
     it('should delete all global faked dirs', () => {
-        const res = SyncFnTarget.create(() => {}).run(RunOptions.create()
+        const res = RunTarget.syncFn(() => {}).run(RunOptions.create()
             .setFakeFsOptions({rmFakedWorkspaceDirAfterRun: false, rmFakedTempDirAfterRun: false})
         );
-        const res2 = SyncFnTarget.create(() => {}).run(RunOptions.create()
+        const res2 = RunTarget.syncFn(() => {}).run(RunOptions.create()
             .setFakeFsOptions({rmFakedWorkspaceDirAfterRun: false, rmFakedTempDirAfterRun: false})
         );
         expect(res.tempDirPath && fs.existsSync(res.tempDirPath)).toEqual(true);
@@ -317,7 +325,7 @@ describe('SyncFnTarget', () => {
     });
 
     it('should handle fn error', () => {
-        const res = SyncFnTarget.create(() => {
+        const res = RunTarget.syncFn(() => {
             core.error('err%msg1');
             core.error('err%msg2');
             core.warning('warning_msg');
@@ -344,7 +352,7 @@ async function waitFor(ms: number) {
 describe('AsyncFnTarget', () => {
     it('should restore process envs and exitCode async', async () => {
         process.env.AAA = 'aaa';
-        const target = AsyncFnTarget.create(async () => {
+        const target = RunTarget.asyncFn(async () => {
             core.debug(process.env.CCC || '');
             process.env.BBB = 'bbb';
             process.env.AAA = 'ccc';
@@ -375,7 +383,7 @@ describe('AsyncFnTarget', () => {
     });
 
     it('should handle async fn error', async () => {
-        const res = await AsyncFnTarget.create(async () => {
+        const res = await RunTarget.asyncFn(async () => {
             await waitFor(1);
             core.error('err%msg1');
             core.error('err%msg2');
@@ -396,7 +404,7 @@ describe('AsyncFnTarget', () => {
     });
 
     it('should handle async fn timeout', async () => {
-        const res = await AsyncFnTarget.create(async () => {
+        const res = await RunTarget.asyncFn(async () => {
             core.warning('warning_msg');
             await waitFor(200);
             return 5;

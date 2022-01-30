@@ -5,7 +5,7 @@ import {getRunnerArch, getRunnerOs} from "../utils/platformProps";
 export class GithubServiceEnvStore extends AbstractStore<GithubServiceEnvInterface> {
     static readonly CI_DEFAULT = 'true';
     static readonly GITHUB_ACTIONS_DEFAULT = 'true';
-    static readonly RUNNER_NAME_DEFAULT = 'test-utils-runner';
+    static readonly RUNNER_NAME_DEFAULT = 'test-runner';
 
     fakeMinimalRunnerEnv(actionPath: string|undefined): this {
         if (actionPath !== undefined) {

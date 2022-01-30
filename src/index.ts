@@ -5,8 +5,7 @@ export {DockerRunResult} from "./actionRunner/docker/DockerRunResult";
 export {SyncFnTarget} from "./actionRunner/fn/runTarget/SyncFnTarget";
 export {AsyncFnTarget} from "./actionRunner/fn/runTarget/AsyncFnTarget";
 
-export {JsFilePathTarget} from "./actionRunner/jsFile/runTarget/JsFilePathTarget";
-export {JsActionScriptTarget} from "./actionRunner/jsFile/runTarget/JsActionScriptTarget";
+export {JsFileTarget} from "./actionRunner/jsFile/runTarget/JsFileTarget";
 export {FnRunResult} from "./actionRunner/fn/FnRunResult";
 
 export {deleteAllFakedDirs} from "./githubServiceFiles/runnerDir/FakeRunnerDir";
@@ -19,6 +18,7 @@ export {RunResultInterface} from "./runResult/RunResultInterface";
 export {ParsedCommandsInterface} from "./runResult/ParsedCommandsInterface";
 
 export {RunTarget} from "./runTarget/RunTarget";
+export {RunTargetInterface} from "./runTarget/RunTargetInterface";
 export {AsyncRunTargetInterface} from "./runTarget/AsyncRunTargetInterface";
 export {SyncRunTargetInterface} from "./runTarget/SyncRunTargetInterface";
 

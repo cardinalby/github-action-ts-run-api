@@ -1,11 +1,16 @@
 {
   "name": "github-action-ts-run-api",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Utils for GitHub Action integration and unit testing",
   "main": "dist",
   "keywords": [
     "github",
-    "actions"
+    "actions",
+    "api",
+    "js",
+    "ts",
+    "tests",
+    "integration"
   ],
   "repository": {
     "type": "git",

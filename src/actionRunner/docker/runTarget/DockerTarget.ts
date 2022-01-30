@@ -1,7 +1,4 @@
-import {
-    ActionConfigStore,
-    ActionConfigStoreFilled
-} from "../../../runOptions/ActionConfigStore";
+import {ActionConfigStore, ActionConfigStoreFilled} from "../../../runOptions/ActionConfigStore";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
 import {CommandsStore} from "../../../runResult/CommandsStore";
@@ -16,18 +13,10 @@ import {SpawnSyncReturns} from "child_process";
 import {ExternalRunnerDir} from "../../../githubServiceFiles/runnerDir/ExternalRunnerDir";
 import {SpawnProc} from "../../../utils/spawnProc";
 import * as os from "os";
-import {DockerTargetOptions} from "./DockerTargetOptions";
 import {UserInfo} from "os";
+import {DockerTargetOptions} from "./DockerTargetOptions";
 import {Duration} from "../../../utils/Duration";
-
-function debugSpawnError(spawnRes: SpawnSyncReturns<string>) {
-    if (spawnRes.error) {
-        process.stderr.write(spawnRes.error.toString() + os.EOL);
-    }
-    if (spawnRes.status !== 0) {
-        process.stderr.write(`Finished with status = ${spawnRes.status}, ${spawnRes.stderr}` + os.EOL);
-    }
-}
+import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
 
 let userInfo: UserInfo<string>|undefined;
 export function getCurrentUserForRun(): string|undefined {
@@ -43,7 +32,7 @@ export function getCurrentUserForRun(): string|undefined {
     return `${userInfo.uid}:${userInfo.gid}`;
 }
 
-export class DockerTarget {
+export class DockerTarget implements SyncRunTargetInterface {
     static readonly DEFAULT_WORKING_DIR = '/github/workspace';
 
     static createFromActionYml(
@@ -65,6 +54,8 @@ export class DockerTarget {
         );
     }
 
+    public isAsync: false = false;
+
     protected constructor(
         public readonly actionConfig: ActionConfigStoreFilled,
         public readonly actionYmlPath: string,
@@ -85,7 +76,7 @@ export class DockerTarget {
             path.resolve(workdir, this.dockerFilePath),
             printDebug
         );
-        printDebug && debugSpawnError(spawnResult);
+        printDebug && SpawnProc.debugError(spawnResult);
         if (spawnResult.status === 0) {
             this.imageId = spawnResult.stdout.trim();
         }
@@ -145,9 +136,9 @@ export class DockerTarget {
         const durationMs = duration.measureMs();
         try {
             if (spawnResult.stderr && !options.outputOptions.data.printStderr) {
-                debugSpawnError(spawnResult);
+                SpawnProc.debugError(spawnResult);
             } else if (spawnResult.error) {
-                debugSpawnError(spawnResult);
+                SpawnProc.debugError(spawnResult);
             }
             SpawnProc.printOutput(
                 spawnResult, options.outputOptions.shouldPrintStdout, options.outputOptions.data.printStderr

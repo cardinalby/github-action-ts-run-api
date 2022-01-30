@@ -10,6 +10,8 @@ import {EnvStore} from "../runOptions/EnvStore";
 import path from "path";
 import {mapToObject} from "../utils/collections";
 import {BaseRunMilieuComponentsFactoryInterface} from "./BaseRunMilieuComponentsFactoryInterface";
+import {GithubContextStore} from "../runOptions/GithubContextStore";
+import {GithubServiceEnvStore} from "../runOptions/GithubServiceEnvStore";
 
 export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFactoryInterface {
     constructor(
@@ -41,6 +43,7 @@ export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFa
         runnerDirs: RunnerDirsCollection<BaseRunnerDirsInterface>
     ): EnvStore {
         const envStore = new EnvStore(this.options.env.data);
+        this.addProcessEnvToEnv(envStore);
         this.addInputsToEnv(envStore);
         this.addStateToEnv(envStore);
         this.addGithubServiceEnvToEnv(envStore);
@@ -49,6 +52,12 @@ export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFa
         this.addTempDirToEnv(envStore, runnerDirs.data.temp);
         this.addWorkspaceDirToEnv(envStore, runnerDirs.data.workspace);
         return envStore;
+    }
+
+    addProcessEnvToEnv(envStore: EnvStore) {
+        if (this.options.shouldAddProcessEnv) {
+            envStore.apply(process.env);
+        }
     }
 
     addInputsToEnv(envStore: EnvStore) {
@@ -69,14 +78,18 @@ export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFa
             if (this.actionConfig?.data?.runs?.using === 'composite' && this.actionYmlPath) {
                 actionYmlPathEnvValue = path.resolve(path.dirname(this.actionYmlPath));
             }
-            githubServiceEnv = this.options.githubServiceEnv.clone().fakeMinimalRunnerEnv(actionYmlPathEnvValue);
+            githubServiceEnv = (new GithubServiceEnvStore())
+                .fakeMinimalRunnerEnv(actionYmlPathEnvValue)
+                .apply(this.options.githubServiceEnv.data);
         }
         envStore.apply(githubServiceEnv.data);
     }
 
     addGithubContextToEnv(envStore: EnvStore) {
         const githubContext = this.options.shouldFakeMinimalGithubRunnerEnv
-            ? this.options.githubContext.clone().fakeMinimalRunnerContext(this.actionConfig.data?.name)
+            ? (new GithubContextStore())
+                .fakeMinimalRunnerContext(this.actionConfig.data?.name)
+                .apply(this.options.githubContext.data)
             : this.options.githubContext;
         envStore.apply(githubContext.toEnvVariables());
     }

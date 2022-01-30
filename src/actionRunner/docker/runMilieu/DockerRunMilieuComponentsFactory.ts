@@ -60,6 +60,9 @@ export class DockerRunMilieuComponentsFactory implements DockerRunMilieuComponen
         runnerDirs: RunnerDirsCollection<DockerRunnerDirsInterface>
     ): EnvStore {
         const envStore = new EnvStore(this.options.env.data);
+        if (this.options.shouldAddProcessEnv === true) {
+            this.baseComponentsFactory.addProcessEnvToEnv(envStore);
+        }
         this.baseComponentsFactory.addInputsToEnv(envStore);
         this.baseComponentsFactory.addStateToEnv(envStore);
         this.baseComponentsFactory.addGithubServiceEnvToEnv(envStore);

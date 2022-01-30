@@ -38,7 +38,9 @@ export class FakeFilesCollection {
         }
         commandFileNames.forEach(name => this.files.set(
             name,
-            dirPath ? FakeFile.createInDir(name, dirPath) : FakeFile.create(name, tempDirPath)));
+            dirPath
+                ? FakeFile.createInDir(name, dirPath, name)
+                : FakeFile.create(name, tempDirPath)));
         return this;
     }
 
