@@ -1,6 +1,6 @@
 {
   "name": "github-action-ts-run-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utils for GitHub Action integration and unit testing",
   "main": "dist",
   "keywords": [
@@ -23,6 +23,7 @@
     "dist/**/*.d.ts",
     "dist/**/*.js",
     "declarations/**/*.d.ts",
+    "docs",
     "LICENSE",
     "README.md"
   ],
@@ -47,6 +48,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "testUnit": "jest tests/unit"
   }
 }
