@@ -21,12 +21,13 @@ is slightly different for different targets. [Read more](./run-result.md) about 
 
 ## Overview
 
-| RunTarget static methods              | Target name   | Description                                              |
-|---------------------------------------|---------------|----------------------------------------------------------|
-| `syncFn`                              | SyncFnTarget  | Isolate and run a single function                        |
-| `asyncFn`                             | AsyncFnTarget | Isolate, run and wait for promise from a single function |
-| `jsFile`, `mainJs`, `postJs`, `preJs` | JsFileTarget  | Run JS file in a child node process                      |
-| `docker`                              | DockerTarget  | Build and run Docker container action                    |
+| RunTarget static methods    | Target name   | Description                                                          |
+|-----------------------------|---------------|----------------------------------------------------------------------|
+| `syncFn`                    | SyncFnTarget  | Isolate and run a single function                                    |
+| `asyncFn`                   | AsyncFnTarget | Isolate, run and wait for promise from a single function             |
+| `jsFile`                    | JsFileTarget  | Use JS file path to run in a child node process                      |
+| `mainJs`, `postJs`, `preJs` | JsFileTarget  | Use JS file specified in `action.yml` to run in a child node process |
+| `docker`                    | DockerTarget  | Build and run Docker container action                                |
 
 ## Single function target
 
@@ -84,10 +85,12 @@ the moment when Promise was fulfilled.
 
 ### Remarks
 
-- `process.exit(...)` calls inside function are not mocked.
-- Specified `timeoutMs` in options doesn't limit an execution time, just sets `result.isTimedOut` property if execution
+🔻 `process.exit(...)` calls inside function are not mocked.
+
+🔻 Specified `timeoutMs` in options doesn't limit an execution time, just sets `result.isTimedOut` property if execution
 time was exceeded the timeout.
-- Keep in mind, `require("@actions/github").context` is cached inside actions library which can cause troubles if you run
+
+🔻 Keep in mind, `require("@actions/github").context` is cached inside actions library which can cause troubles if you run
 multiple test cases. To get it around you can:
   - Use `new (require("@actions/github/lib/context").Context)()` instead
   - call `jest.resetModules()` after each test case run.
@@ -138,11 +141,17 @@ const result = target1.run(RunOptions.create());
 
 ### Remarks
 
-- By default, child proc doesn't share parent process env variables (except `PATH`).
+🔻 Normally, you pack a JS action in a single file before publishing using tools like 
+  [ncc](https://github.com/vercel/ncc). It makes debugging difficult if you use `RunTarget.mainJs(...)` to create
+  a target, because path in _action.yml_ points to a packed file, not a source one. 
+  Use `RunTarget.jsFile(...)` with source path instead.
+
+🔻 By default, child proc doesn't share parent process env variables (except `PATH`).
   * Call `options.setShouldAddProcessEnv(true)` to pass all env variables of a current process to the child one.
   * By default (`options.shouldAddProcessEnv == undefined`), env variables passed to the child process if debugger is
-    attached to the parent process. It helps you to debug a spawned child process.
-- Setting `options.timeoutMs` forces child process to exit after the specified period of time.
+    attached to the parent process. It helps you to debug a spawned child process. 
+
+🔻 Setting `options.timeoutMs` forces child process to exit after the specified period of time.
 
 ## Docker target
 
@@ -208,6 +217,8 @@ After a second and subsequent `run()` calls can be `undefined`, because image id
 
 ### Remarks
 
-- Docker Desktop for Windows and MacOS behaves differently from native docker on Linux. Be aware!
-- Windows and MacOS GitHub hosted runners don't have installed docker.
-- Faked dirs and command files are mounted as volumes.
+🔻 Docker Desktop for Windows and MacOS behaves differently from native docker on Linux. Be aware!
+
+🔻 Windows and MacOS GitHub hosted runners don't have installed docker.
+ 
+🔻 Faked dirs and command files are mounted as volumes.

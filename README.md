@@ -193,3 +193,8 @@ console.log(
 * [Docker target test](./tests/integration/DockerTarget.test.ts)
 * [JS file target test](./tests/integration/JsFileTarget.test.ts)
 * [Function target test](./tests/integration/FnTarget.test.ts)
+
+### Integration tests of the real actions:
+
+* [git-get-release-action](https://github.com/cardinalby/git-get-release-action/blob/master/tests/integration/action.test.ts)
+* [schema-validator-action](https://github.com/cardinalby/schema-validator-action/blob/master/tests/integration/main.test.ts)
