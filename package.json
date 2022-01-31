@@ -21,13 +21,13 @@
   "author": "cardinalby",
   "license": "MIT",
   "files": [
-    "dist/**/*.d.ts",
-    "dist/**/*.js",
-    "declarations/**/*.d.ts",
-    "declarations/**/*.json",
-    "docs",
-    "LICENSE",
-    "README.md"
+    "/dist/**/*.d.ts",
+    "/dist/**/*.js",
+    "/declarations/**/*.d.ts",
+    "/declarations/**/*.json",
+    "/docs",
+    "/LICENSE",
+    "/README.md"
   ],
   "dependencies": {
     "fs-extra": "^10.0.0",
