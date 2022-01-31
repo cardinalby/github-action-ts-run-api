@@ -1,12 +1,13 @@
 import {ActionConfigInterface} from "../types/ActionConfigInterface";
 import {Schema, Validator} from "jsonschema";
-import actionConfigSchema from "../types/github-action-config-schema.json";
 import {InputsStore} from "./InputsStore";
 import {PathLike} from "fs";
 import * as yaml from "yaml";
 import fs from "fs-extra";
 import structuredClone from "realistic-structured-clone";
 import assert from "assert";
+
+const actionConfigSchema = require("../../declarations/github-action-config-schema.json");
 
 /**
  * You can specify an action config by setting an ActionConfigInterface config object or
