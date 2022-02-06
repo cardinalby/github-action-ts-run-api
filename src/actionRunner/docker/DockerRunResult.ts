@@ -1,8 +1,7 @@
 import {AbstractRunResult} from "../../runResult/AbstractRunResult";
 import {ParsedCommandsInterface} from "../../runResult/ParsedCommandsInterface";
-import {SpawnSyncReturns} from "child_process";
 import {OptionalRunnerDirInterface} from "../../githubServiceFiles/runnerDir/RunnerDirInterface";
-import {SpawnProc} from "../../utils/spawnProc";
+import {SpawnAsyncResult} from "../../utils/spawnAsync";
 
 export class DockerRunResult extends AbstractRunResult
 {
@@ -15,15 +14,15 @@ export class DockerRunResult extends AbstractRunResult
         durationMs: number,
         tempDir: OptionalRunnerDirInterface,
         workspaceDir: OptionalRunnerDirInterface,
-        public readonly buildSpawnResult: SpawnSyncReturns<string>|undefined,
-        public readonly spawnResult: SpawnSyncReturns<string>|undefined,
+        public readonly buildSpawnResult: SpawnAsyncResult|undefined,
+        public readonly spawnResult: SpawnAsyncResult|undefined,
         public readonly isSuccessBuild: boolean
     ) {
         super(
             commands,
             error,
             durationMs,
-            spawnResult ? SpawnProc.isTimedOut(spawnResult) : false,
+            spawnResult ? spawnResult.timedOut : false,
             exitCode,
             stdout,
             stderr,

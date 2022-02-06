@@ -1,7 +1,8 @@
-import {spawnSync, SpawnSyncReturns} from "child_process";
+import {spawnSync} from "child_process";
 import {EnvInterface} from "../../../types/EnvInterface";
 import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
 import os from "os";
+import {spawnAsync, SpawnAsyncResult} from "../../../utils/spawnAsync";
 
 function debugSpawnArgs(args: string[]) {
     const charsToEscape = /(["'$`\\])/g;
@@ -24,30 +25,33 @@ export namespace DockerCli {
     /**
      * @return {string} image id
      */
-    export function build(
+    export async function build(
         workingDir: string,
         dockerFilePath: string,
         printDebug: boolean
-    ): SpawnSyncReturns<string> {
+    ): Promise<SpawnAsyncResult> {
         const args = ['build', '-q', '-f', dockerFilePath, workingDir];
         printDebug && debugSpawnArgs(args);
-        const result = spawnSync('docker', ['build', '-q', '-f', dockerFilePath, workingDir], {encoding: 'utf8'});
+        const result = await spawnAsync('docker', ['build', '-q', '-f', dockerFilePath, workingDir]);
         if (printDebug && result.status == 0 && result.stdout) {
             process.stdout.write(result.stdout + os.EOL);
         }
         return result;
     }
 
-    export function run(
+    export async function run(
         imageId: string,
         env: EnvInterface,
         volumes: StringKeyValueObj, // source: target
         workdir: string,
         user: string|undefined,
+        network: string|undefined,
         containerArgs: string[],
         timeoutMs: number|undefined,
-        printDebug: boolean
-    ): SpawnSyncReturns<string> {
+        printDebug: boolean,
+        printStdout: boolean,
+        printStderr: boolean
+    ): Promise<SpawnAsyncResult> {
         const args = ['run', '--rm'];
         if (user !== undefined) {
             args.push('--user', user)
@@ -63,9 +67,12 @@ export namespace DockerCli {
                 args.push('-e', `${entry[0]}=${entry[1]}`);
             }
         });
+        if (network !== undefined) {
+            args.push('--network', network);
+        }
         args.push(imageId);
         args.push(...containerArgs);
         printDebug && debugSpawnArgs(args);
-        return spawnSync('docker', args, {encoding: 'utf8', timeout: timeoutMs});
+        return spawnAsync('docker', args, {timeout: timeoutMs, printStdout, printStderr});
     }
 }

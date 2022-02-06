@@ -5,7 +5,6 @@ import {RunOptions} from "../../src/runOptions/RunOptions";
 import {RunTarget} from "../../src/runTarget/RunTarget";
 import {syncPostRun, asyncPostRun} from "./testActions/complex/postRun.js"
 import {run as githubServiceEnvImplImpl} from "./testActions/complex/githubServiceEnvImpl"
-import {SyncRunTargetInterface} from "../../src/runTarget/SyncRunTargetInterface";
 import {AsyncRunTargetInterface} from "../../src/runTarget/AsyncRunTargetInterface";
 import assert from "assert";
 import fs from "fs-extra";
@@ -13,20 +12,21 @@ import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {getRunnerOs} from "../../src/utils/platformProps";
 import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
+import {RunTargetInterface} from "../../src/runTarget/RunTargetInterface";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('MultiTarget', () => {
-    const syncTargets: SyncRunTargetInterface[] = [
+    const syncTargets: RunTargetInterface[] = [
         RunTarget.postJs(complexActionActionYml),
-        RunTarget.syncFn(syncPostRun, complexActionActionYml)
+        RunTarget.asyncFn(syncPostRun, complexActionActionYml)
     ];
 
-    test.each(syncTargets)(
+    test.each(syncTargets) (
         'should run SyncRunTargetInterface targets',
-        target => {
-            const res = target.run(
+        async target => {
+            const res = await target.run(
                 RunOptions.create()
                     .setInputs({sendFileCommands: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: false})
@@ -37,7 +37,7 @@ describe('MultiTarget', () => {
             expect(res.isSuccess).toEqual(true);
         });
 
-    const mixedTargets: (SyncRunTargetInterface|AsyncRunTargetInterface)[] = [
+    const mixedTargets: RunTargetInterface[] = [
         RunTarget.postJs(complexActionActionYml),
         RunTarget.asyncFn(asyncPostRun, complexActionActionYml)
     ];
@@ -56,9 +56,9 @@ describe('MultiTarget', () => {
             expect(res.isSuccess).toEqual(true);
         });
 
-    const serviceEnvTestTargets: SyncRunTargetInterface[] = [
+    const serviceEnvTestTargets: AsyncRunTargetInterface[] = [
         RunTarget.jsFile(complexActionDir + 'githubServiceEnv.js'),
-        RunTarget.syncFn(() => {
+        RunTarget.asyncFn(async () => {
             githubServiceEnvImplImpl(getNewGithubContext(), fs, path);
         })
     ];
@@ -66,7 +66,7 @@ describe('MultiTarget', () => {
     test.each(serviceEnvTestTargets)(
         'should set github service env and temp dir',
         async target => {
-            const res = target.run(
+            const res = await target.run(
                 RunOptions.create()
                     .setShouldFakeMinimalGithubRunnerEnv(true)
                     .setGithubContext({

@@ -9,52 +9,42 @@ import {DockerRunResult} from "../DockerRunResult";
 import {getContainerArgs, InputContainerArg} from "./getContainerArgs";
 import {DockerRunMilieuFactory} from "../runMilieu/DockerRunMilieuFactory";
 import {DockerRunMilieuComponentsFactory} from "../runMilieu/DockerRunMilieuComponentsFactory";
-import {SpawnSyncReturns} from "child_process";
 import {ExternalRunnerDir} from "../../../githubServiceFiles/runnerDir/ExternalRunnerDir";
-import {SpawnProc} from "../../../utils/spawnProc";
-import * as os from "os";
-import {UserInfo} from "os";
-import {DockerTargetOptions} from "./DockerTargetOptions";
+import {DockerOptions} from "./DockerOptions";
 import {Duration} from "../../../utils/Duration";
-import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
+import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
+import {SpawnAsyncResult} from "../../../utils/spawnAsync";
+import {SpawnProc} from "../../../utils/spawnProc";
+import {DockerOptionsStore} from "./DockerOptionsStore";
 
-let userInfo: UserInfo<string>|undefined;
-export function getCurrentUserForRun(): string|undefined {
-    if (os.platform() !== 'linux') {
-        return undefined;
-    }
-    if (userInfo === undefined) {
-        userInfo = os.userInfo();
-    }
-    if (userInfo.uid < 0 || userInfo.gid < 0) {
-        return undefined;
-    }
-    return `${userInfo.uid}:${userInfo.gid}`;
-}
-
-export class DockerTarget implements SyncRunTargetInterface {
+export class DockerTarget implements AsyncRunTargetInterface {
     static readonly DEFAULT_WORKING_DIR = '/github/workspace';
 
     static createFromActionYml(
         actionYmlPath: string,
-        dockerOptions: DockerTargetOptions = { runUnderCurrentLinuxUser: true }
+        dockerOptions: Partial<DockerOptions> = {}
     ): DockerTarget {
         const actionConfig = ActionConfigStore.fromFile(actionYmlPath);
         assert(actionConfig.data.runs.using.startsWith('docker'), "Passed action config is not runs using docker");
         assert(actionConfig.data.runs.image !== undefined, `Action config doesn't have "image" key in "runs" section`);
         const dockerFilePath = actionConfig.data.runs.image;
         const containerArgs = getContainerArgs(actionConfig.data);
+        const dockerOptionsStore = (new DockerOptionsStore({
+            runUnderCurrentLinuxUser: true,
+            network: undefined
+        })).apply(dockerOptions);
+
         return new DockerTarget(
             actionConfig,
             actionYmlPath,
             containerArgs,
             dockerFilePath,
             undefined,
-            dockerOptions.runUnderCurrentLinuxUser ? getCurrentUserForRun() : undefined
+            dockerOptionsStore
         );
     }
 
-    public isAsync: false = false;
+    public isAsync: true = true;
 
     protected constructor(
         public readonly actionConfig: ActionConfigStoreFilled,
@@ -62,16 +52,16 @@ export class DockerTarget implements SyncRunTargetInterface {
         private readonly containerArgs: (InputContainerArg|string)[],
         private readonly dockerFilePath: string,
         private imageId: string|undefined,
-        private readonly userToRunUnder: string|undefined,
+        public readonly dockerOptions: DockerOptionsStore
     ) {
         assert(actionConfig.data.runs.image !== undefined, `Action config doesn't have "image" key in "runs" section`);
         this.dockerFilePath = actionConfig.data.runs.image;
         this.containerArgs = getContainerArgs(actionConfig.data);
     }
 
-    build(printDebug: boolean = false): SpawnSyncReturns<string> {
+    async build(printDebug: boolean = false): Promise<SpawnAsyncResult> {
         const workdir = path.resolve(path.dirname(this.actionYmlPath));
-        const spawnResult = DockerCli.build(
+        const spawnResult = await DockerCli.build(
             workdir,
             path.resolve(workdir, this.dockerFilePath),
             printDebug
@@ -83,12 +73,12 @@ export class DockerTarget implements SyncRunTargetInterface {
         return spawnResult;
     }
 
-    run(options: RunOptions): DockerRunResult
+    async run(options: RunOptions): Promise<DockerRunResult>
     {
-        let buildSpawnResult: SpawnSyncReturns<string>|undefined = undefined;
+        let buildSpawnResult: SpawnAsyncResult|undefined = undefined;
         if (!this.imageId) {
             const buildDuration = Duration.startMeasuring();
-            buildSpawnResult = this.build(options.outputOptions.data.printRunnerDebug);
+            buildSpawnResult = await this.build(options.outputOptions.data.printRunnerDebug);
             if (buildSpawnResult.error || buildSpawnResult.status !== 0) {
                 return new DockerRunResult(
                     (new CommandsStore()).data,
@@ -123,15 +113,18 @@ export class DockerTarget implements SyncRunTargetInterface {
             : arg
         );
         const duration = Duration.startMeasuring();
-        const spawnResult = DockerCli.run(
+        const spawnResult = await DockerCli.run(
             this.imageId,
             runMilieu.env,
             runMilieu.volumes,
             options.workingDir || DockerTarget.DEFAULT_WORKING_DIR,
-            this.userToRunUnder,
+            this.dockerOptions.getCurrentUserForRun(),
+            this.dockerOptions.data.network,
             args,
             options.timeoutMs,
-            options.outputOptions.data.printRunnerDebug
+            options.outputOptions.data.printRunnerDebug,
+            options.outputOptions.shouldPrintStdout,
+            options.outputOptions.data.printStderr,
         );
         const durationMs = duration.measureMs();
         try {
@@ -140,9 +133,6 @@ export class DockerTarget implements SyncRunTargetInterface {
             } else if (spawnResult.error) {
                 SpawnProc.debugError(spawnResult);
             }
-            SpawnProc.printOutput(
-                spawnResult, options.outputOptions.shouldPrintStdout, options.outputOptions.data.printStderr
-            );
             const commands = spawnResult.stdout && options.outputOptions.data.parseStdoutCommands
                 ? StdoutCommandsExtractor.extract(spawnResult.stdout)
                 : new CommandsStore();
@@ -175,7 +165,7 @@ export class DockerTarget implements SyncRunTargetInterface {
             [...this.containerArgs],
             this.dockerFilePath,
             this.imageId,
-            this.userToRunUnder
+            this.dockerOptions.clone()
         ) as this;
     }
 }

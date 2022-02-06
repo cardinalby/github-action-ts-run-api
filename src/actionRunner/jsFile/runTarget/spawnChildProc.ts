@@ -1,20 +1,23 @@
-import {spawnSync} from "child_process";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
+import {spawnAsync, SpawnAsyncResult} from "../../../utils/spawnAsync";
 
-export function spawnChildProc(
+export async function spawnChildProc(
     jsFilePath: string,
     options: RunOptions,
-    spawnEnv: StringKeyValueObj
-) {
+    spawnEnv: StringKeyValueObj,
+    printStdout: boolean,
+    printStderr: boolean
+): Promise<SpawnAsyncResult> {
     const resultEnv = {...spawnEnv, PATH: process.env.PATH};
-    return spawnSync(
+    return spawnAsync(
         'node',
         [jsFilePath],
         {
             timeout: options.timeoutMs,
             env: resultEnv,
             cwd: options.workingDir,
-            encoding: "utf8"
+            printStdout,
+            printStderr
         });
 }

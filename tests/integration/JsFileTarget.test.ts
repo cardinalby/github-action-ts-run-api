@@ -4,13 +4,14 @@ import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
 import {RunTarget} from "../../src";
+import http from "http";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('JsActionScriptTarget', () => {
-    it('should run main script', () => {
-        const res = RunTarget.mainJs(complexActionActionYml)
+    it('should run main script', async () => {
+        const res = await RunTarget.mainJs(complexActionActionYml)
             .run(RunOptions.create()
                 .setEnv({MY_ENV_VAR: 'my_env_value'})
                 .setInputs({sendFileCommands: 'false', setState: 'stateVal'})
@@ -31,13 +32,13 @@ describe('JsActionScriptTarget', () => {
         expect(res.isSuccess).toEqual(true);
     });
 
-    it('should respect timeout', () => {
+    it('should respect timeout', async () => {
         const options = RunOptions.create()
             .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'false', delayMs: '500'})
             .setFakeFsOptions({fakeCommandFiles: false})
             .setTimeoutMs(400)
         const target = RunTarget.mainJs(complexActionActionYml);
-        const res = target.run(options);
+        const res = await target.run(options);
         if (!inspector.url()) {
             expect(res.durationMs).toBeLessThan(500);
             expect(res.durationMs).toBeGreaterThanOrEqual(350);
@@ -57,8 +58,8 @@ describe('JsActionScriptTarget', () => {
         expect(res.isSuccess).toEqual(false);
     });
 
-    it('should handle fail', () => {
-        const res = RunTarget.mainJs(complexActionActionYml).run(
+    it('should handle fail', async () => {
+        const res = await RunTarget.mainJs(complexActionActionYml).run(
             RunOptions.create()
                 .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'true', failAtTheEnd: 'true'})
                 .setFakeFsOptions({fakeCommandFiles: false})
@@ -83,8 +84,8 @@ describe('JsActionScriptTarget', () => {
         expect(res.spawnResult.status).toEqual(1);
     });
 
-    it('should run post script', () => {
-        const res = RunTarget.postJs(complexActionActionYml).run(
+    it('should run post script', async () => {
+        const res = await RunTarget.postJs(complexActionActionYml).run(
             RunOptions.create()
                 .setEnv({NODE_PATH: process.env.NODE_PATH})
                 .setOutputOptions({printRunnerDebug: true})
@@ -100,13 +101,39 @@ describe('JsActionScriptTarget', () => {
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
     });
+
+    it('should mock octokit', async () => {
+        const server = http.createServer((req, res) => {
+            if (req.url === '/repos/o/r') {
+                res.writeHead(200, {'Content-Type': 'application/json'});
+                res.end('{"name":"x"}');
+            } else {
+                res.writeHead(404);
+                res.end();
+            }
+        }).listen(8234);
+
+        try {
+            const res = await RunTarget.preJs(complexActionActionYml).run(
+                RunOptions.create()
+                    .setGithubContext({apiUrl: 'http://localhost:8234'})
+                    .setEnv({GITHUB_TOKEN: 't'})
+            );
+            expect(res.error).toBeUndefined();
+            expect(res.isTimedOut).toEqual(false);
+            expect(res.isSuccess).toEqual(true);
+            expect(res.commands.outputs).toEqual({resp: '{"name":"x"}'});
+        } finally {
+            server.close();
+        }
+    });
 });
 
 describe('JsFilePathTarget', () => {
     test.each([true, false])(
-        'should run targetJsFilePath, file commands',
-        fakeFileCommands => {
-            const res = RunTarget.jsFile(complexActionDir + 'main.js').run(
+        'should run targetJsFilePath, fakeFileCommands: %s',
+        async fakeFileCommands => {
+            const res = await RunTarget.jsFile(complexActionDir + 'main.js').run(
                 RunOptions.create()
                     .setInputs({sendFileCommands: 'true', sendStdoutCommands: 'false', failAtTheEnd: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
@@ -135,9 +162,9 @@ describe('JsFilePathTarget', () => {
         [ false, false, [],    []      ]
     ])(
         'should respect parseStdoutCommands: %s, fakeFileCommands: %s options',
-        (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
+        async (parseStdoutCommands, fakeFileCommands, expectedWarnings, expectedPath) =>
         {
-            const res = RunTarget.jsFile(complexActionDir + 'parseStdCommandsTest.js').run(
+            const res = await RunTarget.jsFile(complexActionDir + 'parseStdCommandsTest.js').run(
                 RunOptions.create()
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
                     .setOutputOptions({parseStdoutCommands: parseStdoutCommands})
@@ -155,9 +182,9 @@ describe('JsFilePathTarget', () => {
         [undefined, path.resolve(process.cwd()), complexActionDir + 'post.js'],
         [path.resolve(complexActionDir), path.resolve(complexActionDir), 'post.js']
     ])(
-        'should set working directory',
-        (workingDir, resultCwd, jsFilePath) => {
-            const res = RunTarget.jsFile(jsFilePath).run(
+        'should set working directory %s',
+        async (workingDir, resultCwd, jsFilePath) => {
+            const res = await RunTarget.jsFile(jsFilePath).run(
                 RunOptions.create()
                     .setWorkingDir(workingDir)
                     .setInputs({sendFileCommands: 'false'})

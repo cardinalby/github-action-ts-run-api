@@ -1,8 +1,7 @@
 import {AbstractRunResult} from "../../runResult/AbstractRunResult";
 import {ParsedCommandsInterface} from "../../runResult/ParsedCommandsInterface";
-import {SpawnSyncReturns} from "child_process";
 import {RunnerDirInterface} from "../../githubServiceFiles/runnerDir/RunnerDirInterface";
-import {SpawnProc} from "../../utils/spawnProc";
+import {SpawnAsyncResult} from "../../utils/spawnAsync";
 
 export class JsFileRunResult extends AbstractRunResult
 {
@@ -15,13 +14,13 @@ export class JsFileRunResult extends AbstractRunResult
         durationMs: number,
         tempDir: RunnerDirInterface,
         workspaceDir: RunnerDirInterface,
-        public readonly spawnResult: SpawnSyncReturns<string>,
+        public readonly spawnResult: SpawnAsyncResult,
     ) {
         super(
             commands,
             error,
             durationMs,
-            SpawnProc.isTimedOut(spawnResult),
+            spawnResult.timedOut,
             exitCode,
             stdout,
             stderr,

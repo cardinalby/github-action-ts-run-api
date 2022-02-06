@@ -1,4 +1,3 @@
-import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {JsFileRunResult} from "../JsFileRunResult";
 import {spawnChildProc} from "./spawnChildProc";
@@ -13,12 +12,13 @@ import {Duration} from "../../../utils/Duration";
 import {ChildProcRunMilieuComponentsFactory} from "../runMilieu/ChildProcRunMilieuComponentsFactory";
 import assert from "assert";
 import path from "path";
+import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 
 type JsFileTargetWithConfig = JsFileTarget<ActionConfigInterface>;
 type JsFileTargetWithOptionalConfig = JsFileTarget<ActionConfigInterface|undefined>;
 type ScriptName = 'pre'|'main'|'post';
 
-export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements SyncRunTargetInterface {
+export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements AsyncRunTargetInterface {
     // noinspection JSUnusedGlobalSymbols
     static createMain(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTargetWithConfig;
     // noinspection JSUnusedGlobalSymbols
@@ -81,7 +81,7 @@ export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements
         );
     }
 
-    public isAsync: false = false;
+    public isAsync: true = true;
 
     protected constructor(
         public readonly jsFilePath: string,
@@ -89,23 +89,24 @@ export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements
         public readonly actionYmlPath: string|undefined,
     ) {}
 
-    run(options: RunOptions): JsFileRunResult
+    async run(options: RunOptions): Promise<JsFileRunResult>
     {
         const runMilieu = (new ChildProcRunMilieuFactory(
             new ChildProcRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
         )).createMilieu(options.validate());
         const duration = Duration.startMeasuring();
-        const spawnResult = spawnChildProc(this.jsFilePath, options, runMilieu.env);
-        if (spawnResult.stderr && !options.outputOptions.data.printStderr) {
-            SpawnProc.debugError(spawnResult);
-        } else if (spawnResult.error) {
+        const spawnResult = await spawnChildProc(
+            this.jsFilePath,
+            options,
+            runMilieu.env,
+            options.outputOptions.shouldPrintStdout,
+            options.outputOptions.data.printStderr
+        );
+        if ((spawnResult.stderr && !options.outputOptions.data.printStderr) || spawnResult.error) {
             SpawnProc.debugError(spawnResult);
         }
         const durationMs = duration.measureMs();
         try {
-            SpawnProc.printOutput(
-                spawnResult, options.outputOptions.shouldPrintStdout, options.outputOptions.data.printStderr
-            );
             const commands = spawnResult.stdout && options.outputOptions.data.parseStdoutCommands
                 ? StdoutCommandsExtractor.extract(spawnResult.stdout)
                 : new CommandsStore();

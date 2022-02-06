@@ -10,6 +10,7 @@ import path from "path";
 import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
 import * as os from "os";
 import {RunTarget} from "../../src";
+import * as http from "http";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
@@ -34,14 +35,14 @@ describe('DockerTarget', () => {
         [false, false,  'tmp',     'tmp'],
     ])(
         'should handle cleanUpTmp: %s, cleanUpWorkspace: %s, wsExternalDir: %s, tempExternalDir: %s',
-        (cleanUpTmp, cleanUpWorkspace, wsExternalDir, tempExternalDir) => {
+        async (cleanUpTmp, cleanUpWorkspace, wsExternalDir, tempExternalDir) => {
             if (wsExternalDir === 'tmp') {
                 wsExternalDir = tmp.dirSync({keep: true}).name;
             }
             if (tempExternalDir === 'tmp') {
                 tempExternalDir = tmp.dirSync({keep: true}).name;
             }
-            const res = target.run(RunOptions.create()
+            const res = await target.run(RunOptions.create()
                 .setFakeFsOptions({rmFakedTempDirAfterRun: cleanUpTmp, rmFakedWorkspaceDirAfterRun: cleanUpWorkspace})
                 .setWorkspaceDir(wsExternalDir)
                 .setTempDir(tempExternalDir)
@@ -78,8 +79,8 @@ describe('DockerTarget', () => {
         undefined, '/github/home'
     ])(
         'should handle inputs and outputs, workingDir: %s',
-        workDir => {
-            const res = target.run(RunOptions.create()
+        async workDir => {
+            const res = await target.run(RunOptions.create()
                 .setInputs({input1: 'abc', input2: 'def'})
                 .setGithubContext({payload: {pull_request: {number: 123}}})
                 .setWorkingDir(workDir)
@@ -99,19 +100,21 @@ describe('DockerTarget', () => {
             });
         });
 
+    jest.setTimeout(10000);
     test.each([
         [900, 'sleep', false, true],
         [undefined, undefined, true, false],
     ])(
         'should respect %s timeout',
-        (timeoutMs, actionInput, expectSuccess, expectTimedOut) => {
-            const res = target.run(RunOptions.create()
+        async (timeoutMs, actionInput, expectSuccess, expectTimedOut) => {
+
+            const res = await target.run(RunOptions.create()
                 .setOutputOptions({printRunnerDebug: timeoutMs === undefined})
                 .setInputs({action: actionInput})
                 .setTimeoutMs(timeoutMs)
             );
-            if (actionInput === 'sleep') {
-                expect(res.durationMs).toBeGreaterThanOrEqual(1000);
+            if (actionInput === 'sleep' && timeoutMs) {
+                expect(res.durationMs).toBeGreaterThanOrEqual(timeoutMs);
             }
             expect(res.isSuccess).toEqual(expectSuccess);
             expect(res.isTimedOut).toEqual(expectTimedOut);
@@ -123,8 +126,8 @@ describe('DockerTarget', () => {
     }
     test.each(runUnderCurrentLinuxUserCases)(
         'should run with runUnderCurrentLinuxUser: %s',
-        runUnderCurrentLinuxUser => {
-            const res = RunTarget.docker(
+        async runUnderCurrentLinuxUser => {
+            const res = await RunTarget.docker(
                 dockerActionYml, { runUnderCurrentLinuxUser: runUnderCurrentLinuxUser }
             ).run(RunOptions.create()
                 .setInputs({input1: 'abc', action: 'user_out'})
@@ -136,8 +139,8 @@ describe('DockerTarget', () => {
             expect(res.commands.outputs.user_out).toEqual(expectedUser);
         });
 
-    it('should handle build error', () => {
-        const res = RunTarget
+    it('should handle build error', async () => {
+        const res = await RunTarget
             .docker('tests/integration/testActions/dockerActionInvalid/action.yml')
             .run(RunOptions.create().setOutputOptions({printRunnerDebug: false}));
         expect(res.error).not.toBeUndefined();
@@ -151,8 +154,8 @@ describe('DockerTarget', () => {
         expect(res.spawnResult).toBeUndefined();
     });
 
-    it('should handle run error', () => {
-        const res = target.run(RunOptions.create()
+    it('should handle run error', async () => {
+        const res = await target.run(RunOptions.create()
             .setOutputOptions({printRunnerDebug: false})
             .setInputs({input1: 'abc', action: 'fail'})
         );
@@ -166,5 +169,30 @@ describe('DockerTarget', () => {
         expect(res.isTimedOut).toEqual(false);
         expect(res.spawnResult).not.toBeUndefined();
         expect(res.commands.outputs).toEqual({out1: 'abc'})
+    });
+
+    it('should use network', async () => {
+        const server = http.createServer((req, res) => {
+            if (req.url === '/repos/cardinalby/github-action-ts-run-api/releases') {
+                res.writeHead(200);
+                res.end('fake_response');
+            } else {
+                res.writeHead(404);
+                res.end();
+            }
+        }).listen(8234);
+
+        try {
+            const res = await RunTarget.docker(
+                'tests/integration/testActions/dockerNetwork/action/action.yml'
+            ).run(RunOptions.create()
+                .setOutputOptions({printRunnerDebug: true})
+                .setGithubContext({apiUrl: 'http://host.docker.internal:8234'})
+            );
+            expect(res.isSuccess).toEqual(true);
+            expect(res.commands.outputs.response).toEqual('fake_response');
+        } finally {
+            server.close();
+        }
     });
 });

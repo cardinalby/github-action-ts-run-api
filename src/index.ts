@@ -1,5 +1,5 @@
 export {DockerTarget} from "./actionRunner/docker/runTarget/DockerTarget";
-export {DockerTargetOptions} from "./actionRunner/docker/runTarget/DockerTargetOptions";
+export {DockerOptions} from "./actionRunner/docker/runTarget/DockerOptions";
 export {DockerRunResult} from "./actionRunner/docker/DockerRunResult";
 
 export {SyncFnTarget} from "./actionRunner/fn/runTarget/SyncFnTarget";

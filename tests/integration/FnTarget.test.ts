@@ -14,6 +14,7 @@ import fs from "fs-extra";
 import tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
 import {RunTarget} from "../../src";
+import {waitFor} from "../utils/waitFor";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
@@ -344,10 +345,6 @@ describe('SyncFnTarget', () => {
         expect(res.isTimedOut).toEqual(false);
     });
 });
-
-async function waitFor(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 describe('AsyncFnTarget', () => {
     it('should restore process envs and exitCode async', async () => {

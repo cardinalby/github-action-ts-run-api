@@ -1,6 +1,3 @@
-import {GithubContextEnvsInterface} from "./GithubContextEnvsInterface";
-import {GithubServiceEnvInterface} from "./GithubServiceEnvInterface";
-
-export interface EnvInterface extends GithubContextEnvsInterface, GithubServiceEnvInterface {
+export interface EnvInterface {
     [name: string]: string|undefined;
 }
