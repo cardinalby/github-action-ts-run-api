@@ -9,12 +9,12 @@ import {CommandsStore} from "../../../runResult/CommandsStore";
 import {DockerCli} from "./dockerCli";
 import assert from "assert";
 import path from "path";
-import {DockerRunResult} from "../DockerRunResult";
+import {DockerRunResult} from "../runResult/DockerRunResult";
 import {getContainerArgs, InputContainerArg} from "./getContainerArgs";
 import {DockerRunMilieuFactory} from "../runMilieu/DockerRunMilieuFactory";
 import {DockerRunMilieuComponentsFactory} from "../runMilieu/DockerRunMilieuComponentsFactory";
 import {ExternalRunnerDir} from "../../../githubServiceFiles/runnerDir/ExternalRunnerDir";
-import {DockerOptions} from "./DockerOptions";
+import {DockerOptionsInterface} from "./DockerOptionsInterface";
 import {Duration} from "../../../utils/Duration";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 import {SpawnAsyncResult} from "../../../utils/spawnAsync";
@@ -27,7 +27,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
 
     static createFromActionYml(
         actionYmlPath: string,
-        dockerOptions?: Partial<DockerOptions>
+        dockerOptions?: Partial<DockerOptionsInterface>
     ): DockerTarget {
         const actionConfig = ActionConfigStore.fromFile(actionYmlPath);
         assert(actionConfig.data.runs.using.startsWith('docker'), "Passed action config runs.using != docker");
@@ -47,17 +47,17 @@ export class DockerTarget implements AsyncRunTargetInterface {
     static createForDockerfile(
         dockerfilePath: string,
         actionConfig?: ActionConfigInterface,
-        dockerOptions?: Partial<DockerOptions>
+        dockerOptions?: Partial<DockerOptionsInterface>
     ): DockerTarget
     static createForDockerfile(
         dockerfilePath: string,
         actionYmlPath?: string,
-        dockerOptions?: Partial<DockerOptions>
+        dockerOptions?: Partial<DockerOptionsInterface>
     ): DockerTarget
     static createForDockerfile(
         dockerfilePath: string,
         actionConfigSource?: ActionConfigSource,
-        dockerOptions?: Partial<DockerOptions>
+        dockerOptions?: Partial<DockerOptionsInterface>
     ): DockerTarget {
         const actionConfig = ActionConfigStore.create(actionConfigSource, false);
         if (actionConfig.data) {

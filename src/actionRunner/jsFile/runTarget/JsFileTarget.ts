@@ -1,5 +1,5 @@
 import {RunOptions} from "../../../runOptions/RunOptions";
-import {JsFileRunResult} from "../JsFileRunResult";
+import {JsFileRunResult} from "../runResult/JsFileRunResult";
 import {spawnChildProc} from "./spawnChildProc";
 import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
 import {CommandsStore} from "../../../runResult/CommandsStore";
@@ -13,6 +13,7 @@ import {ChildProcRunMilieuComponentsFactory} from "../runMilieu/ChildProcRunMili
 import assert from "assert";
 import path from "path";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
+import {JsFileRunResultInterface} from "../runResult/JsFileRunResultInterface";
 
 type ScriptName = 'pre'|'main'|'post';
 
@@ -87,7 +88,7 @@ export class JsFileTarget implements AsyncRunTargetInterface {
         public readonly actionYmlPath: string|undefined,
     ) {}
 
-    async run(options: RunOptions): Promise<JsFileRunResult>
+    async run(options: RunOptions): Promise<JsFileRunResultInterface>
     {
         const runMilieu = (new ChildProcRunMilieuFactory(
             new ChildProcRunMilieuComponentsFactory(options, this.actionConfig)

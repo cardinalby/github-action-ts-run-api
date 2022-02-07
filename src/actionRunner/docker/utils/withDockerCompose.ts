@@ -4,7 +4,7 @@ import os from "os";
 
 /**
  * @description
- * Wrapper around callback that runs docker compose file.
+ * The wrapper that starts/stops a docker compose file around a callback.
  * Performs docker compose up, then runs `callback` function and after its promise fulfilled,
  * runs docker compose down.
  */

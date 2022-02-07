@@ -31,6 +31,7 @@ export class WritableStreamBuffer extends Writable {
         return this.buffer.length;
     };
 
+    // noinspection JSUnusedGlobalSymbols
     public getContents(length?: number): Buffer|false {
         if (!this._size) return false;
 

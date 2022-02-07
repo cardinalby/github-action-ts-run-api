@@ -1,4 +1,4 @@
-export interface DockerOptions {
+export interface DockerOptionsInterface {
     /**
      * @default {true}
      * @description

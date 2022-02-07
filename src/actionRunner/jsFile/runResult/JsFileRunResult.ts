@@ -1,7 +1,7 @@
-import {AbstractRunResult} from "../../runResult/AbstractRunResult";
-import {ParsedCommandsInterface} from "../../runResult/ParsedCommandsInterface";
-import {RunnerDirInterface} from "../../githubServiceFiles/runnerDir/RunnerDirInterface";
-import {SpawnAsyncResult} from "../../utils/spawnAsync";
+import {AbstractRunResult} from "../../../runResult/AbstractRunResult";
+import {ParsedCommandsInterface} from "../../../runResult/ParsedCommandsInterface";
+import {RunnerDirInterface} from "../../../githubServiceFiles/runnerDir/RunnerDirInterface";
+import {SpawnAsyncResult} from "../../../utils/spawnAsync";
 
 export class JsFileRunResult extends AbstractRunResult
 {

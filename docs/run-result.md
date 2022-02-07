@@ -120,7 +120,7 @@ result.commands.debugs // ["msg"]
 
 ### 🔹 `commands.secrets`
 
-Array of "secret" commands parsed from stdout.
+Array of "add-mask" commands parsed from stdout.
 <details>
 <summary>Example</summary>
 
@@ -311,21 +311,22 @@ afterEach(deleteAllFakedDirs);
 
 _**ONLY** for `asyncFn` and `syncFn` targets_
 
-Contains a value returned by a tested function. 
+Contains a value returned by a tested function.
+In case of `asyncFn` target, it's a value that promise was fulfilled with.
 
 ### 🔸 `spawnResult`
 
 _**ONLY** for JS file and Docker targets_
 
-Contains a result of `spawnSync` operation:
-* spawning child node process for JS file targets
-* execution `docker run` for Docker target
+Contains a result of a spawning of child process:
+* node process for JS file targets
+* `docker run` for Docker target
 
 ### 🔸 `buildSpawnResult`
 
 _**ONLY** for Docker target_
 
-Contains a result of `spawnSync` operation of `docker build`. 
+Contains a result of spawning of `docker build`. 
 After a second and subsequent `run()` calls can be `undefined`, because image id has been cached.
 
 ### 🔸 `isSuccessBuild`

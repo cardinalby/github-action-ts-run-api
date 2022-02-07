@@ -1,9 +1,10 @@
-import {AbstractRunResult} from "../../runResult/AbstractRunResult";
-import {ParsedCommandsInterface} from "../../runResult/ParsedCommandsInterface";
-import {OptionalRunnerDirInterface} from "../../githubServiceFiles/runnerDir/RunnerDirInterface";
-import {SpawnAsyncResult} from "../../utils/spawnAsync";
+import {AbstractRunResult} from "../../../runResult/AbstractRunResult";
+import {ParsedCommandsInterface} from "../../../runResult/ParsedCommandsInterface";
+import {OptionalRunnerDirInterface} from "../../../githubServiceFiles/runnerDir/RunnerDirInterface";
+import {SpawnAsyncResult} from "../../../utils/spawnAsync";
+import {DockerRunResultInterface} from "./DockerRunResultInterface";
 
-export class DockerRunResult extends AbstractRunResult
+export class DockerRunResult extends AbstractRunResult implements DockerRunResultInterface
 {
     constructor(
         commands: ParsedCommandsInterface,

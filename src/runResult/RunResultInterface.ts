@@ -4,13 +4,58 @@ import {ParsedCommandsInterface} from "./ParsedCommandsInterface";
  * Read more in docs/run-result.md
  */
 export interface RunResultInterface {
+    /**
+     * @description
+     * Exit code
+     * - of a child process (for JS file and Docker targets)
+     * - code set to `process.exitCode` (for a single function target).
+     */
     readonly exitCode: number|undefined;
+
+    /**
+     * @description
+     * Collection of workflow commands parsed from stdout and commmand files
+     * @see https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter
+     */
     readonly commands: ParsedCommandsInterface;
+
+    /**
+     * @description
+     * Data intercepted from stdout of a tested action.
+     */
     readonly stdout: string|undefined;
+
+    /**
+     * @description
+     * Data intercepted from stderr of a tested action.
+     */
     readonly stderr: string|undefined;
+
+    /**
+     * @description
+     * - Error from `spawnSync` result (for JS file and Docker targets)
+     * - Error thrown in `syncFn` and `asyncFn` targets or returned Promise rejected reason for `asyncFn` target.
+     */
     readonly error: Error|undefined;
+
+    /**
+     * @description
+     * Duration of target execution in milliseconds (`number`).
+     * For `asyncFn` target counts as time passed from the moment
+     * of calling a function to the moment when Promise fulfills.
+     */
     readonly durationMs: number;
+
+    /**
+     * @description
+     * - `true` if a target execution took more time than timeout specified in `timeoutMs` property of options;
+     * - `false` otherwise.
+     */
     readonly isTimedOut: boolean;
+
+    /**
+     * `true` if exitCode is 0 (or not set in function) and error is `undefined`; `false` otherwise.
+     */
     readonly isSuccess: boolean;
 
     /**

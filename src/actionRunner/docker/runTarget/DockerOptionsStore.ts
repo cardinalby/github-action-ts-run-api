@@ -1,12 +1,12 @@
 import {AbstractStore} from "../../../utils/AbstractStore";
-import {DockerOptions} from "./DockerOptions";
+import {DockerOptionsInterface} from "./DockerOptionsInterface";
 import {UserInfo} from "os";
 import os from "os";
 
 let userInfo: UserInfo<string>|undefined;
 
-export class DockerOptionsStore extends AbstractStore<DockerOptions> {
-    static create(options?: Partial<DockerOptions>) {
+export class DockerOptionsStore extends AbstractStore<DockerOptionsInterface> {
+    static create(options?: Partial<DockerOptionsInterface>) {
         return (new DockerOptionsStore({
             runUnderCurrentLinuxUser: true,
             network: undefined

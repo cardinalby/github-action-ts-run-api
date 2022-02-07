@@ -12,6 +12,7 @@ import * as os from "os";
 import {RunTarget} from "../../src";
 import * as http from "http";
 import {withDockerCompose} from "../../src/actionRunner/docker/utils/withDockerCompose";
+import {getDockerHostName} from "../../src/actionRunner/docker/utils/getDockerHostName";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
@@ -189,7 +190,7 @@ describe('DockerTarget', () => {
             const res = await RunTarget.dockerFile(
                 'tests/integration/testActions/dockerNetwork/action/Dockerfile'
             ).run(RunOptions.create()
-                .setGithubContext({apiUrl: `http://${DockerCli.getDockerHostName()}:${port}`})
+                .setGithubContext({apiUrl: `http://${getDockerHostName()}:${port}`})
             );
             expect(res.isSuccess).toEqual(true);
             expect(res.commands.outputs.response).toEqual('fake_response');

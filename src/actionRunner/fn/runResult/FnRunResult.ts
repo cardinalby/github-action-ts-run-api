@@ -1,9 +1,11 @@
-import {AbstractRunResult} from "../../runResult/AbstractRunResult";
-import {CommandsStore} from "../../runResult/CommandsStore";
-import {FnExecutionEffectsInterface} from "./runMilieu/FnExecutionEffectsInterface";
+import {AbstractRunResult} from "../../../runResult/AbstractRunResult";
+import {CommandsStore} from "../../../runResult/CommandsStore";
+import {FnExecutionEffectsInterface} from "../runMilieu/FnExecutionEffectsInterface";
+import {FnRunResultInterface} from "./FnRunResultInterface";
 
-export class FnRunResult<R> extends AbstractRunResult
+export class FnRunResult<R> extends AbstractRunResult implements FnRunResultInterface<R>
 {
+    // noinspection JSUnusedGlobalSymbols
     constructor(
         public readonly fnResult: R|undefined,
         error: any,

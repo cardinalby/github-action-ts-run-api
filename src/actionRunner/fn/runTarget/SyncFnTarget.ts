@@ -1,10 +1,11 @@
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 import {AbstractFnTarget} from "./AbstractFnTarget";
-import {FnRunResult} from "../FnRunResult";
+import {FnRunResult} from "../runResult/FnRunResult";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {runSyncFn} from "./runFn";
 import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
 import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
+import {FnRunResultInterface} from "../runResult/FnRunResultInterface";
 
 export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTargetInterface {
     static create<R>(fn: () => R, actionConfig?: ActionConfigInterface): SyncFnTarget<R>;
@@ -19,7 +20,7 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
 
     public isAsync: false = false;
 
-    run(options: RunOptions): FnRunResult<R>
+    run(options: RunOptions): FnRunResultInterface<R>
     {
         const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut, durationMs} = runSyncFn(this.fn, options.timeoutMs);
