@@ -74,7 +74,8 @@ describe('DockerTarget', () => {
                     }
                 }
             }
-        }
+        },
+        60000 // first test, target build is called
     )
 
     test.each([
@@ -120,7 +121,7 @@ describe('DockerTarget', () => {
             }
             expect(res.isSuccess).toEqual(expectSuccess);
             expect(res.isTimedOut).toEqual(expectTimedOut);
-        });
+        }, 15000);
 
     const runUnderCurrentLinuxUserCases = [false];
     if (os.platform() === 'linux') {
@@ -197,7 +198,7 @@ describe('DockerTarget', () => {
         } finally {
             server.close();
         }
-    });
+    }, 20000);
 
     it('should access another container', async () => {
         await withDockerCompose(
@@ -217,5 +218,5 @@ describe('DockerTarget', () => {
                 expect(res.isSuccess).toEqual(true);
                 expect(res.commands.outputs.response).toEqual('fake_response');
             });
-    });
+    }, 30000);
 });
