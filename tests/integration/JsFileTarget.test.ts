@@ -40,7 +40,6 @@ describe('JsActionScriptTarget', () => {
         const target = RunTarget.mainJs(complexActionActionYml);
         const res = await target.run(options);
         if (!inspector.url()) {
-            expect(res.durationMs).toBeLessThan(500);
             expect(res.durationMs).toBeGreaterThanOrEqual(350);
         }
         expect(res.commands.errors).toEqual([]);
