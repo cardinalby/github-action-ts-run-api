@@ -3,7 +3,7 @@ import {JsFileRunResult} from "../JsFileRunResult";
 import {spawnChildProc} from "./spawnChildProc";
 import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
 import {CommandsStore} from "../../../runResult/CommandsStore";
-import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
+import {ActionConfigSource, ActionConfigStore, ActionConfigStoreOptional} from "../../../runOptions/ActionConfigStore";
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 import {ChildProcRunMilieuFactory} from "../runMilieu/ChildProcRunMilieuFactory";
 import os from "os";
@@ -14,44 +14,42 @@ import assert from "assert";
 import path from "path";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 
-type JsFileTargetWithConfig = JsFileTarget<ActionConfigInterface>;
-type JsFileTargetWithOptionalConfig = JsFileTarget<ActionConfigInterface|undefined>;
 type ScriptName = 'pre'|'main'|'post';
 
-export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements AsyncRunTargetInterface {
+export class JsFileTarget implements AsyncRunTargetInterface {
     // noinspection JSUnusedGlobalSymbols
-    static createMain(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTargetWithConfig;
+    static createMain(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createMain(actionYmlPath: string): JsFileTargetWithConfig;
+    static createMain(actionYmlPath: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createMain(actionConfigSource: ActionConfigSource, filePathPrefix?: string): JsFileTargetWithConfig {
+    static createMain(actionConfigSource: ActionConfigSource, filePathPrefix?: string): JsFileTarget {
         return JsFileTarget.createFromConfigRunsKey('main', actionConfigSource, filePathPrefix);
     }
 
     // noinspection JSUnusedGlobalSymbols
-    static createPre(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTargetWithConfig;
+    static createPre(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createPre(actionYmlPath: string): JsFileTargetWithConfig;
+    static createPre(actionYmlPath: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createPre(actionConfigSource: ActionConfigSource, filePathPrefix?: string): JsFileTargetWithConfig {
+    static createPre(actionConfigSource: ActionConfigSource, filePathPrefix?: string): JsFileTarget {
         return JsFileTarget.createFromConfigRunsKey('pre', actionConfigSource, filePathPrefix);
     }
 
     // noinspection JSUnusedGlobalSymbols
-    static createPost(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTargetWithConfig;
+    static createPost(actionConfig: ActionConfigInterface, filePathPrefix: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createPost(actionYmlPath: string): JsFileTargetWithConfig;
+    static createPost(actionYmlPath: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createPost(actionConfigSource: ActionConfigSource, filePathPrefix?: string): JsFileTargetWithConfig {
+    static createPost(actionConfigSource: ActionConfigSource, filePathPrefix?: string): JsFileTarget {
         return JsFileTarget.createFromConfigRunsKey('post', actionConfigSource, filePathPrefix);
     }
 
     // noinspection JSUnusedGlobalSymbols
-    static createForFile(jsFilePath: string, actionConfig?: ActionConfigInterface): JsFileTargetWithOptionalConfig;
+    static createForFile(jsFilePath: string, actionConfig?: ActionConfigInterface): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createForFile(jsFilePath: string, actionYmlPath?: string): JsFileTargetWithOptionalConfig;
+    static createForFile(jsFilePath: string, actionYmlPath?: string): JsFileTarget;
     // noinspection JSUnusedGlobalSymbols
-    static createForFile(jsFilePath: string, actionConfigSource?: ActionConfigSource): JsFileTargetWithOptionalConfig {
+    static createForFile(jsFilePath: string, actionConfigSource?: ActionConfigSource): JsFileTarget {
         const actionConfig = ActionConfigStore.create(actionConfigSource, false);
         return new JsFileTarget(
             jsFilePath,
@@ -64,9 +62,9 @@ export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements
         scriptName: ScriptName,
         actionConfigSource: ActionConfigSource,
         filePathPrefix?: string
-    ): JsFileTargetWithConfig {
+    ): JsFileTarget {
         const actionConfig = ActionConfigStore.create(actionConfigSource, true);
-        assert(actionConfig.data.runs.using.startsWith('node'), "Passed action config is not runs using node");
+        assert(actionConfig.data.runs.using.startsWith('node'), "Passed action config has 'runs' != node");
         let targetFilePath = actionConfig.data.runs[scriptName];
         assert(targetFilePath !== undefined, `Action config doesn't have "${scriptName}" key in "runs" section`);
         if (filePathPrefix === undefined) {
@@ -85,14 +83,14 @@ export class JsFileTarget<AC extends ActionConfigInterface|undefined> implements
 
     protected constructor(
         public readonly jsFilePath: string,
-        public readonly actionConfig: ActionConfigStore<AC>,
+        public readonly actionConfig: ActionConfigStoreOptional,
         public readonly actionYmlPath: string|undefined,
     ) {}
 
     async run(options: RunOptions): Promise<JsFileRunResult>
     {
         const runMilieu = (new ChildProcRunMilieuFactory(
-            new ChildProcRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
+            new ChildProcRunMilieuComponentsFactory(options, this.actionConfig)
         )).createMilieu(options.validate());
         const duration = Duration.startMeasuring();
         const spawnResult = await spawnChildProc(

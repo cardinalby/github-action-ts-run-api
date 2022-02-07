@@ -1,0 +1,10 @@
+version: "3.5"
+services:
+  fake-server:
+    build:
+      context: httpServer
+    ports:
+      - "80:80"
+networks:
+  default:
+    name: testNet

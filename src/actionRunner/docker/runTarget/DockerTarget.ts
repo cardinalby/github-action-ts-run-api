@@ -1,4 +1,8 @@
-import {ActionConfigStore, ActionConfigStoreFilled} from "../../../runOptions/ActionConfigStore";
+import {
+    ActionConfigSource,
+    ActionConfigStore,
+    ActionConfigStoreOptional
+} from "../../../runOptions/ActionConfigStore";
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
 import {CommandsStore} from "../../../runResult/CommandsStore";
@@ -16,54 +20,75 @@ import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterfac
 import {SpawnAsyncResult} from "../../../utils/spawnAsync";
 import {SpawnProc} from "../../../utils/spawnProc";
 import {DockerOptionsStore} from "./DockerOptionsStore";
+import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 
 export class DockerTarget implements AsyncRunTargetInterface {
     static readonly DEFAULT_WORKING_DIR = '/github/workspace';
 
     static createFromActionYml(
         actionYmlPath: string,
-        dockerOptions: Partial<DockerOptions> = {}
+        dockerOptions?: Partial<DockerOptions>
     ): DockerTarget {
         const actionConfig = ActionConfigStore.fromFile(actionYmlPath);
-        assert(actionConfig.data.runs.using.startsWith('docker'), "Passed action config is not runs using docker");
+        assert(actionConfig.data.runs.using.startsWith('docker'), "Passed action config runs.using != docker");
         assert(actionConfig.data.runs.image !== undefined, `Action config doesn't have "image" key in "runs" section`);
-        const dockerFilePath = actionConfig.data.runs.image;
+        const dockerfilePath = actionConfig.data.runs.image;
         const containerArgs = getContainerArgs(actionConfig.data);
-        const dockerOptionsStore = (new DockerOptionsStore({
-            runUnderCurrentLinuxUser: true,
-            network: undefined
-        })).apply(dockerOptions);
-
         return new DockerTarget(
             actionConfig,
             actionYmlPath,
             containerArgs,
-            dockerFilePath,
+            path.resolve(path.dirname(actionYmlPath), dockerfilePath),
             undefined,
-            dockerOptionsStore
+            DockerOptionsStore.create(dockerOptions)
         );
+    }
+
+    static createForDockerfile(
+        dockerfilePath: string,
+        actionConfig?: ActionConfigInterface,
+        dockerOptions?: Partial<DockerOptions>
+    ): DockerTarget
+    static createForDockerfile(
+        dockerfilePath: string,
+        actionYmlPath?: string,
+        dockerOptions?: Partial<DockerOptions>
+    ): DockerTarget
+    static createForDockerfile(
+        dockerfilePath: string,
+        actionConfigSource?: ActionConfigSource,
+        dockerOptions?: Partial<DockerOptions>
+    ): DockerTarget {
+        const actionConfig = ActionConfigStore.create(actionConfigSource, false);
+        if (actionConfig.data) {
+            assert(actionConfig.data.runs.using.startsWith('docker'), "Passed action config runs.using != docker");
+        }
+        return new DockerTarget(
+            actionConfig,
+            typeof actionConfigSource === 'string' ? actionConfigSource : undefined,
+            actionConfig.data ? getContainerArgs(actionConfig.data) : [],
+            dockerfilePath,
+            undefined,
+            DockerOptionsStore.create(dockerOptions)
+        )
     }
 
     public isAsync: true = true;
 
+    // noinspection JSUnusedGlobalSymbols
     protected constructor(
-        public readonly actionConfig: ActionConfigStoreFilled,
-        public readonly actionYmlPath: string,
+        public readonly actionConfig: ActionConfigStoreOptional,
+        public readonly actionYmlPath: string|undefined,
         private readonly containerArgs: (InputContainerArg|string)[],
         private readonly dockerFilePath: string,
         private imageId: string|undefined,
         public readonly dockerOptions: DockerOptionsStore
     ) {
-        assert(actionConfig.data.runs.image !== undefined, `Action config doesn't have "image" key in "runs" section`);
-        this.dockerFilePath = actionConfig.data.runs.image;
-        this.containerArgs = getContainerArgs(actionConfig.data);
     }
 
     async build(printDebug: boolean = false): Promise<SpawnAsyncResult> {
-        const workdir = path.resolve(path.dirname(this.actionYmlPath));
         const spawnResult = await DockerCli.build(
-            workdir,
-            path.resolve(workdir, this.dockerFilePath),
+            this.dockerFilePath,
             printDebug
         );
         printDebug && SpawnProc.debugError(spawnResult);
@@ -105,7 +130,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
         }
 
         const runMilieu = (new DockerRunMilieuFactory(
-            new DockerRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
+            new DockerRunMilieuComponentsFactory(options, this.actionConfig)
         )).createMilieu(options.validate());
         const effectiveInputs = this.actionConfig.getDefaultInputs().apply(options.inputs.data);
         const args = this.containerArgs.map(arg => arg instanceof InputContainerArg
@@ -113,19 +138,19 @@ export class DockerTarget implements AsyncRunTargetInterface {
             : arg
         );
         const duration = Duration.startMeasuring();
-        const spawnResult = await DockerCli.run(
-            this.imageId,
-            runMilieu.env,
-            runMilieu.volumes,
-            options.workingDir || DockerTarget.DEFAULT_WORKING_DIR,
-            this.dockerOptions.getCurrentUserForRun(),
-            this.dockerOptions.data.network,
-            args,
-            options.timeoutMs,
-            options.outputOptions.data.printRunnerDebug,
-            options.outputOptions.shouldPrintStdout,
-            options.outputOptions.data.printStderr,
-        );
+        const spawnResult = await DockerCli.runAndWait({
+            imageId: this.imageId,
+            env: runMilieu.env,
+            volumes: runMilieu.volumes,
+            workdir: options.workingDir || DockerTarget.DEFAULT_WORKING_DIR,
+            user: this.dockerOptions.getUserForRun(),
+            network: this.dockerOptions.data.network,
+            args: args,
+            timeoutMs: options.timeoutMs,
+            printDebug: options.outputOptions.data.printRunnerDebug,
+            printStdout: options.outputOptions.shouldPrintStdout,
+            printStderr: options.outputOptions.data.printStderr,
+        });
         const durationMs = duration.measureMs();
         try {
             if (spawnResult.stderr && !options.outputOptions.data.printStderr) {

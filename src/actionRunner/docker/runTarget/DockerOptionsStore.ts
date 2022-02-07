@@ -6,8 +6,15 @@ import os from "os";
 let userInfo: UserInfo<string>|undefined;
 
 export class DockerOptionsStore extends AbstractStore<DockerOptions> {
-    getCurrentUserForRun(): string|undefined {
-        if (os.platform() !== 'linux') {
+    static create(options?: Partial<DockerOptions>) {
+        return (new DockerOptionsStore({
+            runUnderCurrentLinuxUser: true,
+            network: undefined
+        })).apply(options || {});
+    }
+
+    getUserForRun(): string|undefined {
+        if (!this._data.runUnderCurrentLinuxUser || os.platform() !== 'linux') {
             return undefined;
         }
         if (userInfo === undefined) {

@@ -1,5 +1,5 @@
 import {RunOptions} from "../../../runOptions/RunOptions";
-import {ActionConfigStoreFilled} from "../../../runOptions/ActionConfigStore";
+import {ActionConfigStoreOptional} from "../../../runOptions/ActionConfigStore";
 import {RunnerDirsCollection} from "../../../githubServiceFiles/RunnerDirsCollection";
 import {DockerRunnerDirsInterface} from "./DockerRunnerDirsInterface";
 import {BaseRunMilieuComponentsFactory} from "../../../runMilieu/BaseRunMilieuComponentsFactory";
@@ -26,10 +26,9 @@ export class DockerRunMilieuComponentsFactory implements DockerRunMilieuComponen
 
     constructor(
         public options: RunOptions,
-        public actionConfig: ActionConfigStoreFilled,
-        public actionYmlPath: string|undefined
+        public actionConfig: ActionConfigStoreOptional,
     ) {
-        this.baseComponentsFactory = new BaseRunMilieuComponentsFactory(options, actionConfig, actionYmlPath);
+        this.baseComponentsFactory = new BaseRunMilieuComponentsFactory(options, actionConfig);
     }
 
     prepareRunnerDirs(): RunnerDirsCollection<DockerRunnerDirsInterface> {

@@ -7,7 +7,6 @@ import {ActionConfigStoreOptional} from "../runOptions/ActionConfigStore";
 import {BaseRunnerDirsInterface} from "./BaseRunnerDirsInterface";
 import {FakeFilesCollection} from "../githubServiceFiles/FakeFilesCollection";
 import {EnvStore} from "../runOptions/EnvStore";
-import path from "path";
 import {mapToObject} from "../utils/collections";
 import {BaseRunMilieuComponentsFactoryInterface} from "./BaseRunMilieuComponentsFactoryInterface";
 import {GithubContextStore} from "../runOptions/GithubContextStore";
@@ -16,8 +15,7 @@ import {GithubServiceEnvStore} from "../runOptions/GithubServiceEnvStore";
 export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFactoryInterface {
     constructor(
         public options: RunOptions,
-        public actionConfig: ActionConfigStoreOptional,
-        public actionYmlPath: string|undefined
+        public actionConfig: ActionConfigStoreOptional
     ) {}
 
     prepareRunnerDirs(): RunnerDirsCollection<BaseRunnerDirsInterface> {
@@ -74,12 +72,8 @@ export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFa
     addGithubServiceEnvToEnv(envStore: EnvStore) {
         let githubServiceEnv = this.options.githubServiceEnv;
         if (this.options.shouldFakeMinimalGithubRunnerEnv) {
-            let actionYmlPathEnvValue = undefined;
-            if (this.actionConfig?.data?.runs?.using === 'composite' && this.actionYmlPath) {
-                actionYmlPathEnvValue = path.resolve(path.dirname(this.actionYmlPath));
-            }
             githubServiceEnv = (new GithubServiceEnvStore())
-                .fakeMinimalRunnerEnv(actionYmlPathEnvValue)
+                .fakeMinimalRunnerEnv()
                 .apply(this.options.githubServiceEnv.data);
         }
         envStore.apply(githubServiceEnv.data);

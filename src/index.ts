@@ -1,6 +1,7 @@
 export {DockerTarget} from "./actionRunner/docker/runTarget/DockerTarget";
 export {DockerOptions} from "./actionRunner/docker/runTarget/DockerOptions";
 export {DockerRunResult} from "./actionRunner/docker/DockerRunResult";
+export {withDockerCompose} from "./actionRunner/docker/utils/withDockerCompose"
 
 export {SyncFnTarget} from "./actionRunner/fn/runTarget/SyncFnTarget";
 export {AsyncFnTarget} from "./actionRunner/fn/runTarget/AsyncFnTarget";

@@ -16,5 +16,6 @@ export abstract class RunTarget {
     static mainJs = JsFileTarget.createMain;
     static preJs = JsFileTarget.createPre;
     static postJs = JsFileTarget.createPost;
-    static docker = DockerTarget.createFromActionYml;
+    static dockerAction = DockerTarget.createFromActionYml;
+    static dockerFile = DockerTarget.createForDockerfile;
 }

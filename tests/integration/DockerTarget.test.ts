@@ -11,16 +11,17 @@ import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
 import * as os from "os";
 import {RunTarget} from "../../src";
 import * as http from "http";
+import {withDockerCompose} from "../../src/actionRunner/docker/utils/withDockerCompose";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
 
 describe('DockerTarget', () => {
-    const target = RunTarget.docker(dockerActionYml);
+    const target = RunTarget.dockerAction(dockerActionYml);
 
     if (!DockerCli.isInstalled() || process.env.SKIP_DOCKER_TARGET_TEST === 'true') {
         test.only('Docker is not installed, skip tests', () => {
-            expect(target.actionConfig.data.name).toEqual('tttteeeessstt');
+            expect(target.actionConfig.data?.name).toEqual('tttteeeessstt');
         })
     }
 
@@ -127,7 +128,7 @@ describe('DockerTarget', () => {
     test.each(runUnderCurrentLinuxUserCases)(
         'should run with runUnderCurrentLinuxUser: %s',
         async runUnderCurrentLinuxUser => {
-            const res = await RunTarget.docker(
+            const res = await RunTarget.dockerAction(
                 dockerActionYml, { runUnderCurrentLinuxUser: runUnderCurrentLinuxUser }
             ).run(RunOptions.create()
                 .setInputs({input1: 'abc', action: 'user_out'})
@@ -141,7 +142,7 @@ describe('DockerTarget', () => {
 
     it('should handle build error', async () => {
         const res = await RunTarget
-            .docker('tests/integration/testActions/dockerActionInvalid/action.yml')
+            .dockerAction('tests/integration/testActions/dockerActionInvalid/action.yml')
             .run(RunOptions.create().setOutputOptions({printRunnerDebug: false}));
         expect(res.error).not.toBeUndefined();
         expect(res.exitCode).not.toEqual(0);
@@ -171,7 +172,8 @@ describe('DockerTarget', () => {
         expect(res.commands.outputs).toEqual({out1: 'abc'})
     });
 
-    it('should use network', async () => {
+    it('should access host', async () => {
+        const port = 8234;
         const server = http.createServer((req, res) => {
             if (req.url === '/repos/cardinalby/github-action-ts-run-api/releases') {
                 res.writeHead(200);
@@ -180,19 +182,39 @@ describe('DockerTarget', () => {
                 res.writeHead(404);
                 res.end();
             }
-        }).listen(8234);
+        }).listen(port);
 
         try {
-            const res = await RunTarget.docker(
-                'tests/integration/testActions/dockerNetwork/action/action.yml'
+            // noinspection HttpUrlsUsage
+            const res = await RunTarget.dockerFile(
+                'tests/integration/testActions/dockerNetwork/action/Dockerfile'
             ).run(RunOptions.create()
-                .setOutputOptions({printRunnerDebug: true})
-                .setGithubContext({apiUrl: 'http://host.docker.internal:8234'})
+                .setGithubContext({apiUrl: `http://${DockerCli.getDockerHostName()}:${port}`})
             );
             expect(res.isSuccess).toEqual(true);
             expect(res.commands.outputs.response).toEqual('fake_response');
         } finally {
             server.close();
         }
+    });
+
+    it('should access another container', async () => {
+        await withDockerCompose(
+            'tests/integration/testActions/dockerNetwork/docker-compose.yml',
+            async () =>
+            {
+                const network = 'testNet';
+                const serverContainer = 'fake-server';
+                // noinspection HttpUrlsUsage
+                const res = await RunTarget.dockerFile(
+                    'tests/integration/testActions/dockerNetwork/action/Dockerfile',
+                    undefined,
+                    {network: network}
+                ).run(RunOptions.create()
+                    .setGithubContext({apiUrl: `http://${serverContainer}:80`})
+                );
+                expect(res.isSuccess).toEqual(true);
+                expect(res.commands.outputs.response).toEqual('fake_response');
+            });
     });
 });

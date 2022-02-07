@@ -15,7 +15,7 @@ export abstract class AbstractFnTarget<R> {
 
     protected createMilieu(options: RunOptions): FnRunMilieu {
         return (new FnRunMilieuFactory(
-            new BaseRunMilieuComponentsFactory(options, this.actionConfig, this.actionYmlPath)
+            new BaseRunMilieuComponentsFactory(options, this.actionConfig)
         )).createMilieu(options.validate());
     }
 }
