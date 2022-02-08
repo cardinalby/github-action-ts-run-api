@@ -153,8 +153,16 @@ See _"Stubbing GitHub API by HTTP server container"_ example below.
 
 ## Testing techniques
 
+### 💡 Stubbing GitHub API by local NodeJS HTTP server
+
+This approach relates to stubbing any external service:
+* Read base API URL from environment variable, use default if variable is not set
+* For GitHub API there are dedicated `GITHUB_API_URL`, `GITHUB_SERVER_URL`, `GITHUB_GRAPHQL_URL`
+  [variables](../run-options.md#-setshouldfakeminimalgithubrunnerenv).
+* Start local HTTP stub server, pass its address to the needed env variable.
+
 <details>
-<summary>Stubbing GitHub API by local NodeJS HTTP server</summary>
+<summary>Show example code</summary>
 
 _entrypoint.sh_:
 
@@ -190,10 +198,19 @@ try {
     server.close();
 }
 ```
+
+You can find actual working code in [DockerTarget.test.ts](../../tests/integration/DockerTarget.test.ts).
 </details>
 
+### 💡 Stubbing GitHub API by HTTP server container
+
+It's the similar approach to the described above:
+- Use a docker container defined as a service in docker-compose.yml to run your stub server. 
+- Define a named network in docker-compose.yml.
+- Attach an action container to the network and make requests to the stub service by name.
+
 <details>
-<summary>Stubbing GitHub API by HTTP server container</summary>
+<summary>Show example code</summary>
 
 _entrypoint.sh_:
 
@@ -239,10 +256,8 @@ await withDockerCompose(
         assert(res.commands.outputs.out1 === 'fake_response');
 });
 ```
+
+You can find actual working code in [DockerTarget.test.ts](../../tests/integration/DockerTarget.test.ts).
 </details>
-
-
-
-
 
 ### [👈 Back to overview of targets](../run-targets.md)

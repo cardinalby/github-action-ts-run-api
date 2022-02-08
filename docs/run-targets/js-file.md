@@ -78,8 +78,16 @@ attached to the parent process. It helps you to debug a spawned child process.
 
 ## Testing techniques
 
+### 💡 Stubbing GitHub API by local NodeJS HTTP server
+
+This approach relates to stubbing any external service:
+* Read base API URL from environment variable, use default if variable is not set
+* For GitHub API there are dedicated `GITHUB_API_URL`, `GITHUB_SERVER_URL`, `GITHUB_GRAPHQL_URL` 
+[variables](../run-options.md#-setshouldfakeminimalgithubrunnerenv).
+* Start local HTTP stub server, pass its address to the needed env variable.
+
 <details>
-<summary>Stubbing GitHub API by local NodeJS HTTP server</summary>
+<summary>Example code</summary>
 
 _main.js_:
 
@@ -123,6 +131,8 @@ try {
     server.close();
 }
 ```
+
+You can find actual working code in [JsFileTarget.test.ts](../../tests/integration/JsFileTarget.test.ts).
 </details>
 
 ### [👈 Back to overview of targets](../run-targets.md)
