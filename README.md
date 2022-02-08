@@ -56,6 +56,11 @@ npm i github-action-ts-run-api --save-dev
 - [Run options](./docs/run-options.md)
 - [Run result](./docs/run-result.md)
 
+
+### Other information:
+
+* [Testing of GitHub Actions](https://dev.to/cardinalby/github-actions-testing-h3h) article.
+
 ## Quick examples
 
 The following examples show using the library with TypeScript.
@@ -202,7 +207,3 @@ console.log(
 * [git-get-release-action](https://github.com/cardinalby/git-get-release-action/blob/master/tests/integration/action.test.ts)
 * [schema-validator-action](https://github.com/cardinalby/schema-validator-action/blob/master/tests/integration/main.test.ts)
 * [js-eval-action](https://github.com/cardinalby/js-eval-action/blob/master/tests/integration/cliAction.test.ts)
-
-### Other information:
-
-* [GitHub Actions testing](https://dev.to/cardinalby/github-actions-testing-h3h) article
