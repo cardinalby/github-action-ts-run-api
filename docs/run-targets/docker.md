@@ -137,13 +137,13 @@ Usage examples can be found in [DockerTarget.test.ts](../../tests/integration/Do
 
 ## Utilities
 
-#### 📌 `getDockerHostName()`
+#### 📌 [`getDockerHostName()`](../../src/actionRunner/docker/utils/getDockerHostName.ts)
 
 Returns the host that can be used inside container to access the Docker host machine.
 
 See _"Stubbing GitHub API by local NodeJS HTTP server"_ example below.
 
-#### 📌 `withDockerCompose()`
+#### 📌 [`withDockerCompose()`](../../src/actionRunner/docker/utils/withDockerCompose.ts)
 
 The wrapper that starts/stops a docker compose file around a callback.
 Performs _docker compose up_, then runs `callback` function and after its promise fulfilled,
