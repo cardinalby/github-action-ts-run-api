@@ -59,7 +59,7 @@ npm i github-action-ts-run-api --save-dev
 
 ### Other information:
 
-* [Testing of GitHub Actions](https://dev.to/cardinalby/github-actions-testing-h3h) article.
+* [Testing of GitHub Actions](https://cardinalby.github.io/blog/post/github-actions/testing/1-testing-of-github-actions-intro/) article.
 
 ## Quick examples
 
