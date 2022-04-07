@@ -3,6 +3,7 @@
 import {RunOptions} from "../../../src/runOptions/RunOptions";
 import {FakeFsOptionsInterface} from "../../../src/runOptions/FakeFsOptionsInterface";
 import {OutputOptionsInterface} from "../../../src/runOptions/OutputOptionsInterface";
+import {StdoutTransform} from "../../../src/runOptions/StdoutTransform";
 
 describe('RunOptions', () => {
     it('should create from obj and clone', () => {
@@ -39,7 +40,8 @@ describe('RunOptions', () => {
             expect(o.shouldFakeMinimalGithubRunnerEnv).toEqual(true);
             expect(o.outputOptions.data).toEqual({
                 parseStdoutCommands: false,
-                printStdout: undefined,
+                printStdout: true,
+                stdoutTransform: undefined,
                 printStderr: true,
                 printRunnerDebug: false
             } as OutputOptionsInterface);
@@ -60,6 +62,7 @@ describe('RunOptions', () => {
         cloned.setOutputOptions({
             printStderr: true,
             printStdout: false,
+            stdoutTransform: StdoutTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
             printRunnerDebug: false
         }, false);
@@ -78,6 +81,7 @@ describe('RunOptions', () => {
         expect(cloned.outputOptions.data).toEqual({
             printStderr: true,
             printStdout: false,
+            stdoutTransform: StdoutTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
             printRunnerDebug: false
         });
@@ -88,7 +92,8 @@ describe('RunOptions', () => {
         expect(options.state.data).toEqual({s1: 'v3'});
         expect(options.outputOptions.data).toEqual({
             parseStdoutCommands: false,
-            printStdout: undefined,
+            printStdout: true,
+            stdoutTransform: undefined,
             printStderr: true,
             printRunnerDebug: false
         } as OutputOptionsInterface);
@@ -106,7 +111,8 @@ describe('RunOptions', () => {
 
         expect(options.outputOptions.data).toEqual({
             printStderr: true,
-            printStdout: undefined,
+            printStdout: true,
+            stdoutTransform: undefined,
             parseStdoutCommands: true,
             printRunnerDebug: false
         } as OutputOptionsInterface);

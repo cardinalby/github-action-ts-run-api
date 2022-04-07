@@ -15,6 +15,8 @@ import tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
 import {RunTarget} from "../../src";
 import {waitFor} from "../utils/waitFor";
+import {StdoutTransform} from "../../src/runOptions/StdoutTransform";
+import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
@@ -83,6 +85,32 @@ describe('SyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
+    });
+
+    it('should transform stdout', async () => {
+        const options = RunOptions.create({
+            outputOptions: {
+                printStdout: true,
+                stdoutTransform: StdoutTransform.SANITIZE_COMMANDS
+            }
+        });
+        const interceptor = StdoutInterceptor.start(false, StdoutTransform.NONE, true);
+        try {
+            RunTarget.syncFn(() => {
+                core.error('err%msg1');
+                core.info('info_msg');
+                process.stdout.write('::set-output na');
+                process.stdout.write('me=out3::out3_val' + os.EOL);
+            }).run(options);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(interceptor.interceptedStdout).toEqual(
+                '⦂⦂error⦂⦂err%25msg1' + os.EOL +
+                'info_msg' + os.EOL +
+                '⦂⦂set-output name=out3⦂⦂out3_val' + os.EOL
+            );
+        } finally {
+            interceptor.unHook();
+        }
     });
 
     test.each([5, 6])('should set github service envs', async runNumber => {

@@ -28,7 +28,8 @@ export class RunOptions
         const defaultOutputHandlingOptions: OutputOptionsInterface = {
             parseStdoutCommands: true,
             printStderr: true,
-            printStdout: undefined,
+            printStdout: true,
+            stdoutTransform: undefined,
             printRunnerDebug: false
         }
         return new RunOptions(

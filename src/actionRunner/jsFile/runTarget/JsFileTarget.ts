@@ -98,13 +98,17 @@ export class JsFileTarget implements AsyncRunTargetInterface {
             this.jsFilePath,
             options,
             runMilieu.env,
-            options.outputOptions.shouldPrintStdout,
+            options.outputOptions.data.printStdout,
+            options.outputOptions.stdoutTransform,
             options.outputOptions.data.printStderr
         );
+        const durationMs = duration.measureMs();
         if ((spawnResult.stderr && !options.outputOptions.data.printStderr) || spawnResult.error) {
             SpawnProc.debugError(spawnResult);
         }
-        const durationMs = duration.measureMs();
+        if (options.outputOptions.data.printRunnerDebug) {
+            process.stdout.write(`Process finished with status code = ${spawnResult.status}` + os.EOL);
+        }
         try {
             const commands = spawnResult.stdout && options.outputOptions.data.parseStdoutCommands
                 ? StdoutCommandsExtractor.extract(spawnResult.stdout)

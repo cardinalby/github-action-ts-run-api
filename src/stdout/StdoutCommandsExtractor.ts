@@ -1,18 +1,19 @@
 import {CommandsStore, CommandInterface} from "../runResult/CommandsStore";
-import {unescapeCommandValue, unescapePropertyValue} from "../utils/commandsEscaping";
+import {parseStdoutCommand} from "./parseStdoutCommand";
 
 export class StdoutCommandsExtractor {
     private _unprocessedLine = '';
-    private _commands = new CommandsStore();
 
     static extract(stdoutData: string): CommandsStore {
-        const extractor = new StdoutCommandsExtractor();
+        const commandsStore = new CommandsStore();
+        const extractor = new StdoutCommandsExtractor(cmd => {
+            commandsStore.addCommand(cmd);
+        });
         extractor.onStdoutData(stdoutData);
-        return extractor.commands;
+        return commandsStore;
     }
 
-    get commands(): CommandsStore {
-        return this._commands;
+    constructor(public readonly onCommand: (cmd: CommandInterface) => void) {
     }
 
     onStdoutData(data: string) {
@@ -21,40 +22,13 @@ export class StdoutCommandsExtractor {
         if (lines.length > 1) {
             for (let i = 0; i < lines.length - 1; ++i) {
                 if (lines[i]) {
-                    const cmd = StdoutCommandsExtractor.parseStdoutCommand(lines[i]);
+                    const cmd = parseStdoutCommand(lines[i]);
                     if (cmd !== undefined) {
-                        this._commands.addCommand(cmd);
+                        this.onCommand(cmd);
                     }
                 }
             }
             this._unprocessedLine = lines[lines.length - 1];
-        }
-    }
-
-    static parseStdoutCommand(str: string): CommandInterface | undefined {
-        const cmdRegexp = /^::([A-Za-z0-9\-_.]+?)(\s.+)?::(.*)?$/m;
-        const regexpResult = cmdRegexp.exec(str);
-        if (!regexpResult) {
-            return undefined;
-        }
-        // noinspection JSUnusedLocalSymbols
-        const [cmd, cmdName, cmdProperties, cmdMessage] = regexpResult;
-        let properties: { [key: string]: string } = {};
-        if (cmdProperties) {
-            cmdProperties.trimLeft().split(',').forEach(expression => {
-                const expressionParts = expression.split('=');
-                if (expressionParts.length === 2) {
-                    let [propKey, propValue] = expressionParts;
-                    propValue = unescapePropertyValue(propValue);
-                    properties[propKey] = propValue;
-                }
-            })
-        }
-
-        return {
-            command: cmdName,
-            properties,
-            message: cmdMessage ? unescapeCommandValue(cmdMessage) : undefined
         }
     }
 }

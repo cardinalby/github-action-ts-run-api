@@ -21,7 +21,9 @@ export class FnRunMilieuFactory {
                 process.chdir(options.workingDir);
             }
             const stdoutInterceptor = StdoutInterceptor.start(
-                options.outputOptions.shouldPrintStdout, options.outputOptions.data.printStderr
+                options.outputOptions.data.printStdout,
+                options.outputOptions.stdoutTransform,
+                options.outputOptions.data.printStderr
             );
             const fnRunMilieu = new FnRunMilieu(
                 runnerFs.files,

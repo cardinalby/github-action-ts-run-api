@@ -1,6 +1,6 @@
-import {StdoutCommandsExtractor} from "../../../src/stdout/StdoutCommandsExtractor";
+import {parseStdoutCommand} from "../../../src/stdout/parseStdoutCommand";
 
-describe('StdoutCommandsExtractor', () => {
+describe('parseStdoutCommand', () => {
     test.each([
         ['::warning::warning%0Dmsg', {name: 'warning', msg: "warning\rmsg", props: {}}],
         ['::ABC::m%25sg', {name: 'ABC', msg: "m%sg", props: {}}],
@@ -12,7 +12,7 @@ describe('StdoutCommandsExtractor', () => {
     ])(
         'should parse',
         (str, expected) => {
-            const cmd = StdoutCommandsExtractor.parseStdoutCommand(str);
+            const cmd = parseStdoutCommand(str);
             if (expected !== undefined) {
                 expect(cmd).not.toBeUndefined();
                 if (cmd) {

@@ -6,6 +6,7 @@ import {runAsyncFn} from "./runFn";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
 import {FnRunResultInterface} from "../runResult/FnRunResultInterface";
+import os from "os";
 
 export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements AsyncRunTargetInterface {
     static create<R>(fn: () => Promise<R>, actionConfig?: ActionConfigInterface): AsyncFnTarget<R>;
@@ -25,6 +26,9 @@ export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements As
         const {fnResult, error, timedOut, durationMs} = await runAsyncFn(this.fn, options.timeoutMs);
         try {
             const effects = runMilieu.getEffects(options.outputOptions.data.parseStdoutCommands);
+            if (options.outputOptions.data.printRunnerDebug) {
+                process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
+            }
             return new FnRunResult<R>(fnResult, error, durationMs, timedOut, effects);
         } finally {
             runMilieu.restore();

@@ -1,3 +1,5 @@
+import {StdoutTransform} from "./StdoutTransform";
+
 export interface OutputOptionsInterface {
     /**
      * @default {true}
@@ -6,11 +8,22 @@ export interface OutputOptionsInterface {
     parseStdoutCommands: boolean;
 
     /**
-     * @default {undefined}
-     * if undefined, stdout will be printed only if process.env.GITHUB_ACTIONS != 'true'
-     * (so as not to accidentally interfere with github commands if run in GitHub CI)
+     * Sets what should be printed to stdout from tested action stdout
+     * true: print tested action stdout directly to the runner stdout
+     * false: print nothing
+     *
+     * @default {true}
      */
-    printStdout: boolean|undefined;
+    printStdout: boolean;
+
+    /**
+     * Sets the way stdout will be transformed before printing (if printStdout == true)
+     * undefined:
+     *    if process.env.GITHUB_ACTIONS == 'true' then {StdoutTransform.SANITIZE_COMMANDS}
+     *    if process.env.GITHUB_ACTIONS != 'true' then {StdoutTransform.NONE}
+     * @default {undefined}
+     */
+    stdoutTransform: StdoutTransform|undefined;
 
     /**
      * @default {true}

@@ -2,6 +2,7 @@ import {spawn, SpawnSyncReturns} from "child_process";
 import {URL} from "node:url";
 import {WritableStreamBuffer} from "./WritableStreamBuffer";
 import {Duration} from "./Duration";
+import {getTransformStream, StdoutTransform} from "../runOptions/StdoutTransform";
 
 export interface SpawnAsyncOptions {
     timeout?: number;
@@ -11,6 +12,12 @@ export interface SpawnAsyncOptions {
      * @default false
      */
     printStdout?: boolean,
+    /**
+     * Sets the way stdout will be transformed before printing (if printStdout == true)
+     *
+     * @default {StdoutTransform.NONE}
+     */
+    stdoutTransform?: StdoutTransform;
     /**
      * @default false
      */
@@ -52,8 +59,11 @@ export async function spawnAsync(
     }
 
     if (options.printStdout) {
-        child.stdout.pipe(process.stdout);
+        const transformStream = getTransformStream(options.stdoutTransform || StdoutTransform.NONE);
+        const src = transformStream ? child.stdout.pipe(transformStream) : child.stdout;
+        src.pipe(process.stdout);
     }
+
     const stdoutBuffer = new WritableStreamBuffer();
     child.stdout.pipe(stdoutBuffer);
 

@@ -6,6 +6,7 @@ import {runSyncFn} from "./runFn";
 import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface";
 import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
 import {FnRunResultInterface} from "../runResult/FnRunResultInterface";
+import os from "os";
 
 export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTargetInterface {
     static create<R>(fn: () => R, actionConfig?: ActionConfigInterface): SyncFnTarget<R>;
@@ -26,6 +27,9 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
         const {fnResult, error, timedOut, durationMs} = runSyncFn(this.fn, options.timeoutMs);
         try {
             const effects = runMilieu.getEffects(options.outputOptions.data.parseStdoutCommands);
+            if (options.outputOptions.data.printRunnerDebug) {
+                process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
+            }
             return new FnRunResult(fnResult, error, durationMs, timedOut, effects);
         } finally {
             runMilieu.restore();

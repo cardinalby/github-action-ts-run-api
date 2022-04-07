@@ -148,7 +148,8 @@ export class DockerTarget implements AsyncRunTargetInterface {
             args: args,
             timeoutMs: options.timeoutMs,
             printDebug: options.outputOptions.data.printRunnerDebug,
-            printStdout: options.outputOptions.shouldPrintStdout,
+            printStdout: options.outputOptions.data.printStdout,
+            stdoutTransform: options.outputOptions.stdoutTransform,
             printStderr: options.outputOptions.data.printStderr,
         });
         const durationMs = duration.measureMs();

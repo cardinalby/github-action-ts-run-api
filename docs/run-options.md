@@ -19,9 +19,10 @@ const options = RunOptions.create({
     inputs: {a: 'val'},
     // Result outputOptions will be: 
     // { 
-    //     parseStdoutCommands: true,  // stays default 
+    //     parseStdoutCommands: true,  // stays default
     //     printStderr: false, 
-    //     printStdout: undefined,     // stays default
+    //     printStdout: true,          // stays default
+    //     stdoutTransform: undefined  // stays default
     //     printRunnerDebug: false     // stays default
     // }
     outputOptions: { printStderr: false }
@@ -189,15 +190,26 @@ The following env variables will be set:
 Set or modify action output handling options. Receives an object with optional properties if you
 want to update only some properties.
 
-| Property              | Type                     | Description                                                                                                                                                                                   | Default     |
-|-----------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| `parseStdoutCommands` | boolean                  | If `false` commands will not be parsed from stdout                                                                                                                                            | `true`      |
-| `printStdout`         | boolean &#124; undefined | Print action stdout.<br> if `undefined`, stdout will be printed only if `process.env.GITHUB_ACTIONS != 'true'` (so as not to accidentally interfere with github commands if run in GitHub CI) | `undefined` |
-| `printStderr`         | boolean                  | Print action stderr to process stderr                                                                                                                                                         | `true`      |
-| `printRunnerDebug`    | boolean                  | Print additional debug information                                                                                                                                                            | `false`     |
+| Property            | Type                                                                      | Description                                                                                                           | Default     |
+|---------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-------------|
+| parseStdoutCommands | boolean                                                                   | If `false` commands will not be parsed from stdout                                                                    | `true`      |
+| printStdout         | boolean                                                                   | Print action stdout to process stdout.                                                                                | `true`      |
+| stdoutTransform     | [StdoutTransform](../src/runOptions/StdoutTransform.ts) &#124; undefined; | The way stdout will be transformed before printing. If `undefined`, behavior depends on `process.env.GITHUB_ACTIONS`  | `undefined` |
+| printStderr         | boolean                                                                   | Print action stderr to process stderr                                                                                 | `true`      |
+| printRunnerDebug    | boolean                                                                   | Print additional debug information                                                                                    | `false`     |
 
-⚠️ If you use `printStdout == true` on GitHub Actions runner, it will lead to passing all commands of a tested
-action directly to the GitHub runner, which is probably an undesired behavior.
+#### stdoutTransform option
+
+The option has effect only if _printStdout_ is `true`.
+
+|                                     | Value             | Description                                                                                                                   | 
+|-------------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `StdoutTransform.NONE`              | `"none"`          | Print action's stdout directly to the process stdout                                                                          |
+| `StdoutTransform.SANITIZE_COMMANDS` | `"sanitize_cmds"` | Detect commands start "::" and replace with "⦂⦂" so as not to accidentally interfere with github commands if run in GitHub CI |
+| _(default)_                         | `undefined`       | If `process.env.GITHUB_ACTIONS` is `true` then `"sanitize_cmds"`, else `"none"`                                               |
+
+⚠️ If you use `printStdout === true` and `stdoutTransform == "none"` on GitHub Actions runner, it will lead to passing 
+all commands of a tested action directly to the GitHub runner, which is probably an undesired behavior.
 
 ```ts
 // has defaults as in table above
@@ -206,10 +218,11 @@ const options = RunOptions.create()
     .setOutputOptions({parseStdoutCommands: false})
     // replace all output options
     .setOutputOptions({
-        parseStdoutCommands: 'true',
-        printStdout: 'true',
-        printStderr: 'true',
-        printRunnerDebug: 'true'
+        parseStdoutCommands: true,
+        printStdout: true,
+        stdoutTransform: StdoutTransform.SANITIZE_COMMANDS,
+        printStderr: true,
+        printRunnerDebug: true
     }, false);
 ```
 
