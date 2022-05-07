@@ -67,6 +67,10 @@ export async function spawnAsync(
     const stdoutBuffer = new WritableStreamBuffer();
     child.stdout.pipe(stdoutBuffer);
 
+    if (options.printStderr) {
+        child.stdout.pipe(process.stderr);
+    }
+
     const stderrBuffer = new WritableStreamBuffer();
     child.stderr.pipe(stderrBuffer);
 
