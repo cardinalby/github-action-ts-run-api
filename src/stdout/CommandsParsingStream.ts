@@ -14,6 +14,11 @@ export class CommandsParsingStream extends Writable {
         this.on('close', () => this._isClosed = true)
     }
 
+    // noinspection JSUnusedGlobalSymbols
+    get closed() {
+        return this._isClosed;
+    }
+
     async waitUntilClosed(): Promise<void> {
         if (this._isClosed) {
             return;

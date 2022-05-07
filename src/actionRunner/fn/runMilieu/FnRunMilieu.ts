@@ -25,6 +25,7 @@ export class FnRunMilieu {
 
     getEffects(): FnExecutionEffectsInterface {
         const baseEffects = this._baseRunMilieu.getEffects(os.EOL);
+        this.stdoutInterceptor.finishCommandsParsing();
         return {
             ...baseEffects,
             stdoutCommands: this.stdoutInterceptor.parsedCommands.data,

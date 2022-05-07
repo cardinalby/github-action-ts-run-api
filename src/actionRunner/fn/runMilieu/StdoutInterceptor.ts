@@ -64,10 +64,6 @@ export class StdoutInterceptor {
                 }
             })
         }
-        if (this._commandsCollector.stdoutParsingStream) {
-            this._commandsCollector.stdoutParsingStream.end();
-            this._commandsCollector.stdoutParsingStream.destroy();
-        }
         // We use unHook() signal to
         // send the remaining data from this._stderrTransformStream to stdout
         if (this._stderrTransformStream) {
@@ -78,11 +74,8 @@ export class StdoutInterceptor {
                 }
             })
         }
-        if (this._commandsCollector.stderrParsingStream) {
-            this._commandsCollector.stderrParsingStream.end();
-            this._commandsCollector.stderrParsingStream.destroy();
-        }
 
+        this.finishCommandsParsing();
         this._unhook();
     }
 
@@ -92,6 +85,17 @@ export class StdoutInterceptor {
 
     get interceptedStderr(): string {
         return this._stderrData;
+    }
+
+    finishCommandsParsing() {
+        if (this._commandsCollector.stdoutParsingStream && !this._commandsCollector.stdoutParsingStream.closed) {
+            this._commandsCollector.stdoutParsingStream.end();
+            this._commandsCollector.stdoutParsingStream.destroy();
+        }
+        if (this._commandsCollector.stderrParsingStream && !this._commandsCollector.stderrParsingStream.closed) {
+            this._commandsCollector.stderrParsingStream.end();
+            this._commandsCollector.stderrParsingStream.destroy();
+        }
     }
 
     get parsedCommands(): CommandsStore {
