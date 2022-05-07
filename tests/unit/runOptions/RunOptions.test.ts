@@ -3,7 +3,7 @@
 import {RunOptions} from "../../../src/runOptions/RunOptions";
 import {FakeFsOptionsInterface} from "../../../src/runOptions/FakeFsOptionsInterface";
 import {OutputOptionsInterface} from "../../../src/runOptions/OutputOptionsInterface";
-import {StdoutTransform} from "../../../src/runOptions/StdoutTransform";
+import {OutputTransform} from "../../../src/runOptions/OutputTransform";
 
 describe('RunOptions', () => {
     it('should create from obj and clone', () => {
@@ -42,6 +42,7 @@ describe('RunOptions', () => {
                 parseStdoutCommands: false,
                 printStdout: true,
                 stdoutTransform: undefined,
+                stderrTransform: undefined,
                 printStderr: true,
                 printRunnerDebug: false
             } as OutputOptionsInterface);
@@ -62,7 +63,8 @@ describe('RunOptions', () => {
         cloned.setOutputOptions({
             printStderr: true,
             printStdout: false,
-            stdoutTransform: StdoutTransform.SANITIZE_COMMANDS,
+            stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
+            stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
             printRunnerDebug: false
         }, false);
@@ -81,7 +83,8 @@ describe('RunOptions', () => {
         expect(cloned.outputOptions.data).toEqual({
             printStderr: true,
             printStdout: false,
-            stdoutTransform: StdoutTransform.SANITIZE_COMMANDS,
+            stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
+            stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
             printRunnerDebug: false
         });
@@ -94,6 +97,7 @@ describe('RunOptions', () => {
             parseStdoutCommands: false,
             printStdout: true,
             stdoutTransform: undefined,
+            stderrTransform: undefined,
             printStderr: true,
             printRunnerDebug: false
         } as OutputOptionsInterface);
@@ -113,6 +117,7 @@ describe('RunOptions', () => {
             printStderr: true,
             printStdout: true,
             stdoutTransform: undefined,
+            stderrTransform: undefined,
             parseStdoutCommands: true,
             printRunnerDebug: false
         } as OutputOptionsInterface);

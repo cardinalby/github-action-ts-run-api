@@ -1,4 +1,4 @@
-import {StdoutTransform} from "./StdoutTransform";
+import {OutputTransform} from "./OutputTransform";
 
 export interface OutputOptionsInterface {
     /**
@@ -19,17 +19,26 @@ export interface OutputOptionsInterface {
     /**
      * Sets the way stdout will be transformed before printing (if printStdout == true)
      * undefined:
-     *    if process.env.GITHUB_ACTIONS == 'true' then {StdoutTransform.SANITIZE_COMMANDS}
-     *    if process.env.GITHUB_ACTIONS != 'true' then {StdoutTransform.NONE}
+     *    if process.env.GITHUB_ACTIONS == 'true' then {OutputTransform.SANITIZE_COMMANDS}
+     *    if process.env.GITHUB_ACTIONS != 'true' then {OutputTransform.NONE}
      * @default {undefined}
      */
-    stdoutTransform: StdoutTransform|undefined;
+    stdoutTransform: OutputTransform|undefined;
 
     /**
      * @default {true}
      * Print action stderr to process stderr
      */
     printStderr: boolean;
+
+    /**
+     * Sets the way stderr will be transformed before printing (if printStderr == true)
+     * undefined:
+     *    if process.env.GITHUB_ACTIONS == 'true' then {OutputTransform.SANITIZE_COMMANDS}
+     *    if process.env.GITHUB_ACTIONS != 'true' then {OutputTransform.NONE}
+     * @default {undefined}
+     */
+    stderrTransform: OutputTransform|undefined;
 
     /**
      * @default {false}

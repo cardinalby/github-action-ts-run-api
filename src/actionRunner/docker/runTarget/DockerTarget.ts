@@ -151,6 +151,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
             printStdout: options.outputOptions.data.printStdout,
             stdoutTransform: options.outputOptions.stdoutTransform,
             printStderr: options.outputOptions.data.printStderr,
+            stderrTransform: options.outputOptions.stderrTransform
         });
         const durationMs = duration.measureMs();
         try {

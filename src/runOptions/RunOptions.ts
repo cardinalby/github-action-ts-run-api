@@ -30,6 +30,7 @@ export class RunOptions
             printStderr: true,
             printStdout: true,
             stdoutTransform: undefined,
+            stderrTransform: undefined,
             printRunnerDebug: false
         }
         return new RunOptions(

@@ -23,7 +23,8 @@ export class FnRunMilieuFactory {
             const stdoutInterceptor = StdoutInterceptor.start(
                 options.outputOptions.data.printStdout,
                 options.outputOptions.stdoutTransform,
-                options.outputOptions.data.printStderr
+                options.outputOptions.data.printStderr,
+                options.outputOptions.stderrTransform
             );
             const fnRunMilieu = new FnRunMilieu(
                 runnerFs.files,

@@ -2,7 +2,7 @@ import {spawn, SpawnSyncReturns} from "child_process";
 import {URL} from "node:url";
 import {WritableStreamBuffer} from "./WritableStreamBuffer";
 import {Duration} from "./Duration";
-import {getTransformStream, StdoutTransform} from "../runOptions/StdoutTransform";
+import {getTransformStream, OutputTransform} from "../runOptions/OutputTransform";
 
 export interface SpawnAsyncOptions {
     timeout?: number;
@@ -15,13 +15,20 @@ export interface SpawnAsyncOptions {
     /**
      * Sets the way stdout will be transformed before printing (if printStdout == true)
      *
-     * @default {StdoutTransform.NONE}
+     * @default {OutputTransform.NONE}
      */
-    stdoutTransform?: StdoutTransform;
+    stdoutTransform?: OutputTransform;
     /**
      * @default false
      */
     printStderr?: boolean
+
+    /**
+     * Sets the way stderr will be transformed before printing (if printStderr == true)
+     *
+     * @default {OutputTransform.NONE}
+     */
+    stderrTransform?: OutputTransform;
 }
 
 export interface SpawnAsyncResult extends SpawnSyncReturns<string> {
@@ -58,21 +65,29 @@ export async function spawnAsync(
         timedOut: false
     }
 
-    if (options.printStdout) {
-        const transformStream = getTransformStream(options.stdoutTransform || StdoutTransform.NONE);
-        const src = transformStream ? child.stdout.pipe(transformStream) : child.stdout;
-        src.pipe(process.stdout);
+    const pipeOutput = (
+        childOutput: NodeJS.ReadableStream,
+        processOutput: NodeJS.WritableStream,
+        print: boolean,
+        transformPrint: OutputTransform
+    ): WritableStreamBuffer => {
+        if (print) {
+            const transformStream = getTransformStream(transformPrint);
+            const src = transformStream ? childOutput.pipe(transformStream) : childOutput;
+            src.pipe(processOutput);
+        }
+        const buffer = new WritableStreamBuffer();
+        childOutput.pipe(buffer);
+        return buffer;
     }
 
-    const stdoutBuffer = new WritableStreamBuffer();
-    child.stdout.pipe(stdoutBuffer);
+    const stdoutBuffer = pipeOutput(
+        child.stdout, process.stdout, !!options.printStdout, options.stdoutTransform || OutputTransform.NONE
+    );
 
-    if (options.printStderr) {
-        child.stdout.pipe(process.stderr);
-    }
-
-    const stderrBuffer = new WritableStreamBuffer();
-    child.stderr.pipe(stderrBuffer);
+    const stderrBuffer = pipeOutput(
+        child.stderr, process.stderr, !!options.printStderr, options.stderrTransform || OutputTransform.NONE
+    );
 
     return new Promise(resolve => {
         const killTimeout = options.timeout && setTimeout(() => {

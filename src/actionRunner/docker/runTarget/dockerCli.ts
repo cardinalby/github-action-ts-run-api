@@ -4,7 +4,7 @@ import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
 import os from "os";
 import {spawnAsync, SpawnAsyncResult} from "../../../utils/spawnAsync";
 import path from "path";
-import {StdoutTransform} from "../../../runOptions/StdoutTransform";
+import {OutputTransform} from "../../../runOptions/OutputTransform";
 
 function debugSpawnArgs(args: readonly string[]) {
     const charsToEscape = /(["'$`\\])/g;
@@ -32,8 +32,9 @@ export namespace DockerCli {
         timeoutMs?: number;
         printDebug?: boolean;
         printStdout?: boolean;
-        stdoutTransform: StdoutTransform,
+        stdoutTransform: OutputTransform;
         printStderr?: boolean;
+        stderrTransform: OutputTransform;
     }
 
     export function isInstalled(): boolean {
@@ -95,7 +96,7 @@ export namespace DockerCli {
             {
                 timeout: options.timeoutMs,
                 printStdout: options.printStdout || false,
-                stdoutTransform: options.stdoutTransform || StdoutTransform.NONE,
+                stdoutTransform: options.stdoutTransform || OutputTransform.NONE,
                 printStderr: options.printStderr || false
             }
         );

@@ -100,7 +100,8 @@ export class JsFileTarget implements AsyncRunTargetInterface {
             runMilieu.env,
             options.outputOptions.data.printStdout,
             options.outputOptions.stdoutTransform,
-            options.outputOptions.data.printStderr
+            options.outputOptions.data.printStderr,
+            options.outputOptions.stderrTransform
         );
         const durationMs = duration.measureMs();
         if ((spawnResult.stderr && !options.outputOptions.data.printStderr) || spawnResult.error) {

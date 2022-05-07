@@ -15,7 +15,7 @@ import tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
 import {RunTarget} from "../../src";
 import {waitFor} from "../utils/waitFor";
-import {StdoutTransform} from "../../src/runOptions/StdoutTransform";
+import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
@@ -71,13 +71,19 @@ describe('SyncFnTarget', () => {
             process.stdout.write('::set-output na');
             process.stdout.write('me=out3::out3_val' + os.EOL + '::debug::de');
             process.stdout.write('bug_msg2' + os.EOL);
+            // TODO: Undocumented, but GitHub also parses stderr and looks for commands
+            process.stderr.write('::set-output name=out4::out4_val' + os.EOL);
         }).run(options);
         const commands = res.commands;
         expect(commands.errors).toEqual(['err%msg1', 'err%msg2']);
         expect(commands.warnings).toEqual(["warning\rmsg"]);
         expect(commands.notices).toEqual(['notice:msg1', 'notice:msg2']);
         expect(commands.debugs).toEqual(['debug_msg1', 'debug_msg2']);
-        expect(commands.outputs).toEqual({'out1': 'out1_val', 'out2': 'out2_val', 'out3': 'out3_val'});
+        expect(commands.outputs).toEqual({
+            'out1': 'out1_val',
+            'out2': 'out2_val',
+            'out3': 'out3_val'
+        });
         expect(commands.secrets).toEqual(['secret1', 'secret2']);
         expect(commands.echo).toEqual('on');
         expect(res.exitCode).toBeUndefined();
@@ -87,20 +93,23 @@ describe('SyncFnTarget', () => {
         expect(res.isSuccess).toEqual(true);
     });
 
-    it('should transform stdout', async () => {
+    it('should transform stdout and stderr', async () => {
         const options = RunOptions.create({
             outputOptions: {
                 printStdout: true,
-                stdoutTransform: StdoutTransform.SANITIZE_COMMANDS
+                printStderr: true,
+                stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
+                stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             }
         });
-        const interceptor = StdoutInterceptor.start(false, StdoutTransform.NONE, true);
+        const interceptor = StdoutInterceptor.start(true, OutputTransform.NONE, true, OutputTransform.NONE);
         try {
             RunTarget.syncFn(() => {
                 core.error('err%msg1');
                 core.info('info_msg');
                 process.stdout.write('::set-output na');
                 process.stdout.write('me=out3::out3_val' + os.EOL);
+                process.stderr.write('::set-output name=out4::out4_val' + os.EOL);
             }).run(options);
             await new Promise(resolve => setTimeout(resolve, 0));
             expect(interceptor.interceptedStdout).toEqual(
@@ -108,6 +117,7 @@ describe('SyncFnTarget', () => {
                 'info_msg' + os.EOL +
                 '⦂⦂set-output name=out3⦂⦂out3_val' + os.EOL
             );
+            expect(interceptor.interceptedStderr).toEqual('⦂⦂set-output name=out4⦂⦂out4_val' + os.EOL);
         } finally {
             interceptor.unHook();
         }

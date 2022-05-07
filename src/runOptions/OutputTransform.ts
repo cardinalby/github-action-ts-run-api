@@ -1,7 +1,7 @@
 import {Duplex} from "stream";
 import {CommandsSanitizerStream} from "../stdout/CommandsSanitizerStream";
 
-export enum StdoutTransform {
+export enum OutputTransform {
     /**
      * Print action stdout directly to the process stdout
      */
@@ -13,9 +13,9 @@ export enum StdoutTransform {
     SANITIZE_COMMANDS = 'sanitize_cmds'
 }
 
-export function getTransformStream(transform: StdoutTransform): Duplex|undefined {
+export function getTransformStream(transform: OutputTransform): Duplex|undefined {
     switch (transform) {
-        case StdoutTransform.SANITIZE_COMMANDS: return new CommandsSanitizerStream();
+        case OutputTransform.SANITIZE_COMMANDS: return new CommandsSanitizerStream();
     }
     return undefined;
 }

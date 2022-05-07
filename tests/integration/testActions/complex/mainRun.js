@@ -32,6 +32,8 @@ async function run() {
         process.stdout.write('::set-output na');
         process.stdout.write('me=out3::out3_val' + os.EOL + '::debug::de');
         process.stdout.write('bug_msg2' + os.EOL);
+        // Undocumented, but GitHub also parses stderr and looks for commands
+        process.stderr.write('::set-output name=out4::out4_val' + os.EOL);
     }
 
     if (core.getBooleanInput('sendFileCommands', {required: true})) {

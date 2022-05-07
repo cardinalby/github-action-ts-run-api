@@ -190,26 +190,28 @@ The following env variables will be set:
 Set or modify action output handling options. Receives an object with optional properties if you
 want to update only some properties.
 
-| Property            | Type                                                                      | Description                                                                                                           | Default     |
-|---------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-------------|
-| parseStdoutCommands | boolean                                                                   | If `false` commands will not be parsed from stdout                                                                    | `true`      |
-| printStdout         | boolean                                                                   | Print action stdout to process stdout.                                                                                | `true`      |
-| stdoutTransform     | [StdoutTransform](../src/runOptions/StdoutTransform.ts) &#124; undefined; | The way stdout will be transformed before printing. If `undefined`, behavior depends on `process.env.GITHUB_ACTIONS`  | `undefined` |
-| printStderr         | boolean                                                                   | Print action stderr to process stderr                                                                                 | `true`      |
-| printRunnerDebug    | boolean                                                                   | Print additional debug information                                                                                    | `false`     |
+| Property            | Type                                                                      | Description                                                                                                          | Default     |
+|---------------------|---------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|-------------|
+| parseStdoutCommands | boolean                                                                   | If `false` commands will not be parsed from stdout                                                                   | `true`      |
+| printStdout         | boolean                                                                   | Print action stdout to process stdout.                                                                               | `true`      |
+| stdoutTransform     | [OutputTransform](../src/runOptions/OutputTransform.ts) &#124; undefined; | The way stdout will be transformed before printing. If `undefined`, behavior depends on `process.env.GITHUB_ACTIONS` | `undefined` |
+| printStderr         | boolean                                                                   | Print action stderr to process stderr                                                                                | `true`      |
+| stderrTransform     | [OutputTransform](../src/runOptions/OutputTransform.ts) &#124; undefined; | The way stderr will be transformed before printing. If `undefined`, behavior depends on `process.env.GITHUB_ACTIONS` | `undefined` |
+| printRunnerDebug    | boolean                                                                   | Print additional debug information                                                                                   | `false`     |
 
-#### stdoutTransform option
+#### stdoutTransform and stderrTransform options
 
-The option has effect only if _printStdout_ is `true`.
+The options have effect only if corresponding _printStdout_ or _printStderr_ option is `true`.
 
 |                                     | Value             | Description                                                                                                                   | 
 |-------------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| `StdoutTransform.NONE`              | `"none"`          | Print action's stdout directly to the process stdout                                                                          |
-| `StdoutTransform.SANITIZE_COMMANDS` | `"sanitize_cmds"` | Detect commands start "::" and replace with "⦂⦂" so as not to accidentally interfere with github commands if run in GitHub CI |
+| `OutputTransform.NONE`              | `"none"`          | Print action's stdout/stderr directly to the process stdout/stderr                                                            |
+| `OutputTransform.SANITIZE_COMMANDS` | `"sanitize_cmds"` | Detect commands start "::" and replace with "⦂⦂" so as not to accidentally interfere with github commands if run in GitHub CI |
 | _(default)_                         | `undefined`       | If `process.env.GITHUB_ACTIONS` is `true` then `"sanitize_cmds"`, else `"none"`                                               |
 
 ⚠️ If you use `printStdout === true` and `stdoutTransform == "none"` on GitHub Actions runner, it will lead to passing 
-all commands of a tested action directly to the GitHub runner, which is probably an undesired behavior.
+all commands of a tested action directly to the GitHub runner, which is probably an undesired behavior. 
+The same is true (although not documented by GitHub) for **stderr**.
 
 ```ts
 // has defaults as in table above
@@ -220,8 +222,9 @@ const options = RunOptions.create()
     .setOutputOptions({
         parseStdoutCommands: true,
         printStdout: true,
-        stdoutTransform: StdoutTransform.SANITIZE_COMMANDS,
+        stdoutTransform: OutputTransform.SANITIZE_COMMANDS,      
         printStderr: true,
+        stderrTransform: OutputTransform.SANITIZE_COMMANDS,
         printRunnerDebug: true
     }, false);
 ```

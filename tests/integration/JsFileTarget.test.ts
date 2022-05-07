@@ -3,25 +3,45 @@
 import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
-import {RunTarget} from "../../src";
+import {JsFileRunResultInterface, RunTarget} from "../../src";
 import http from "http";
+import {OutputTransform} from "../../src/runOptions/OutputTransform";
+import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('JsActionScriptTarget', () => {
     it('should run main script', async () => {
-        const res = await RunTarget.mainJs(complexActionActionYml)
-            .run(RunOptions.create()
-                .setEnv({MY_ENV_VAR: 'my_env_value'})
-                .setInputs({sendFileCommands: 'false', setState: 'stateVal'})
-                .setFakeFsOptions({fakeCommandFiles: false})
-            );
+        const interceptor = StdoutInterceptor.start(true, OutputTransform.NONE, true, OutputTransform.NONE);
+        let res: JsFileRunResultInterface;
+        try {
+            res = await RunTarget.mainJs(complexActionActionYml)
+                .run(RunOptions.create()
+                    .setEnv({MY_ENV_VAR: 'my_env_value'})
+                    .setInputs({sendFileCommands: 'false', setState: 'stateVal'})
+                    .setFakeFsOptions({fakeCommandFiles: false})
+                    .setOutputOptions({
+                        printStdout: true,
+                        printStderr: true,
+                        stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
+                        stderrTransform: OutputTransform.SANITIZE_COMMANDS
+                    })
+                );
+            await new Promise(resolve => setTimeout(resolve, 0));
+        } finally {
+            interceptor.unHook();
+        }
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2']);
         expect(res.commands.warnings).toEqual(["warning\rmsg"]);
         expect(res.commands.notices).toEqual(['notice:msg1', 'notice:msg2']);
         expect(res.commands.debugs).toEqual(['my_env_value', 'debug_msg2']);
-        expect(res.commands.outputs).toEqual({'out1': 'out1_val', 'out2': 'out2_val', 'out3': 'out3_val'});
+        expect(res.commands.outputs).toEqual({
+            'out1': 'out1_val',
+            'out2': 'out2_val',
+            'out3': 'out3_val',
+            // TODO: Undocumented, but GitHub also parses stderr and looks for commands
+        });
         expect(res.commands.secrets).toEqual(['secret1', 'secret2']);
         expect(res.commands.echo).toEqual('on');
         expect(res.commands.savedState).toEqual({my_state: 'stateVal'});
@@ -30,6 +50,11 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false)
         expect(res.isSuccess).toEqual(true);
+
+        expect(interceptor.interceptedStdout.includes('::')).toEqual(false);
+        expect(interceptor.interceptedStdout.includes('⦂⦂')).toEqual(true);
+        expect(interceptor.interceptedStderr.includes('::')).toEqual(false);
+        expect(interceptor.interceptedStderr.includes('⦂⦂')).toEqual(true);
     });
 
     it('should respect timeout', async () => {
