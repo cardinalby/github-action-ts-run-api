@@ -20,9 +20,11 @@ const options = RunOptions.create({
     // Result outputOptions will be: 
     // { 
     //     parseStdoutCommands: true,  // stays default
+    //     parseStderrCommands: true,  // stays default
     //     printStderr: false, 
     //     printStdout: true,          // stays default
     //     stdoutTransform: undefined  // stays default
+    //     stderrTransform: undefined  // stays default
     //     printRunnerDebug: false     // stays default
     // }
     outputOptions: { printStderr: false }
@@ -193,6 +195,7 @@ want to update only some properties.
 | Property            | Type                                                                      | Description                                                                                                          | Default     |
 |---------------------|---------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|-------------|
 | parseStdoutCommands | boolean                                                                   | If `false` commands will not be parsed from stdout                                                                   | `true`      |
+| parseStderrCommands | boolean                                                                   | If `false` commands will not be parsed from stderr                                                                   | `true`      |
 | printStdout         | boolean                                                                   | Print action stdout to process stdout.                                                                               | `true`      |
 | stdoutTransform     | [OutputTransform](../src/runOptions/OutputTransform.ts) &#124; undefined; | The way stdout will be transformed before printing. If `undefined`, behavior depends on `process.env.GITHUB_ACTIONS` | `undefined` |
 | printStderr         | boolean                                                                   | Print action stderr to process stderr                                                                                | `true`      |
@@ -221,6 +224,7 @@ const options = RunOptions.create()
     // replace all output options
     .setOutputOptions({
         parseStdoutCommands: true,
+        parseStderrCommands: true,
         printStdout: true,
         stdoutTransform: OutputTransform.SANITIZE_COMMANDS,      
         printStderr: true,

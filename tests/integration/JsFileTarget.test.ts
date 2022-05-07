@@ -40,7 +40,7 @@ describe('JsActionScriptTarget', () => {
             'out1': 'out1_val',
             'out2': 'out2_val',
             'out3': 'out3_val',
-            // TODO: Undocumented, but GitHub also parses stderr and looks for commands
+            'out4': 'out4_val',
         });
         expect(res.commands.secrets).toEqual(['secret1', 'secret2']);
         expect(res.commands.echo).toEqual('on');
@@ -92,7 +92,12 @@ describe('JsActionScriptTarget', () => {
         expect(res.commands.warnings).toEqual(["warning\rmsg"]);
         expect(res.commands.notices).toEqual(['notice:msg1', 'notice:msg2']);
         expect(res.commands.debugs).toEqual(['debug_msg2']);
-        expect(res.commands.outputs).toEqual({'out1': 'out1_val', 'out2': 'out2_val', 'out3': 'out3_val'});
+        expect(res.commands.outputs).toEqual({
+            'out1': 'out1_val',
+            'out2': 'out2_val',
+            'out3': 'out3_val',
+            'out4': 'out4_val',
+        });
         expect(res.commands.secrets).toEqual(['secret1', 'secret2']);
         expect(res.commands.echo).toEqual('on');
         expect(res.commands.savedState).toEqual({});

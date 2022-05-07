@@ -24,7 +24,9 @@ export class FnRunMilieuFactory {
                 options.outputOptions.data.printStdout,
                 options.outputOptions.stdoutTransform,
                 options.outputOptions.data.printStderr,
-                options.outputOptions.stderrTransform
+                options.outputOptions.stderrTransform,
+                options.outputOptions.data.parseStdoutCommands,
+                options.outputOptions.data.parseStderrCommands
             );
             const fnRunMilieu = new FnRunMilieu(
                 runnerFs.files,

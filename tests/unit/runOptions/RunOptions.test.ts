@@ -18,7 +18,8 @@ describe('RunOptions', () => {
             shouldAddProcessEnv: false,
             shouldFakeMinimalGithubRunnerEnv: true,
             outputOptions: {
-                parseStdoutCommands: false
+                parseStdoutCommands: false,
+                parseStderrCommands: false
             },
             timeoutMs: 123,
             env: {e1: 'v1'},
@@ -40,6 +41,7 @@ describe('RunOptions', () => {
             expect(o.shouldFakeMinimalGithubRunnerEnv).toEqual(true);
             expect(o.outputOptions.data).toEqual({
                 parseStdoutCommands: false,
+                parseStderrCommands: false,
                 printStdout: true,
                 stdoutTransform: undefined,
                 stderrTransform: undefined,
@@ -66,6 +68,7 @@ describe('RunOptions', () => {
             stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
             stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
+            parseStderrCommands: true,
             printRunnerDebug: false
         }, false);
 
@@ -86,6 +89,7 @@ describe('RunOptions', () => {
             stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
             stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
+            parseStderrCommands: true,
             printRunnerDebug: false
         });
 
@@ -95,6 +99,7 @@ describe('RunOptions', () => {
         expect(options.state.data).toEqual({s1: 'v3'});
         expect(options.outputOptions.data).toEqual({
             parseStdoutCommands: false,
+            parseStderrCommands: false,
             printStdout: true,
             stdoutTransform: undefined,
             stderrTransform: undefined,
@@ -119,6 +124,7 @@ describe('RunOptions', () => {
             stdoutTransform: undefined,
             stderrTransform: undefined,
             parseStdoutCommands: true,
+            parseStderrCommands: true,
             printRunnerDebug: false
         } as OutputOptionsInterface);
         expect(options.timeoutMs).toEqual(undefined);
@@ -135,6 +141,7 @@ describe('RunOptions', () => {
             rmFakedWorkspaceDirAfterRun: true
         } as FakeFsOptionsInterface);
         expect(options.outputOptions.data.parseStdoutCommands).toEqual(true);
+        expect(options.outputOptions.data.parseStderrCommands).toEqual(true);
     });
 
     it('should set fakeFsOptions', () => {

@@ -2,6 +2,7 @@ import {RunOptions} from "../../../runOptions/RunOptions";
 import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
 import {spawnAsync, SpawnAsyncResult} from "../../../utils/spawnAsync";
 import {OutputTransform} from "../../../runOptions/OutputTransform";
+import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
 
 export async function spawnChildProc(
     jsFilePath: string,
@@ -10,10 +11,11 @@ export async function spawnChildProc(
     printStdout: boolean,
     stdoutTransform: OutputTransform,
     printStderr: boolean,
-    stderrTransform: OutputTransform
+    stderrTransform: OutputTransform,
+    commandsCollector: OutputsCommandsCollector
 ): Promise<SpawnAsyncResult> {
     const resultEnv = {...spawnEnv, PATH: process.env.PATH};
-    return spawnAsync(
+    const res = await spawnAsync(
         'node',
         [jsFilePath],
         {
@@ -23,6 +25,16 @@ export async function spawnChildProc(
             printStdout,
             stdoutTransform,
             printStderr,
-            stderrTransform
+            stderrTransform,
+            onSpawn: child => {
+                if (commandsCollector.stdoutParsingStream) {
+                    child.stdout.pipe(commandsCollector.stdoutParsingStream)
+                }
+                if (commandsCollector.stderrParsingStream) {
+                    child.stderr.pipe(commandsCollector.stderrParsingStream)
+                }
+            }
         });
+    await commandsCollector.waitUntilStreamsAreClosed();
+    return res;
 }

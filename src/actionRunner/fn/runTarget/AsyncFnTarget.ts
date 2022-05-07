@@ -25,7 +25,7 @@ export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements As
         const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut, durationMs} = await runAsyncFn(this.fn, options.timeoutMs);
         try {
-            const effects = runMilieu.getEffects(options.outputOptions.data.parseStdoutCommands);
+            const effects = runMilieu.getEffects();
             if (options.outputOptions.data.printRunnerDebug) {
                 process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
             }

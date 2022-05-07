@@ -1,4 +1,4 @@
-import {ChildProcessWithoutNullStreams, spawn, spawnSync} from "child_process";
+import {ChildProcessWithoutNullStreams, spawnSync} from "child_process";
 import {EnvInterface} from "../../../types/EnvInterface";
 import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
 import os from "os";
@@ -35,6 +35,7 @@ export namespace DockerCli {
         stdoutTransform: OutputTransform;
         printStderr?: boolean;
         stderrTransform: OutputTransform;
+        onSpawn?: (child: ChildProcessWithoutNullStreams) => void;
     }
 
     export function isInstalled(): boolean {
@@ -97,25 +98,10 @@ export namespace DockerCli {
                 timeout: options.timeoutMs,
                 printStdout: options.printStdout || false,
                 stdoutTransform: options.stdoutTransform || OutputTransform.NONE,
-                printStderr: options.printStderr || false
+                printStderr: options.printStderr || false,
+                onSpawn: options.onSpawn
             }
         );
-    }
-
-    export async function run(options: RunOptions): Promise<ChildProcessWithoutNullStreams> {
-        const args = getRunSpawnArgs(options);
-        options.printDebug && debugSpawnArgs(args);
-        const spawnResult = spawn(
-            'docker',
-            args,
-            {
-                timeout: options.timeoutMs
-            }
-        );
-        return new Promise((resolve, reject) => {
-            spawnResult.on('spawn', () => resolve(spawnResult));
-            spawnResult.on('error', err => reject(err));
-        })
     }
 
     export async function composeUp(

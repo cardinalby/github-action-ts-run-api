@@ -8,6 +8,13 @@ export interface OutputOptionsInterface {
     parseStdoutCommands: boolean;
 
     /**
+     * @default {true}
+     * If `false` commands will not be parsed from stderr.
+     * It's not documented, but GitHub parses commands from both stdout and stderr
+     */
+    parseStderrCommands: boolean;
+
+    /**
      * Sets what should be printed to stdout from tested action stdout
      * true: print tested action stdout directly to the runner stdout
      * false: print nothing

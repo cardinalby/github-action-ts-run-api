@@ -1,7 +1,5 @@
 import {RestoreProcessPropsFn} from "./saveProcessProps";
 import {StdoutInterceptor} from "./StdoutInterceptor";
-import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
-import {CommandsStore} from "../../../runResult/CommandsStore";
 import {BaseRunMilieu} from "../../../runMilieu/BaseRunMilieu";
 import {FnExecutionEffectsInterface} from "./FnExecutionEffectsInterface";
 import {FakeFilesCollection} from "../../../githubServiceFiles/FakeFilesCollection";
@@ -25,15 +23,11 @@ export class FnRunMilieu {
         this._baseRunMilieu = new BaseRunMilieu(fakeFiles, runnerDirs, env, fakeFsOptions);
     }
 
-    getEffects(shouldParseStdout: boolean): FnExecutionEffectsInterface {
+    getEffects(): FnExecutionEffectsInterface {
         const baseEffects = this._baseRunMilieu.getEffects(os.EOL);
-        const stdoutCommands = shouldParseStdout
-            ? StdoutCommandsExtractor.extract(this.stdoutInterceptor.interceptedStdout)
-            : new CommandsStore()
-
         return {
             ...baseEffects,
-            stdoutCommands: stdoutCommands.data,
+            stdoutCommands: this.stdoutInterceptor.parsedCommands.data,
             exitCode: process.exitCode,
             stdout: this.stdoutInterceptor.interceptedStdout,
             stderr: this.stdoutInterceptor.interceptedStderr

@@ -27,6 +27,7 @@ export class RunOptions
         }
         const defaultOutputHandlingOptions: OutputOptionsInterface = {
             parseStdoutCommands: true,
+            parseStderrCommands: true,
             printStderr: true,
             printStdout: true,
             stdoutTransform: undefined,

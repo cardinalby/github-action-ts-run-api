@@ -4,7 +4,6 @@ import {
     ActionConfigStoreOptional
 } from "../../../runOptions/ActionConfigStore";
 import {RunOptions} from "../../../runOptions/RunOptions";
-import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
 import {CommandsStore} from "../../../runResult/CommandsStore";
 import {DockerCli} from "./dockerCli";
 import assert from "assert";
@@ -21,6 +20,7 @@ import {SpawnAsyncResult} from "../../../utils/spawnAsync";
 import {SpawnProc} from "../../../utils/spawnProc";
 import {DockerOptionsStore} from "./DockerOptionsStore";
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
+import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
 
 export class DockerTarget implements AsyncRunTargetInterface {
     static readonly DEFAULT_WORKING_DIR = '/github/workspace';
@@ -137,6 +137,10 @@ export class DockerTarget implements AsyncRunTargetInterface {
             ? effectiveInputs.data[arg.inputName] || ''
             : arg
         );
+        const commandsCollector = new OutputsCommandsCollector(
+            options.outputOptions.data.parseStdoutCommands,
+            options.outputOptions.data.parseStderrCommands
+        );
         const duration = Duration.startMeasuring();
         const spawnResult = await DockerCli.runAndWait({
             imageId: this.imageId,
@@ -151,24 +155,30 @@ export class DockerTarget implements AsyncRunTargetInterface {
             printStdout: options.outputOptions.data.printStdout,
             stdoutTransform: options.outputOptions.stdoutTransform,
             printStderr: options.outputOptions.data.printStderr,
-            stderrTransform: options.outputOptions.stderrTransform
+            stderrTransform: options.outputOptions.stderrTransform,
+            onSpawn: child => {
+                if (commandsCollector.stdoutParsingStream) {
+                    child.stdout.pipe(commandsCollector.stdoutParsingStream)
+                }
+                if (commandsCollector.stderrParsingStream) {
+                    child.stderr.pipe(commandsCollector.stderrParsingStream)
+                }
+            }
         });
         const durationMs = duration.measureMs();
+        await commandsCollector.waitUntilStreamsAreClosed();
         try {
             if (spawnResult.stderr && !options.outputOptions.data.printStderr) {
                 SpawnProc.debugError(spawnResult);
             } else if (spawnResult.error) {
                 SpawnProc.debugError(spawnResult);
             }
-            const commands = spawnResult.stdout && options.outputOptions.data.parseStdoutCommands
-                ? StdoutCommandsExtractor.extract(spawnResult.stdout)
-                : new CommandsStore();
             const effects = runMilieu.getEffects();
             if (options.fakeFsOptions.data.fakeCommandFiles) {
-                commands.apply(effects.fileCommands);
+                commandsCollector.commandsStore.apply(effects.fileCommands);
             }
             return new DockerRunResult(
-                commands.data,
+                commandsCollector.commandsStore.data,
                 spawnResult.error,
                 spawnResult.status !== null ? spawnResult.status : undefined,
                 spawnResult.stdout,

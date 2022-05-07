@@ -71,7 +71,7 @@ describe('SyncFnTarget', () => {
             process.stdout.write('::set-output na');
             process.stdout.write('me=out3::out3_val' + os.EOL + '::debug::de');
             process.stdout.write('bug_msg2' + os.EOL);
-            // TODO: Undocumented, but GitHub also parses stderr and looks for commands
+            // Undocumented, but GitHub also parses stderr and looks for commands
             process.stderr.write('::set-output name=out4::out4_val' + os.EOL);
         }).run(options);
         const commands = res.commands;
@@ -82,7 +82,8 @@ describe('SyncFnTarget', () => {
         expect(commands.outputs).toEqual({
             'out1': 'out1_val',
             'out2': 'out2_val',
-            'out3': 'out3_val'
+            'out3': 'out3_val',
+            'out4': 'out4_val'
         });
         expect(commands.secrets).toEqual(['secret1', 'secret2']);
         expect(commands.echo).toEqual('on');

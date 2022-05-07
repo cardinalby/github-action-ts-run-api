@@ -1,4 +1,4 @@
-import {spawn, SpawnSyncReturns} from "child_process";
+import {ChildProcessWithoutNullStreams, spawn, SpawnSyncReturns} from "child_process";
 import {URL} from "node:url";
 import {WritableStreamBuffer} from "./WritableStreamBuffer";
 import {Duration} from "./Duration";
@@ -29,6 +29,11 @@ export interface SpawnAsyncOptions {
      * @default {OutputTransform.NONE}
      */
     stderrTransform?: OutputTransform;
+
+    /**
+     * Callback called after child process was spawned
+     */
+    onSpawn?: (child: ChildProcessWithoutNullStreams) => void;
 }
 
 export interface SpawnAsyncResult extends SpawnSyncReturns<string> {
@@ -52,6 +57,10 @@ export async function spawnAsync(
         env: options.env,
         cwd: options.cwd
     });
+
+    if (options.onSpawn) {
+        options.onSpawn(child);
+    }
 
     const spawnResult: SpawnAsyncResult = {
         error: undefined,

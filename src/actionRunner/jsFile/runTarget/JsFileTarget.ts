@@ -1,8 +1,6 @@
 import {RunOptions} from "../../../runOptions/RunOptions";
 import {JsFileRunResult} from "../runResult/JsFileRunResult";
 import {spawnChildProc} from "./spawnChildProc";
-import {StdoutCommandsExtractor} from "../../../stdout/StdoutCommandsExtractor";
-import {CommandsStore} from "../../../runResult/CommandsStore";
 import {ActionConfigSource, ActionConfigStore, ActionConfigStoreOptional} from "../../../runOptions/ActionConfigStore";
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 import {ChildProcRunMilieuFactory} from "../runMilieu/ChildProcRunMilieuFactory";
@@ -14,6 +12,7 @@ import assert from "assert";
 import path from "path";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 import {JsFileRunResultInterface} from "../runResult/JsFileRunResultInterface";
+import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
 
 type ScriptName = 'pre'|'main'|'post';
 
@@ -93,6 +92,12 @@ export class JsFileTarget implements AsyncRunTargetInterface {
         const runMilieu = (new ChildProcRunMilieuFactory(
             new ChildProcRunMilieuComponentsFactory(options, this.actionConfig)
         )).createMilieu(options.validate());
+
+        const commandsCollector = new OutputsCommandsCollector(
+            options.outputOptions.data.parseStdoutCommands,
+            options.outputOptions.data.parseStderrCommands
+        );
+
         const duration = Duration.startMeasuring();
         const spawnResult = await spawnChildProc(
             this.jsFilePath,
@@ -101,9 +106,11 @@ export class JsFileTarget implements AsyncRunTargetInterface {
             options.outputOptions.data.printStdout,
             options.outputOptions.stdoutTransform,
             options.outputOptions.data.printStderr,
-            options.outputOptions.stderrTransform
+            options.outputOptions.stderrTransform,
+            commandsCollector
         );
         const durationMs = duration.measureMs();
+
         if ((spawnResult.stderr && !options.outputOptions.data.printStderr) || spawnResult.error) {
             SpawnProc.debugError(spawnResult);
         }
@@ -111,15 +118,12 @@ export class JsFileTarget implements AsyncRunTargetInterface {
             process.stdout.write(`Process finished with status code = ${spawnResult.status}` + os.EOL);
         }
         try {
-            const commands = spawnResult.stdout && options.outputOptions.data.parseStdoutCommands
-                ? StdoutCommandsExtractor.extract(spawnResult.stdout)
-                : new CommandsStore();
             const effects = runMilieu.getEffects(os.EOL);
             if (options.fakeFsOptions.data.fakeCommandFiles) {
-                commands.apply(effects.fileCommands);
+                commandsCollector.commandsStore.apply(effects.fileCommands);
             }
             return new JsFileRunResult(
-                commands.data,
+                commandsCollector.commandsStore.data,
                 spawnResult.error,
                 spawnResult.status !== null ? spawnResult.status : undefined,
                 spawnResult.stdout,
