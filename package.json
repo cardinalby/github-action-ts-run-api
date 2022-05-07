@@ -1,6 +1,6 @@
 {
   "name": "github-action-ts-run-api",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Utils for GitHub Action integration and unit testing",
   "main": "./dist",
   "types": "./dist/index.d.ts",
