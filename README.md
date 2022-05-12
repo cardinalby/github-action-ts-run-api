@@ -15,7 +15,7 @@ real GitHub runners every time.
 ## Features
 
 ✅ Supports executing JavaScript and Docker actions.<br>
-✅ Tested under Windows, Linux and macOS locally and on GitHub hosted runners.<br>
+✅ Tested under Windows, Linux and macOS (Node >= 12) locally and on GitHub hosted runners.<br>
 ✅ Works well with Docker Desktop under Windows and macOS (for Docker actions).<br>
 ✅ Can be used with any JavaScript test frameworks or alone.<br>
 ✅ Can execute an explicitly specified js file or _main_, _pre_, _post_ script from `action.yml`.<br>
@@ -167,6 +167,7 @@ try {
     res.cleanUpFakedDirs();
     
     // With Jest you can use this instead:
+    // This code also gets executed on test timeout 
     // afterAll(() => { 
     //     deleteAllFakedDirs(); 
     // });

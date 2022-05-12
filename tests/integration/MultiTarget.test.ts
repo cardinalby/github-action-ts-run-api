@@ -13,11 +13,16 @@ import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore"
 import {getRunnerOs} from "../../src/utils/platformProps";
 import {getNewGithubContext} from "../../src/utils/getNewGithubContext";
 import {RunTargetInterface} from "../../src/runTarget/RunTargetInterface";
+import {deleteAllFakedDirs} from "../../src";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('MultiTarget', () => {
+    afterAll(() => {
+        deleteAllFakedDirs();
+    });
+
     const syncTargets: RunTargetInterface[] = [
         RunTarget.postJs(complexActionActionYml),
         RunTarget.asyncFn(syncPostRun, complexActionActionYml)

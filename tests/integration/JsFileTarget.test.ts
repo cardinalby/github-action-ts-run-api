@@ -3,7 +3,7 @@
 import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
-import {JsFileRunResultInterface, RunTarget} from "../../src";
+import {deleteAllFakedDirs, JsFileRunResultInterface, RunTarget} from "../../src";
 import http from "http";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
@@ -12,6 +12,10 @@ const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('JsActionScriptTarget', () => {
+    afterAll(() => {
+        deleteAllFakedDirs();
+    });
+
     it('should run main script', async () => {
         const interceptor = StdoutInterceptor.start(true, OutputTransform.NONE, true, OutputTransform.NONE);
         let res: JsFileRunResultInterface;

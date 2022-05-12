@@ -22,6 +22,10 @@ const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('SyncFnTarget', () => {
+    afterAll(() => {
+        deleteAllFakedDirs();
+    });
+
     it('should restore process envs and exitCode', () => {
         const envBackup = ProcessEnvVarsBackup.safeSet({AAA: 'aaa'});
         try {

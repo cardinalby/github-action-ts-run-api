@@ -13,7 +13,11 @@ export class OutputsCommandsCollector {
         private parseStdout: boolean,
         private parseStderr: boolean
     ) {
-        const createStream = () => new CommandsParsingStream(cmd => this.commandsStore.addCommand(cmd));
+        const createStream = () => new CommandsParsingStream(
+            cmd => this.commandsStore.addCommand(cmd),
+            // For node < 14
+            {autoDestroy: true}
+        );
         if (parseStdout) {
             this.stdoutParsingStream = createStream();
         }

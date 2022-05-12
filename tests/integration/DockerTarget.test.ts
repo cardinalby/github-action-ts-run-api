@@ -9,7 +9,7 @@ import fs from "fs-extra";
 import path from "path";
 import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
 import * as os from "os";
-import {RunTarget} from "../../src";
+import {deleteAllFakedDirs, RunTarget} from "../../src";
 import * as http from "http";
 import {withDockerCompose} from "../../src/actionRunner/docker/utils/withDockerCompose";
 import {getDockerHostName} from "../../src/actionRunner/docker/utils/getDockerHostName";
@@ -18,6 +18,10 @@ const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
 
 describe('DockerTarget', () => {
+    afterAll(() => {
+        deleteAllFakedDirs();
+    });
+
     const target = RunTarget.dockerAction(dockerActionYml);
 
     if (!DockerCli.isInstalled() || process.env.SKIP_DOCKER_TARGET_TEST === 'true') {
