@@ -104,6 +104,9 @@ export class StdoutInterceptor {
 
     private onStdoutData(str: string): string|undefined {
         this._stdoutData += str;
+        if (this._commandsCollector.stdoutParsingStream) {
+            this._commandsCollector.stdoutParsingStream.write(str, () => {});
+        }
         if (!this._printStdout) {
             return '';
         }
@@ -112,14 +115,14 @@ export class StdoutInterceptor {
             const sanitized = this._stdoutTransformStream.read();
             return sanitized ? sanitized.toString() : '';
         }
-        if (this._commandsCollector.stdoutParsingStream) {
-            this._commandsCollector.stdoutParsingStream.write(str, () => {});
-        }
         return undefined;
     }
 
     private onStderrData(str: string): string|undefined {
         this._stderrData += str;
+        if (this._commandsCollector.stderrParsingStream) {
+            this._commandsCollector.stderrParsingStream.write(str, () => {});
+        }
         if (!this._printStderr) {
             return '';
         }
@@ -127,9 +130,6 @@ export class StdoutInterceptor {
             this._stderrTransformStream.write(str, 'utf8');
             const sanitized = this._stderrTransformStream.read();
             return sanitized ? sanitized.toString() : '';
-        }
-        if (this._commandsCollector.stderrParsingStream) {
-            this._commandsCollector.stderrParsingStream.write(str, () => {});
         }
         return undefined;
     }
