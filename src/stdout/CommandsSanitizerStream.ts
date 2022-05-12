@@ -1,15 +1,12 @@
 import {Transform, TransformCallback} from "stream";
 import os from "os";
+import {chunkToString} from "../utils/streamUtils";
 
 export class CommandsSanitizerStream extends Transform {
     private _unprocessedLine = '';
 
     _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
-        if (Buffer.isBuffer(chunk)) {
-            chunk = (chunk as Buffer).toString("utf8");
-        } else if (encoding !== "utf8") {
-            chunk = Buffer.from(chunk, encoding).toString("utf8");
-        }
+        chunk = chunkToString(chunk, encoding);
         this._unprocessedLine += chunk;
         // I don't know how GitHub runner separates lines: based on os separator or os-independent
         // So I detect both \r\n and \n separators and replace them with os.EOL

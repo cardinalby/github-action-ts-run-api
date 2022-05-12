@@ -1,4 +1,4 @@
-import {CommandsStore} from "../runResult/CommandsStore";
+import {CommandInterface, CommandsStore} from "../runResult/CommandsStore";
 import {CommandsParsingStream} from "./CommandsParsingStream";
 
 /**
@@ -13,16 +13,15 @@ export class OutputsCommandsCollector {
         private parseStdout: boolean,
         private parseStderr: boolean
     ) {
-        const createStream = () => new CommandsParsingStream(
-            cmd => this.commandsStore.addCommand(cmd),
-            // For node < 14
-            {autoDestroy: true}
-        );
+        const createStream = () => new CommandsParsingStream();
+        const addCmdToStore = (cmd: CommandInterface) => this.commandsStore.addCommand(cmd);
         if (parseStdout) {
             this.stdoutParsingStream = createStream();
+            this.stdoutParsingStream.on('data', addCmdToStore);
         }
         if (parseStderr) {
             this.stderrParsingStream = createStream();
+            this.stderrParsingStream.on('data', addCmdToStore);
         }
     }
 

@@ -1,17 +1,23 @@
-import {Writable, WritableOptions} from "stream";
-import {CommandInterface} from "../runResult/CommandsStore";
+import {Transform, TransformCallback} from "stream";
 import {parseStdoutCommand} from "./parseStdoutCommand";
+import {chunkToString} from "../utils/streamUtils";
 
-export class CommandsParsingStream extends Writable {
+/**
+ * emits commands objects
+ * @see CommandInterface
+ */
+export class CommandsParsingStream extends Transform {
     private _unprocessedLine = '';
     private _isClosed: boolean = false;
 
-    constructor(
-        public readonly onCommand: (cmd: CommandInterface) => void,
-        opts?: WritableOptions
-    ) {
-        super(opts);
-        this.on('close', () => this._isClosed = true)
+    constructor() {
+        super({
+            readableObjectMode: true,
+            writableObjectMode: false,
+            // For node < 14
+            autoDestroy: true
+        });
+        this.on('close', () => this._isClosed = true);
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -26,12 +32,8 @@ export class CommandsParsingStream extends Writable {
         return new Promise(resolve => this.on('close', resolve));
     }
 
-    _write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {
-        if (Buffer.isBuffer(chunk)) {
-            chunk = (chunk as Buffer).toString("utf8");
-        } else if (encoding !== "utf8") {
-            chunk = Buffer.from(chunk, encoding).toString("utf8");
-        }
+    _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
+        chunk = chunkToString(chunk, encoding);
         this._unprocessedLine += chunk;
         const lines = this._unprocessedLine.split(/\r?\n/);
         if (lines.length > 1) {
@@ -39,7 +41,7 @@ export class CommandsParsingStream extends Writable {
                 if (lines[i]) {
                     const cmd = parseStdoutCommand(lines[i]);
                     if (cmd !== undefined) {
-                        this.onCommand(cmd);
+                        this.push(cmd);
                     }
                 }
             }

@@ -18,7 +18,7 @@ export interface InitRunOptionsInterface {
     githubServiceEnv?: GithubServiceEnvInterface,
     /** @default {{tmpRootDir: undefined, fakeCommandFiles: true, rmFakedTempDirAfterRub: true, rmFakedWorkspaceDirAfterRun: true}} */
     fakeFsOptions?: Partial<FakeFsOptionsInterface>,
-    /** @default {{parseStdoutCommands: true, printStderr: true, printStdout: true, stdoutTransform: undefined, printRunnerDebug: false }} */
+    /** @default {{parseStdoutCommands: true, printStderr: true, printStdout: true, stdoutTransform: undefined, stderrTransform: undefined, printRunnerDebug: false }} */
     outputOptions?: Partial<OutputOptionsInterface>,
     /**
      * true: add process.env of the current process to target's env
