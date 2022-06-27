@@ -1,28 +1,31 @@
 [![test](https://github.com/cardinalby/github-action-ts-run-api/actions/workflows/test.yml/badge.svg)](https://github.com/cardinalby/github-action-ts-run-api/actions/workflows/test.yml)
 [![publish](https://github.com/cardinalby/github-action-ts-run-api/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/cardinalby/github-action-ts-run-api/actions/workflows/npm-publish.yml)
 
-# JavaScript API for GitHub Action execution and integration/functional testing
+# TypeScript API for GitHub Action execution and integration/functional testing
 
 ## Purpose
 
-🔶 Executing your GitHub action **locally** (or at any other environment).
+🔶 Execute your GitHub action **locally** (or at any other environment).
 
-🔶 Writing integration and functional tests, run them locally and at CI.
+🔶 Write integration and functional tests for an action, run them locally and on CI.
 
-🔶 Having a short feedback loop without pushing and checking it behaviour at 
-real GitHub runners every time.
+🔶 Have a short feedback loop without pushing and checking an action behaviour at real GitHub runners every time you change it.
 
 ## Features
 
-✅ Supports executing JavaScript and Docker actions.<br>
-✅ Tested under Windows, Linux and macOS (Node >= 12) locally and on GitHub hosted runners.<br>
-✅ Works well with Docker Desktop under Windows and macOS (for Docker actions).<br>
-✅ Can be used with any JavaScript test frameworks or alone.<br>
-✅ Can execute an explicitly specified js file or _main_, _pre_, _post_ script from `action.yml`.<br>
-✅ If you need to mock dependencies in a JS action, it can execute and test a separate sync or async JS function, 
-isolating its environment (process env, exitCode and working dir), intercepting _stdout_ and _stderr_ output.<br>
-✅ Has a clear JavaScript API with TypeScript declarations and reasonable defaults<br>
-✅ Provides a uniform way of setting action run options which can be reused for different targets
+✅ Supports executing JavaScript and Docker actions.
+
+✅ Tested under Windows, Linux and macOS (NodeJS >= 12) locally and on GitHub hosted runners.
+
+✅ Works well with Docker Desktop under Windows and macOS.
+
+✅ Can be used together with any JavaScript test frameworks or alone.<br>
+
+✅ Can execute an explicitly specified JS file or _main_, _pre_, _post_ script from `action.yml`.
+
+✅ Can execute a separate sync or async JS function, isolating its environment (process env, exitCode and working dir), intercepting _stdout_ and _stderr_ output for effective dependencies mocking.
+
+✅ Has a clear JavaScript API with TypeScript declarations and reasonable defaults
 
 ### Setting up an action run option includes:
 
