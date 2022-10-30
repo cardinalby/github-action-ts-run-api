@@ -41,6 +41,8 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Check engine
+        run: npm run checkDepsEngineRequirements
       - name: Test
         env:
           SKIP_DOCKER_TARGET_TEST: true
