@@ -13,6 +13,7 @@ import path from "path";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 import {JsFileRunResultInterface} from "../runResult/JsFileRunResultInterface";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
+import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
 
 type ScriptName = 'pre'|'main'|'post';
 
@@ -120,7 +121,11 @@ export class JsFileTarget implements AsyncRunTargetInterface {
         try {
             const effects = runMilieu.getEffects(os.EOL);
             if (options.fakeFsOptions.data.fakeCommandFiles) {
-                commandsCollector.commandsStore.apply(effects.fileCommands);
+                commandsCollector.commandsStore.applyAndMerge(effects.fileCommands);
+            }
+            const warnings = new WarningsArray(...commandsCollector.deprecationWarnings);
+            if (options.outputOptions.data.printWarnings) {
+                warnings.print()
             }
             return new JsFileRunResult(
                 commandsCollector.commandsStore.data,
@@ -131,6 +136,7 @@ export class JsFileTarget implements AsyncRunTargetInterface {
                 durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
+                warnings,
                 spawnResult
             );
         } finally {

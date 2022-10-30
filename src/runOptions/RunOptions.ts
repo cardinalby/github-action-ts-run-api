@@ -32,7 +32,8 @@ export class RunOptions
             printStdout: true,
             stdoutTransform: undefined,
             stderrTransform: undefined,
-            printRunnerDebug: false
+            printRunnerDebug: false,
+            printWarnings: true
         }
         return new RunOptions(
             new InputsStore(init.inputs || {}),

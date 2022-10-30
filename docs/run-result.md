@@ -15,7 +15,7 @@ result object).
 
 ### 🔹 `commands.outputs`
 
-Object with action outputs parsed from stdout. 
+Object with action outputs (parsed both from stdout and from $GITHUB_OUTPUT file). 
 <details>
 <summary>Example</summary>
 
@@ -26,7 +26,7 @@ core.setOutput('out1', 'val1');
 ```
 Output set in bash script (Docker action):
 ```bash
-echo "::set-output name=out1::val1"
+echo "out1=val1" >> "$GITHUB_OUTPUT"
 ```
 Read outputs:
 ```ts
@@ -141,7 +141,7 @@ result.commands.secrets // ["password"]
 
 ### 🔹 `commands.savedState`
 
-Object with saved state values parsed from stdout.
+Object with saved state values (parsed both from stdout and from $GITHUB_STATE file)
 
 <details>
 <summary>Example</summary>
@@ -153,7 +153,7 @@ core.saveState('stateName', 'value');
 ```
 State saved in bash script (Docker action):
 ```bash
-echo "::save-state name=stateName::value"
+echo "stateName=value" >> $GITHUB_STATE
 ```
 Read saved state names and values:
 ```ts
@@ -185,7 +185,7 @@ result.commands.echo // 'on'
 
 ### 🔹 `commands.addedPaths`
 
-Array of "add path" commands parsed from GITHUB_PATH file or from stdout.
+Array of "add path" commands (parsed both from stdout and from $GITHUB_PATH file).
 
 <details>
 <summary>Example</summary>
@@ -207,7 +207,7 @@ result.commands.addedPaths // ['some/path']
 
 ### 🔹 `commands.exportedVars`
 
-Object with variables exported to workflow env parsed from GITHUB_ENV file or from stdout.
+Object with variables exported to workflow env (parsed both from stdout and from $GITHUB_ENV file).
 
 <details>
 <summary>Example</summary>
@@ -287,6 +287,16 @@ Can have value in case of:
    `options.setFakeFsOptions({ rmFakedWorkspaceDirAfterRun: false })`.<br>
    You are supposed to call `result.cleanUpFakedDirs()` at the end of a test by yourself.
 2. You set existing directory as action temp dir: `options.setWorkspaceDir('existing/path')`.
+
+### 🔹 `warnings`
+
+An array of [`Warning`](../src/runResult/warnings/Warning.ts)s containing warnings similar to ones produced by 
+GitHub Runner. Currently, contains only warnings about deprecation 
+([1](https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/), 
+[2](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/)) 
+of some stdout commands. By default, warning messages are printed to stderr at the end of the run. 
+If you want to check them by yourself, you can disable this behavior by 
+`options.setOutputOptions({printWarnings: false})`. 
 
 ### 🔹 `cleanUpFakedDirs()` method
 

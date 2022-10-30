@@ -3,7 +3,7 @@ import {StringKeyValueObj} from "../types/StringKeyValueObj";
 import assert from "assert";
 import {unescapeCommandValue} from "../utils/commandsEscaping";
 
-export function readFileCommandLines(filePath: string, eol: string): string[] {
+function readFileCommandLines(filePath: string, eol: string): string[] {
     if (!fs.existsSync(filePath)) {
         return [];
     }
@@ -14,13 +14,13 @@ export function readFileCommandLines(filePath: string, eol: string): string[] {
     return lines;
 }
 
-export function readExportedVarsFromFileCommand(filePath: string, eol: string): StringKeyValueObj {
+export function readKvPairsFromFileCommand(filePath: string, eol: string): StringKeyValueObj {
     enum ExpectedToken {
         NAME_OR_ONE_LINER, VALUE, VALUE_LINE_OR_FINISH_DELIMITER
     }
 
     const lines = readFileCommandLines(filePath, eol);
-    const exportedVars: StringKeyValueObj = {};
+    const kvPairs: StringKeyValueObj = {};
     let expectedToken: ExpectedToken = ExpectedToken.NAME_OR_ONE_LINER;
     let name: string | undefined = undefined;
     let delimiter: string | undefined = undefined;
@@ -36,13 +36,13 @@ export function readExportedVarsFromFileCommand(filePath: string, eol: string): 
                 }
                 const nameAndValue = line.split('=');
                 if (nameAndValue.length == 2) {
-                    exportedVars[nameAndValue[0]] = nameAndValue[1];
+                    kvPairs[nameAndValue[0]] = nameAndValue[1];
                     name = undefined;
                     value = undefined;
                     expectedToken = ExpectedToken.NAME_OR_ONE_LINER;
                     break;
                 }
-                console.warn('Error parsing GITHUB_ENV commands file. ' +
+                console.warn(`Error parsing ${filePath} commands file. ` +
                     'Expected line is either in VAR=VAL format or VAR<<delimiter. Read line');
                 console.warn(line);
                 break;
@@ -54,7 +54,7 @@ export function readExportedVarsFromFileCommand(filePath: string, eol: string): 
                 assert(delimiter !== undefined);
                 if (line === delimiter) {
                     assert(name !== undefined && value !== undefined);
-                    exportedVars[name] = value;
+                    kvPairs[name] = value;
                     expectedToken = ExpectedToken.NAME_OR_ONE_LINER;
                     name = undefined;
                     value = undefined;
@@ -64,9 +64,9 @@ export function readExportedVarsFromFileCommand(filePath: string, eol: string): 
                 }
         }
     }
-    return exportedVars;
+    return kvPairs;
 }
 
-export function readAddedPathsFromFileCommand(filePath: string, eol: string): string[] {
+export function readValuesFromFileCommand(filePath: string, eol: string): string[] {
     return readFileCommandLines(filePath, eol).map(unescapeCommandValue);
 }

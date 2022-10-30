@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "::set-output name=out1::$1"
+echo "out1=$1" >> "$GITHUB_OUTPUT"
 
 if [ "$INPUT_ACTION" == "sleep" ]; then
   sleep 1
@@ -12,9 +12,10 @@ if [ "$INPUT_ACTION" == "user_out" ]; then
   echo "::set-output name=user_out::$(id -u):$(id -g)"
 fi
 
-echo "::set-output name=out2::$INPUT_INPUT2"
-echo "::set-output name=pwd_out::$(pwd)"
-echo "::set-output name=workspace_out::$GITHUB_WORKSPACE"
+# shellcheck disable=SC2129
+echo "out2=$INPUT_INPUT2" >> "$GITHUB_OUTPUT"
+echo "pwd_out=$(pwd)" >> "$GITHUB_OUTPUT"
+echo "workspace_out=$GITHUB_WORKSPACE" >> "$GITHUB_OUTPUT"
 
 echo "my_path" >> "$GITHUB_PATH"
 {
@@ -28,5 +29,5 @@ echo -n "temp" > "$RUNNER_TEMP/t.txt"
 echo -n "ws" > "$GITHUB_WORKSPACE/w.txt"
 
 if [ -f "$GITHUB_EVENT_PATH" ]; then
-  echo "::set-output name=out_pr_num::$(< "$GITHUB_EVENT_PATH" jq '.pull_request.number')"
+  echo "out_pr_num=$(< "$GITHUB_EVENT_PATH" jq '.pull_request.number')" >> "$GITHUB_OUTPUT"
 fi

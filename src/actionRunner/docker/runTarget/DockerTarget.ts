@@ -21,6 +21,7 @@ import {SpawnProc} from "../../../utils/spawnProc";
 import {DockerOptionsStore} from "./DockerOptionsStore";
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
+import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
 
 export class DockerTarget implements AsyncRunTargetInterface {
     static readonly DEFAULT_WORKING_DIR = '/github/workspace';
@@ -121,6 +122,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
                     options.workspaceDir
                         ? new ExternalRunnerDir(options.workspaceDir)
                         : { existingDirPath: undefined },
+                    new WarningsArray(),
                     buildSpawnResult,
                     undefined,
                     false
@@ -175,7 +177,11 @@ export class DockerTarget implements AsyncRunTargetInterface {
             }
             const effects = runMilieu.getEffects();
             if (options.fakeFsOptions.data.fakeCommandFiles) {
-                commandsCollector.commandsStore.apply(effects.fileCommands);
+                commandsCollector.commandsStore.applyAndMerge(effects.fileCommands);
+            }
+            const warnings = new WarningsArray(...commandsCollector.deprecationWarnings)
+            if (options.outputOptions.data.printWarnings) {
+                warnings.print()
             }
             return new DockerRunResult(
                 commandsCollector.commandsStore.data,
@@ -186,6 +192,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
                 durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
+                warnings,
                 buildSpawnResult,
                 spawnResult,
                 true

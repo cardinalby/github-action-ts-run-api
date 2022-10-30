@@ -13,12 +13,14 @@ import {deleteAllFakedDirs, RunTarget} from "../../src";
 import * as http from "http";
 import {withDockerCompose} from "../../src/actionRunner/docker/utils/withDockerCompose";
 import {getDockerHostName} from "../../src/actionRunner/docker/utils/getDockerHostName";
+import {expectWarningsContains} from "../utils/warnings";
+import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
 
 describe('DockerTarget', () => {
-    afterAll(() => {
+    afterEach(() => {
         deleteAllFakedDirs();
     });
 
@@ -138,12 +140,14 @@ describe('DockerTarget', () => {
                 dockerActionYml, { runUnderCurrentLinuxUser: runUnderCurrentLinuxUser }
             ).run(RunOptions.create()
                 .setInputs({input1: 'abc', action: 'user_out'})
+                .setOutputOptions({printWarnings: false})
             );
             expect(res.isSuccess).toEqual(true);
             const expectedUser = runUnderCurrentLinuxUser
                 ? `${os.userInfo().uid}:${os.userInfo().gid}`
                 : '0:0';
             expect(res.commands.outputs.user_out).toEqual(expectedUser);
+            expectWarningsContains(res.warnings, [StdoutCommandName.SET_OUTPUT]);
         });
 
     it('should handle build error', async () => {
@@ -159,6 +163,7 @@ describe('DockerTarget', () => {
         expect(res.isTimedOut).toEqual(false);
         expect(res.buildSpawnResult).not.toBeUndefined();
         expect(res.spawnResult).toBeUndefined();
+        expect(res.warnings).toHaveLength(0);
     });
 
     it('should handle run error', async () => {
@@ -176,6 +181,7 @@ describe('DockerTarget', () => {
         expect(res.isTimedOut).toEqual(false);
         expect(res.spawnResult).not.toBeUndefined();
         expect(res.commands.outputs).toEqual({out1: 'abc'})
+        expect(res.warnings).toHaveLength(0);
     });
 
     it('should access host', async () => {
@@ -199,6 +205,7 @@ describe('DockerTarget', () => {
             );
             expect(res.isSuccess).toEqual(true);
             expect(res.commands.outputs.response).toEqual('fake_response');
+            expect(res.warnings).toHaveLength(0);
         } finally {
             server.close();
         }
@@ -221,6 +228,7 @@ describe('DockerTarget', () => {
                 );
                 expect(res.isSuccess).toEqual(true);
                 expect(res.commands.outputs.response).toEqual('fake_response');
+                expect(res.warnings).toHaveLength(0);
             });
     }, 30000);
 });

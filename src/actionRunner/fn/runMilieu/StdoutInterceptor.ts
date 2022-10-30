@@ -3,6 +3,7 @@ import {getTransformStream, OutputTransform} from "../../../runOptions/OutputTra
 import {Duplex} from "stream";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
 import {CommandsStore} from "../../../runResult/CommandsStore";
+import {Warning} from "../../../runResult/warnings/Warning";
 
 export class StdoutInterceptor {
     private readonly _printStdout: boolean;
@@ -20,7 +21,7 @@ export class StdoutInterceptor {
         printStderr: boolean,
         stderrTransform: OutputTransform,
         parseStdoutCommands: boolean = false,
-        parseStderrCommands: boolean = false,
+        parseStderrCommands: boolean = false
     ): StdoutInterceptor {
         return new StdoutInterceptor(
             printStdout,
@@ -50,7 +51,10 @@ export class StdoutInterceptor {
             this.onStdoutData.bind(this),
             this.onStderrData.bind(this)
         );
-        this._commandsCollector = new OutputsCommandsCollector(parseStdoutCommands, parseStderrCommands);
+        this._commandsCollector = new OutputsCommandsCollector(
+            parseStdoutCommands,
+            parseStderrCommands
+        );
     }
 
     unHook(): void {
@@ -100,6 +104,10 @@ export class StdoutInterceptor {
 
     get parsedCommands(): CommandsStore {
         return this._commandsCollector.commandsStore;
+    }
+
+    get parserWarnings(): Warning[] {
+        return this._commandsCollector.deprecationWarnings;
     }
 
     private onStdoutData(str: string): string|undefined {

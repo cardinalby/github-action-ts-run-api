@@ -26,6 +26,7 @@ const options = RunOptions.create({
     //     stdoutTransform: undefined  // stays default
     //     stderrTransform: undefined  // stays default
     //     printRunnerDebug: false     // stays default
+    //     printWarnings: true         // stays default
     // }
     outputOptions: { printStderr: false }
 });
@@ -201,6 +202,7 @@ want to update only some properties.
 | printStderr         | boolean                                                                   | Print action stderr to process stderr                                                                                | `true`      |
 | stderrTransform     | [OutputTransform](../src/runOptions/OutputTransform.ts) &#124; undefined; | The way stderr will be transformed before printing. If `undefined`, behavior depends on `process.env.GITHUB_ACTIONS` | `undefined` |
 | printRunnerDebug    | boolean                                                                   | Print additional debug information                                                                                   | `false`     |
+| printWarnings       | boolean                                                                   | Print warnings to stderr (similar to GitHub Runner) at the end of an action run                                      | `true`      |
 
 #### stdoutTransform and stderrTransform options
 
@@ -229,7 +231,8 @@ const options = RunOptions.create()
         stdoutTransform: OutputTransform.SANITIZE_COMMANDS,      
         printStderr: true,
         stderrTransform: OutputTransform.SANITIZE_COMMANDS,
-        printRunnerDebug: true
+        printRunnerDebug: true,
+        printWarnings: false
     }, false);
 ```
 

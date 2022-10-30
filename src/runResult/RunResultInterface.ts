@@ -1,4 +1,5 @@
 import {ParsedCommandsInterface} from "./ParsedCommandsInterface";
+import {WarningsArray} from "./warnings/WarningsArray";
 
 /**
  * Read more in docs/run-result.md
@@ -85,6 +86,13 @@ export interface RunResultInterface {
      */
     readonly workspaceDirPath: string|undefined;
 
+    /**
+     * Array of structured Warnings, similar messages produced by GitHub Runner
+     * By default these warnings are printed to stderr at the end of the run.
+     * If you want to check them by yourself, you can disable this behavior by
+     * `options.setOutputOptions({printWarnings: false})`
+     **/
+    readonly warnings: WarningsArray;
     /**
      * @description
      * Delete faked directories that still exist after run. It will not delete existing dirs set explicitly by

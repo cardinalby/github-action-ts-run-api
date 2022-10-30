@@ -2,6 +2,7 @@ import {RunResultInterface} from "./RunResultInterface";
 import {ParsedCommandsInterface} from "./ParsedCommandsInterface";
 import {FakeRunnerDir} from "../githubServiceFiles/runnerDir/FakeRunnerDir";
 import {OptionalRunnerDirInterface} from "../githubServiceFiles/runnerDir/RunnerDirInterface";
+import {WarningsArray} from "./warnings/WarningsArray";
 
 export abstract class AbstractRunResult implements RunResultInterface
 {
@@ -15,8 +16,9 @@ export abstract class AbstractRunResult implements RunResultInterface
         public readonly exitCode: number|undefined,
         public readonly stdout: string|undefined,
         public readonly stderr: string|undefined,
+        public readonly warnings: WarningsArray,
         private readonly tempDir: OptionalRunnerDirInterface,
-        private readonly workspaceDir: OptionalRunnerDirInterface,
+        private readonly workspaceDir: OptionalRunnerDirInterface
     ) {
         this.isSuccess = (this.exitCode === 0 || this.exitCode === undefined) && this.error === undefined;
     }

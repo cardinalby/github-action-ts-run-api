@@ -30,9 +30,41 @@ export interface ParsedFileCommandsInterface {
      * Export variable in bash script (Docker action):
      *
      *     # For multi-line values you need to use delimiters
-     *     echo "varName=varValue" >> "$GITHUB_PATH"
+     *     echo "varName=varValue" >> "$GITHUB_ENV"
      */
     exportedVars: StringKeyValueObj;
+
+    /**
+     * @description
+     * Object with state set for an action parsed from GITHUB_STATE file or from stdout.
+     *
+     * Set state in JS action:
+     *
+     *     const core = require('@actions/core');
+     *     core.setState('varName', 'varValue');
+     *
+     * Set state in bash script (Docker action):
+     *
+     *     # For multi-line values you need to use delimiters
+     *     echo "varName=varValue" >> "$GITHUB_STATE"
+     */
+    savedState: StringKeyValueObj;
+
+    /**
+     * @description
+     * Object with outputs set for an action parsed from GITHUB_OUTPUT file or from stdout.
+     *
+     * Set output in JS action:
+     *
+     *     const core = require('@actions/core');
+     *     core.setOutput('name', 'value');
+     *
+     * Set output in bash script (Docker action):
+     *
+     *     # For multi-line values you need to use delimiters
+     *     echo "name=value" >> "$GITHUB_OUTPUT"
+     */
+    outputs: StringKeyValueObj;
 }
 
 export interface StdoutCommandsInterface {
@@ -99,21 +131,6 @@ export interface StdoutCommandsInterface {
 
     /**
      * @description
-     * Object with saved state values parsed from stdout.
-     *
-     * State saved in JS action:
-     *
-     *      const core = require('@actions/core');
-     *      core.saveState('stateName', 'value');
-     *
-     * State saved in bash script (Docker action):
-     *
-     *      echo "::save-state name=stateName::value"
-     */
-    savedState: StringKeyValueObj;
-
-    /**
-     * @description
      * Array of "add-mask" commands parsed from stdout.
      *
      * Secret added in JS action:
@@ -141,21 +158,6 @@ export interface StdoutCommandsInterface {
      *      echo "::echo::on"
      */
     echo: EchoCommandMessage;
-
-    /**
-     * @description
-     * Object (key: output name, value: output value) with action outputs parsed from stdout.
-     *
-     * Output set in JS action:
-     *
-     *      const core = require('@actions/core');
-     *      core.setOutput('out1', 'val1');
-     *
-     * Output set in bash script (Docker action):
-     *
-     *      echo "::set-output name=out1::val1"
-     */
-    outputs: StringKeyValueObj;
 }
 
 export interface ParsedCommandsInterface extends ParsedFileCommandsInterface, StdoutCommandsInterface {

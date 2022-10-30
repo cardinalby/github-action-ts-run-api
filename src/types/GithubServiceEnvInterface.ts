@@ -80,4 +80,16 @@ export interface GithubServiceEnvInterface {
      * If set, overwrites options.fakeFileOptions.unsetCommandFilesEnvs
      */
     GITHUB_PATH?: string
+
+    /**
+     * Path to state command file used for setting state in an action
+     * If set, overwrites options.fakeFileOptions.unsetCommandFilesEnvs
+     */
+    GITHUB_STATE?: string;
+
+    /**
+     * Path to output command file used for setting outputs in an action
+     * If set, overwrites options.fakeFileOptions.unsetCommandFilesEnvs
+     */
+    GITHUB_OUTPUT?: string;
 }

@@ -46,7 +46,8 @@ describe('RunOptions', () => {
                 stdoutTransform: undefined,
                 stderrTransform: undefined,
                 printStderr: true,
-                printRunnerDebug: false
+                printRunnerDebug: false,
+                printWarnings: true
             } as OutputOptionsInterface);
             expect(o.timeoutMs).toEqual(123);
             expect(o.env.data).toEqual({e1: 'v1'});
@@ -69,7 +70,8 @@ describe('RunOptions', () => {
             stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
             parseStderrCommands: true,
-            printRunnerDebug: false
+            printRunnerDebug: false,
+            printWarnings: false
         }, false);
 
         expect(cloned.fakeFsOptions.data).toEqual({
@@ -90,7 +92,8 @@ describe('RunOptions', () => {
             stderrTransform: OutputTransform.SANITIZE_COMMANDS,
             parseStdoutCommands: true,
             parseStderrCommands: true,
-            printRunnerDebug: false
+            printRunnerDebug: false,
+            printWarnings: false
         });
 
         expect(options.shouldAddProcessEnv).toEqual(false);
@@ -104,7 +107,8 @@ describe('RunOptions', () => {
             stdoutTransform: undefined,
             stderrTransform: undefined,
             printStderr: true,
-            printRunnerDebug: false
+            printRunnerDebug: false,
+            printWarnings: true
         } as OutputOptionsInterface);
         expect(options.fakeFsOptions.data).toEqual({
             fakeCommandFiles: false,
@@ -125,7 +129,8 @@ describe('RunOptions', () => {
             stderrTransform: undefined,
             parseStdoutCommands: true,
             parseStderrCommands: true,
-            printRunnerDebug: false
+            printRunnerDebug: false,
+            printWarnings: true
         } as OutputOptionsInterface);
         expect(options.timeoutMs).toEqual(undefined);
         expect(options.env.data).toEqual({});

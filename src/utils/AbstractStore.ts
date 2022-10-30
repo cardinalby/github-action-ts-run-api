@@ -1,4 +1,4 @@
-export class AbstractStore<T extends {}, CH = Partial<T>> {
+export class AbstractStore<T extends {}, CH extends {} = Partial<T>> {
     constructor(
         protected _data: T = {} as T
     ) {}

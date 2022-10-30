@@ -1,6 +1,6 @@
 {
   "name": "github-action-ts-run-api",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "Utils for GitHub Action integration and unit testing",
   "main": "./dist",
   "types": "./dist/index.d.ts",
@@ -31,7 +31,7 @@
   ],
   "dependencies": {
     "fs-extra": "^10.1.0",
-    "yaml": "^1.10.2",
+    "yaml": "^2.1.3",
     "jsonschema": "^1.4.1",
     "intercept-stdout": "^0.1.2",
     "tmp": "^0.2.1",
@@ -40,11 +40,11 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@types/node": "^16.11.51",
+    "@types/node": "^16.18.3",
     "@types/tmp": "^0.2.3",
-    "@types/jest": "^28.1.7",
-    "typescript": "^4.7.4",
-    "@actions/core": "^1.9.1",
+    "@types/jest": "^28.1.8",
+    "typescript": "^4.8.4",
+    "@actions/core": "^1.10.0",
     "jest": "^28.1.3",
     "ts-jest": "^28.0.8"
   },

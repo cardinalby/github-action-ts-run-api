@@ -49,6 +49,13 @@ Install for use in tests
 ```
 npm i github-action-ts-run-api --save-dev
 ```
+## News
+Starting from release **2.3.0** the library will produce **warnings** regarding **deprecation of some commands**
+([1](https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/),
+[2](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/)) 
+like GitHub Runner does. By default, warnings are printed to stderr and are accessible via `runResult.warnings` field.
+
+Pay attention and update your actions!
 
 ## Documentation
 
@@ -108,6 +115,7 @@ assert(result.durationMs >= 1000);
 assert(result.commands.outputs === {out1: 'abc', out2: 'def'});
 assert(result.commands.exportedVars === {v3: 'ghi'});
 assert(result.exitCode === 1);
+assert(result.warnings.length === 0);
 // changes were isolated inside a function run
 assert(process.exitCode !== 1);
 assert(result.commands.errors === ['err1']);

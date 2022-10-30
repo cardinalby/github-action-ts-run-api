@@ -1,15 +1,15 @@
-export function mapObjectKeys<T>(
-    obj: T,
-    mapper: (key: string, value: T[keyof T]) => string
-): {[key: string]: T[keyof T]} {
+export function mapObjectKeys<ObjV>(
+    obj: { [s: string]: ObjV },
+    mapper: (key: string, value: ObjV) => string
+): {[key: string]: ObjV} {
     return Object.fromEntries(Object.entries(obj).map(
         entry => [mapper(entry[0], entry[1]), entry[1]]
     ));
 }
 
-export function mapObjectValues<T, R>(
-    obj: T,
-    mapper: (key: string, value: T[keyof T]) => R
+export function mapObjectValues<ObjV, R>(
+    obj: { [s: string]: ObjV },
+    mapper: (key: string, value: ObjV) => R
 ): {[key: string]: R} {
     return Object.fromEntries(Object.entries(obj).map(
         entry => [entry[0], mapper(entry[0], entry[1])]
@@ -25,13 +25,11 @@ export function mapObject<SrcK extends string, SrcV, ResK extends string, ResV>(
     )) as {[key in ResK]: ResV};
 }
 
-export function filterObjectKeys<T>(
-    obj: T,
-    filter: (key: string, value: T[keyof T]) => boolean
-): {[key: string]: T[keyof T]} {
-    return Object.fromEntries(Object.entries(obj)
-        .filter(entry => filter(entry[0], entry[1] as T[keyof T]))
-    );
+export function filterObjectKeys<ObjV>(
+    obj: { [s: string]: ObjV },
+    filter: (key: string, value: ObjV) => boolean
+): {[key: string]: ObjV} {
+    return Object.fromEntries(Object.entries(obj).filter(entry => filter(entry[0], entry[1])));
 }
 
 export function mapToObject<MapK extends string, MapV, ResK extends string, ResV>(

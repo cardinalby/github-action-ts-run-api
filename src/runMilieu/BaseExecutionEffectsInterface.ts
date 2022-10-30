@@ -3,6 +3,6 @@ import {RunnerDirsCollection} from "../githubServiceFiles/RunnerDirsCollection";
 import {BaseRunnerDirsInterface} from "./BaseRunnerDirsInterface";
 
 export interface BaseExecutionEffectsInterface {
-    fileCommands: Partial<ParsedFileCommandsInterface>,
+    fileCommands: ParsedFileCommandsInterface,
     runnerDirs: RunnerDirsCollection<BaseRunnerDirsInterface>
 }

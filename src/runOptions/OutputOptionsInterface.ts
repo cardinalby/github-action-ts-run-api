@@ -52,4 +52,9 @@ export interface OutputOptionsInterface {
      * Print additional debug information
      */
     printRunnerDebug: boolean;
+
+    /**
+     * Print warnings to stderr (similar to GitHub Runner) at the end of an action run
+     */
+    printWarnings: boolean;
 }

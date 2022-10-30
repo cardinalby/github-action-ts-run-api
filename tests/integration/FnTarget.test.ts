@@ -17,12 +17,14 @@ import {RunTarget} from "../../src";
 import {waitFor} from "../utils/waitFor";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
+import {expectWarningsContains} from "../utils/warnings";
+import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('SyncFnTarget', () => {
-    afterAll(() => {
+    afterEach(() => {
         deleteAllFakedDirs();
     });
 
@@ -38,7 +40,8 @@ describe('SyncFnTarget', () => {
                 process.chdir(path.join(process.cwd(), 'tests'));
                 return 32;
             }).run(RunOptions.create({
-                env: {CCC: 'x'}
+                env: {CCC: 'x'},
+                outputOptions: {printWarnings: false}
             }));
             expect(process.cwd()).toEqual(initialProcessCwd);
             expect(process.env.AAA).toEqual('aaa');
@@ -51,13 +54,14 @@ describe('SyncFnTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(false);
+            expect(res.warnings).toHaveLength(0);
         } finally {
             envBackup.restore();
         }
     });
 
     it('should parse stdout commands', () => {
-        const options = RunOptions.create();
+        const options = RunOptions.create({outputOptions: {printWarnings: false}});
         const res = RunTarget.syncFn(() => {
             core.error('err%msg1');
             core.error('err%msg2');
@@ -96,6 +100,7 @@ describe('SyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
+        expectWarningsContains(res.warnings, [StdoutCommandName.SET_OUTPUT]);
     });
 
     it('should transform stdout and stderr', async () => {
@@ -104,10 +109,10 @@ describe('SyncFnTarget', () => {
                 printStdout: true,
                 printStderr: true,
                 stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
-                stderrTransform: OutputTransform.SANITIZE_COMMANDS,
+                stderrTransform: OutputTransform.SANITIZE_COMMANDS
             }
         });
-        const interceptor = StdoutInterceptor.start(true, OutputTransform.NONE, true, OutputTransform.NONE);
+        const interceptor = StdoutInterceptor.start(true, OutputTransform.NONE, false, OutputTransform.NONE);
         try {
             RunTarget.syncFn(() => {
                 core.error('err%msg1');
@@ -122,7 +127,8 @@ describe('SyncFnTarget', () => {
                 'info_msg' + os.EOL +
                 '⦂⦂set-output name=out3⦂⦂out3_val' + os.EOL
             );
-            expect(interceptor.interceptedStderr).toEqual('⦂⦂set-output name=out4⦂⦂out4_val' + os.EOL);
+            expect(interceptor.interceptedStderr).toContain('⦂⦂set-output name=out4⦂⦂out4_val' + os.EOL);
+            expect(interceptor.interceptedStderr).toContain('Deprecated')
         } finally {
             interceptor.unHook();
         }
@@ -130,7 +136,7 @@ describe('SyncFnTarget', () => {
 
     test.each([5, 6])('should set github service envs', async runNumber => {
         jest.resetModules();
-        const options = RunOptions.create();
+        const options = RunOptions.create({outputOptions: {printWarnings: false}});
         let fnContext: Context = new Context();
         let fnRepo: any = undefined;
         const res = await RunTarget.asyncFn(async () => {
@@ -149,7 +155,7 @@ describe('SyncFnTarget', () => {
 
     it('should fake github service envs', async () => {
         jest.resetModules();
-        const options = RunOptions.create();
+        const options = RunOptions.create({outputOptions: {printWarnings: false}});
         let fnEnv: EnvInterface = {};
         let fnContext: Context = new Context();
         const res = await RunTarget.asyncFn(async () => {
@@ -201,7 +207,10 @@ describe('SyncFnTarget', () => {
                 core.exportVariable('v3', '3');
                 return 4;
             }).run(RunOptions.create()
-                .setOutputOptions({parseStdoutCommands: parseStdoutCommands})
+                .setOutputOptions({
+                    parseStdoutCommands: parseStdoutCommands,
+                    printWarnings: fakeFileCommands || !parseStdoutCommands
+                })
                 .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
@@ -212,6 +221,10 @@ describe('SyncFnTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
+            expectWarningsContains(res.warnings, fakeFileCommands || !parseStdoutCommands
+                ? []
+                : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV]
+            );
         }
     );
 
@@ -263,6 +276,7 @@ describe('SyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
+        expect(res.warnings).toHaveLength(0);
     });
 
     test.each([
@@ -386,10 +400,15 @@ describe('SyncFnTarget', () => {
         expect(res.error?.message).toEqual('abc');
         expect(res.isSuccess).toEqual(false);
         expect(res.isTimedOut).toEqual(false);
+        expect(res.warnings).toHaveLength(0);
     });
 });
 
 describe('AsyncFnTarget', () => {
+    afterEach(() => {
+        deleteAllFakedDirs();
+    });
+
     it('should restore process envs and exitCode async', async () => {
         process.env.AAA = 'aaa';
         const target = RunTarget.asyncFn(async () => {
@@ -420,6 +439,7 @@ describe('AsyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(false);
+        expect(res.warnings).toHaveLength(0);
     });
 
     it('should handle async fn error', async () => {
@@ -441,6 +461,7 @@ describe('AsyncFnTarget', () => {
         expect(res.error?.message).toEqual('abc');
         expect(res.isSuccess).toEqual(false);
         expect(res.isTimedOut).toEqual(false);
+        expect(res.warnings).toHaveLength(0);
     });
 
     it('should handle async fn timeout', async () => {
@@ -457,5 +478,6 @@ describe('AsyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isSuccess).toEqual(true);
         expect(res.isTimedOut).toEqual(true);
+        expect(res.warnings).toHaveLength(0);
     });
 });

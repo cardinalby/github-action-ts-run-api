@@ -1,6 +1,6 @@
 import {getFileCommandNames, GithubServiceFileName} from "./GithubServiceFileName";
 import {FakeFile} from "./FakeFile";
-import {readAddedPathsFromFileCommand, readExportedVarsFromFileCommand} from "./readFileCommands";
+import {readValuesFromFileCommand, readKvPairsFromFileCommand} from "./readFileCommands";
 import {ParsedFileCommandsInterface} from "../runResult/ParsedCommandsInterface";
 import fs from "fs-extra";
 import {WebhookPayload} from "@actions/github/lib/interfaces";
@@ -69,15 +69,26 @@ export class FakeFilesCollection {
         return this;
     }
 
-    readFileCommands(eol: string): Partial<ParsedFileCommandsInterface> {
-        const result: Partial<ParsedFileCommandsInterface> = {}
+    readFileCommands(eol: string): ParsedFileCommandsInterface {
+        const result: ParsedFileCommandsInterface = {
+            outputs: {},
+            savedState: {},
+            exportedVars: {},
+            addedPaths: []
+        }
         this.files.forEach((file, cmdName) => {
             switch (cmdName) {
                 case GithubServiceFileName.ENV:
-                    result.exportedVars = readExportedVarsFromFileCommand(file.filePath, eol);
+                    result.exportedVars = readKvPairsFromFileCommand(file.filePath, eol);
                     break;
                 case GithubServiceFileName.PATH:
-                    result.addedPaths = readAddedPathsFromFileCommand(file.filePath, eol);
+                    result.addedPaths = readValuesFromFileCommand(file.filePath, eol);
+                    break;
+                case GithubServiceFileName.STATE:
+                    result.savedState = readKvPairsFromFileCommand(file.filePath, eol);
+                    break;
+                case GithubServiceFileName.OUTPUT:
+                    result.outputs = readKvPairsFromFileCommand(file.filePath, eol);
                     break;
             }
         });

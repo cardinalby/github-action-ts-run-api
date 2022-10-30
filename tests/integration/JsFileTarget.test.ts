@@ -7,12 +7,14 @@ import {deleteAllFakedDirs, JsFileRunResultInterface, RunTarget} from "../../src
 import http from "http";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
+import {expectWarningsContains} from "../utils/warnings";
+import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
 
 const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + 'action.yml';
 
 describe('JsActionScriptTarget', () => {
-    afterAll(() => {
+    afterEach(() => {
         deleteAllFakedDirs();
     });
 
@@ -29,7 +31,8 @@ describe('JsActionScriptTarget', () => {
                         printStdout: true,
                         printStderr: true,
                         stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
-                        stderrTransform: OutputTransform.SANITIZE_COMMANDS
+                        stderrTransform: OutputTransform.SANITIZE_COMMANDS,
+                        printWarnings: false
                     })
                 );
             await new Promise(resolve => setTimeout(resolve, 0));
@@ -54,6 +57,7 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false)
         expect(res.isSuccess).toEqual(true);
+        expectWarningsContains(res.warnings, [StdoutCommandName.SAVE_STATE, StdoutCommandName.SET_OUTPUT]);
 
         expect(interceptor.interceptedStdout.includes('::')).toEqual(false);
         expect(interceptor.interceptedStdout.includes('⦂⦂')).toEqual(true);
@@ -84,6 +88,7 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).not.toBeUndefined();
         expect(res.isTimedOut).toEqual(true);
         expect(res.isSuccess).toEqual(false);
+        expect(res.warnings).toHaveLength(0);
     });
 
     it('should handle fail', async () => {
@@ -91,6 +96,7 @@ describe('JsActionScriptTarget', () => {
             RunOptions.create()
                 .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'true', failAtTheEnd: 'true'})
                 .setFakeFsOptions({fakeCommandFiles: false})
+                .setOutputOptions({printWarnings: false})
         );
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2', 'failed_msg']);
         expect(res.commands.warnings).toEqual(["warning\rmsg"]);
@@ -115,6 +121,10 @@ describe('JsActionScriptTarget', () => {
         expect(res.isSuccess).toEqual(false);
         expect(res.exitCode).toEqual(1);
         expect(res.spawnResult.status).toEqual(1);
+        expectWarningsContains(
+            res.warnings,
+            [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_OUTPUT, StdoutCommandName.SET_ENV]
+        );
     });
 
     it('should run post script', async () => {
@@ -133,6 +143,7 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
+        expect(res.warnings).toHaveLength(0);
     });
 
     it('should mock octokit', async () => {
@@ -156,6 +167,7 @@ describe('JsActionScriptTarget', () => {
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
             expect(res.commands.outputs).toEqual({resp: '{"name":"x"}'});
+            expect(res.warnings).toHaveLength(0);
         } finally {
             server.close();
         }
@@ -163,6 +175,10 @@ describe('JsActionScriptTarget', () => {
 });
 
 describe('JsFilePathTarget', () => {
+    afterEach(() => {
+        deleteAllFakedDirs();
+    });
+
     test.each([true, false])(
         'should run targetJsFilePath, fakeFileCommands: %s',
         async fakeFileCommands => {
@@ -170,6 +186,7 @@ describe('JsFilePathTarget', () => {
                 RunOptions.create()
                     .setInputs({sendFileCommands: 'true', sendStdoutCommands: 'false', failAtTheEnd: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
+                    .setOutputOptions({printWarnings: fakeFileCommands})
             );
             expect(res.commands.errors).toEqual([]);
             expect(res.commands.warnings).toEqual([]);
@@ -186,6 +203,10 @@ describe('JsFilePathTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
+            expectWarningsContains(
+                res.warnings,
+                fakeFileCommands ? [] : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV]
+            );
         });
 
     test.each([
@@ -200,7 +221,10 @@ describe('JsFilePathTarget', () => {
             const res = await RunTarget.jsFile(complexActionDir + 'parseStdCommandsTest.js').run(
                 RunOptions.create()
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
-                    .setOutputOptions({parseStdoutCommands: parseStdoutCommands})
+                    .setOutputOptions({
+                        parseStdoutCommands: parseStdoutCommands,
+                        printWarnings: fakeFileCommands || !parseStdoutCommands
+                    })
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
             expect(res.commands.addedPaths).toEqual(expectedPath);
@@ -208,6 +232,10 @@ describe('JsFilePathTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
+            expectWarningsContains(res.warnings, fakeFileCommands || !parseStdoutCommands
+                ? []
+                : [StdoutCommandName.ADD_PATH]
+            );
         }
     );
 
@@ -227,5 +255,6 @@ describe('JsFilePathTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
+            expect(res.warnings).toHaveLength(0);
         });
 });
