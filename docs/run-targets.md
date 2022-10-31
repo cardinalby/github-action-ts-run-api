@@ -1,7 +1,7 @@
 # Run targets
 
 In the terms of the library, a **run target** - is a class that can run particular kind of GitHub actions. 
-Run target also can contain an action config (a contents of `action.yml` file) and custom options.
+Run target also can contain an action config (the contents of `action.yml` file) and custom options.
 
 The library supports 4 run targets, that can be created by calling factory methods in `RunTarget`.
 

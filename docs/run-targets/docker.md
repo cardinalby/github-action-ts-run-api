@@ -11,13 +11,15 @@ Unlike other targets, docker target has fixed path of faked dirs and files insid
 But relying on them is not recommended. You should use GitHub 
 [environment variables](https://docs.github.com/en/actions/learn-github-actions/environment-variables) values instead.
 
-| Environment variable | Value                         | Description                                                                                                                     |
-|----------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| _RUNNER_TEMP_        | `/home/runner/work/_temp`     | Temp dir                                                                                                                        |
-| _GITHUB_WORKSPACE_   | `/github/workspace`           | The default working directory on the runner for steps, and the default location of a repository when using the checkout action. |
-| _GITHUB_EVENT_PATH_  | `/github/workflow/event.json` | The path of the file with the complete webhook event payload.                                                                   |
-| _GITHUB_ENV_         | `/github/file_commands/ENV`   | file for exported vars commands                                                                                                 |
-| _GITHUB_PATH_        | `/github/file_commands/PATH`  | file for added path commands                                                                                                    |
+| Environment variable | Value                          | Description                                                                                                                     |
+|----------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| _RUNNER_TEMP_        | `/home/runner/work/_temp`      | Temp dir                                                                                                                        |
+| _GITHUB_WORKSPACE_   | `/github/workspace`            | The default working directory on the runner for steps, and the default location of a repository when using the checkout action. |
+| _GITHUB_EVENT_PATH_  | `/github/workflow/event.json`  | The path of the file with the complete webhook event payload.                                                                   |
+| _GITHUB_ENV_         | `/github/file_commands/ENV`    | file for exported vars                                                                                                          |
+| _GITHUB_PATH_        | `/github/file_commands/PATH`   | file for added paths                                                                                                            |
+| _GITHUB_OUTPUT_      | `/github/file_commands/OUTPUT` | file for setting outputs                                                                                                        |
+| _GITHUB_STATE_       | `/github/file_commands/STATE`  | file for setting state                                                                                                          |
 
 As in other targets, temporary created dirs used by default to fake these paths. 
 
