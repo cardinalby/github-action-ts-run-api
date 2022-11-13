@@ -27,6 +27,8 @@
 
 ✅ Has a clear JavaScript API with TypeScript declarations and reasonable defaults
 
+✅ Produces warnings about deprecated Actions commands
+
 ### Setting up an action run option includes:
 
 * Inputs. Can read default input values from `action.yml`
