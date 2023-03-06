@@ -15,7 +15,7 @@ export interface RunResultInterface {
 
     /**
      * @description
-     * Collection of workflow commands parsed from stdout and commmand files
+     * Collection of workflow commands parsed from stdout and command files
      * @see https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter
      */
     readonly commands: ParsedCommandsInterface;

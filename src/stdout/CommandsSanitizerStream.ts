@@ -1,6 +1,7 @@
 import {Transform, TransformCallback} from "stream";
 import os from "os";
 import {chunkToString} from "../utils/streamUtils";
+import {stdoutCmdRegexp} from "./stdoutCommands";
 
 export class CommandsSanitizerStream extends Transform {
     private _unprocessedLine = '';
@@ -26,6 +27,6 @@ export class CommandsSanitizerStream extends Transform {
     }
 
     private static sanitizeLine(str: string): string {
-        return str.replace(/^::([A-Za-z0-9\-_.]+?)(\s.+)?::/m, '⦂⦂$1$2⦂⦂');
+        return str.replace(stdoutCmdRegexp, '⦂⦂$1$2⦂⦂');
     }
 }

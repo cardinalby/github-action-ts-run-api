@@ -10,18 +10,21 @@ import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {EnvInterface} from "../../src/types/EnvInterface";
 import {Context} from "@actions/github/lib/context";
-import fs from "fs-extra";
-import tmp from "tmp";
+import * as fs from "fs-extra";
+import * as tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
-import {RunTarget} from "../../src";
+import {DeprecatedNodeVersionWarning, RunTarget} from "../../src";
 import {waitFor} from "../utils/waitFor";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
-import {expectWarningsContains} from "../utils/warnings";
-import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
+import {expectDeprecatedCmdsWarnings} from "../utils/warnings";
+import {StdoutCommandName} from "../../src/stdout/stdoutCommands";
 
+const actionYml = 'action.yml'
 const complexActionDir = 'tests/integration/testActions/complex/';
-const complexActionActionYml = complexActionDir + 'action.yml';
+const complexActionActionYml = complexActionDir + actionYml;
+const node12ActionDir = 'tests/integration/testActions/node12/';
+const node12ActionActionYml = node12ActionDir + actionYml
 
 describe('SyncFnTarget', () => {
     afterEach(() => {
@@ -100,7 +103,8 @@ describe('SyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
-        expectWarningsContains(res.warnings, [StdoutCommandName.SET_OUTPUT]);
+        expect(res.warnings).toHaveLength(1);
+        expectDeprecatedCmdsWarnings(res.warnings, [StdoutCommandName.SET_OUTPUT]);
     });
 
     it('should transform stdout and stderr', async () => {
@@ -221,10 +225,12 @@ describe('SyncFnTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
-            expectWarningsContains(res.warnings, fakeFileCommands || !parseStdoutCommands
+
+            const expectedDeprecatedCmds =fakeFileCommands || !parseStdoutCommands
                 ? []
-                : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV]
-            );
+                : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV];
+            expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
+            expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
         }
     );
 
@@ -402,6 +408,22 @@ describe('SyncFnTarget', () => {
         expect(res.isTimedOut).toEqual(false);
         expect(res.warnings).toHaveLength(0);
     });
+
+    it('should produce warning about deprecated node12 version', async () => {
+        const res = await RunTarget
+            .syncFn(() => { return 5; }, node12ActionActionYml)
+            .run(RunOptions.create({
+                outputOptions: {
+                    printWarnings: false
+                }
+            }));
+        expect(res.exitCode).toBeUndefined();
+        expect(res.fnResult).toEqual(5);
+        expect(res.error).toBeUndefined();
+        expect(res.isSuccess).toEqual(true);
+        expect(res.warnings).toHaveLength(1);
+        expect(res.warnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
+    });
 });
 
 describe('AsyncFnTarget', () => {
@@ -479,5 +501,21 @@ describe('AsyncFnTarget', () => {
         expect(res.isSuccess).toEqual(true);
         expect(res.isTimedOut).toEqual(true);
         expect(res.warnings).toHaveLength(0);
+    });
+
+    it('should produce warning about deprecated node12 version', async () => {
+        const res = await RunTarget
+            .asyncFn(async () => { return 5; }, node12ActionActionYml)
+            .run(RunOptions.create({
+                outputOptions: {
+                    printWarnings: false
+                }
+            }));
+        expect(res.exitCode).toBeUndefined();
+        expect(res.fnResult).toEqual(5);
+        expect(res.error).toBeUndefined();
+        expect(res.isSuccess).toEqual(true);
+        expect(res.warnings).toHaveLength(1);
+        expect(res.warnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
     });
 });

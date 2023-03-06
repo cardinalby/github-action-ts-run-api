@@ -1,4 +1,4 @@
-import {ActionConfigInterface} from "../types/ActionConfigInterface";
+import {ActionConfigInterface, ActionRunsUsingNode12} from "../types/ActionConfigInterface";
 import {Schema, Validator} from "jsonschema";
 import {InputsStore} from "./InputsStore";
 import {PathLike} from "fs";
@@ -6,6 +6,8 @@ import * as yaml from "yaml";
 import fs from "fs-extra";
 import structuredClone from "realistic-structured-clone";
 import assert from "assert";
+import {WarningsArray} from "../runResult/warnings/WarningsArray";
+import {DeprecatedNodeVersionWarning} from "../runResult/warnings/DeprecatedNodeVersionWarning";
 
 const actionConfigSchema = require("../../declarations/github-action-config-schema.json");
 
@@ -84,5 +86,17 @@ export class ActionConfigStore<D extends ActionConfigInterface|undefined> {
             ));
         }
         return new InputsStore();
+    }
+
+    getWarnings(): WarningsArray {
+        const warnings = new WarningsArray()
+        if (this._data && this._data.runs.using === ActionRunsUsingNode12) {
+            warnings.push(new DeprecatedNodeVersionWarning(
+                'Node.js 12 actions are deprecated. For more information see: ' +
+                'https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/.',
+                '12'
+            ));
+        }
+        return warnings;
     }
 }

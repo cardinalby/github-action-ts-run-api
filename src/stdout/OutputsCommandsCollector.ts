@@ -1,9 +1,8 @@
 import {CommandsStore} from "../runResult/CommandsStore";
 import {CommandsParsingStream} from "./CommandsParsingStream";
-import {StdoutCommandInterface} from "./StdoutCommandInterface";
-import {StdoutCommandName} from "./StdoutCommandName";
 import {Warning} from "../runResult/warnings/Warning";
 import {DeprecatedStdoutCommandWarning} from "../runResult/warnings/DeprecatedStdoutCommandWarning";
+import {StdoutCommandInterface, StdoutCommandName} from "./stdoutCommands";
 
 /**
  * It's not documented, but GitHub Actions parses commands from both stdout and stderr streams

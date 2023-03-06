@@ -8,6 +8,8 @@ export interface ActionInputsConfigInterface {
     [name: string]: ActionInputConfigInterface;
 }
 
+export const ActionRunsUsingNode12 = 'node12'
+
 export interface ActionConfigInterface {
     name: string,
     inputs?: ActionInputsConfigInterface;

@@ -290,13 +290,15 @@ Can have value in case of:
 
 ### 🔹 `warnings`
 
-An array of [`Warning`](../src/runResult/warnings/Warning.ts)s containing warnings similar to ones produced by 
-GitHub Runner. Currently, contains only warnings about deprecation 
-([1](https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/), 
-[2](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/)) 
-of some stdout commands. By default, warning messages are printed to stderr at the end of the run. 
-If you want to check them by yourself, you can disable this behavior by 
+The property has type [`WarningsArray`](../src/runResult/warnings/WarningsArray.ts) (array of 
+[`Warning`](../src/runResult/warnings/Warning.ts)) and contains warnings similar to ones produced by 
+GitHub Runner. 
+
+By default, warning messages are printed to stderr at the end of the run.
+If you want to check them by yourself, you can disable this behavior by
 `options.setOutputOptions({printWarnings: false})`. 
+
+Read detailed description [here](./run-result-warnings.md).  
 
 ### 🔹 `cleanUpFakedDirs()` method
 

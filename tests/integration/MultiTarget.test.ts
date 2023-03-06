@@ -6,8 +6,8 @@ import {RunTarget} from "../../src/runTarget/RunTarget";
 import {syncPostRun, asyncPostRun} from "./testActions/complex/postRun.js"
 import {run as githubServiceEnvImplImpl} from "./testActions/complex/githubServiceEnvImpl"
 import {AsyncRunTargetInterface} from "../../src/runTarget/AsyncRunTargetInterface";
-import assert from "assert";
-import fs from "fs-extra";
+import { strict as assert } from 'assert';
+import * as fs from "fs-extra";
 import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {getRunnerOs} from "../../src/utils/platformProps";

@@ -7,7 +7,7 @@ import {SyncRunTargetInterface} from "../../../runTarget/SyncRunTargetInterface"
 import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
 import {FnRunResultInterface} from "../runResult/FnRunResultInterface";
 import os from "os";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {WarningsCollector} from "../../../runResult/warnings/WarningsCollector";
 
 export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTargetInterface {
     static create<R>(fn: () => R, actionConfig?: ActionConfigInterface): SyncFnTarget<R>;
@@ -26,18 +26,18 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
     {
         const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut, durationMs} = runSyncFn(this.fn, options.timeoutMs);
-        const warnings = new WarningsArray(...runMilieu.stdoutInterceptor.parserWarnings);
+        const warningsCollector = (new WarningsCollector(options, this.actionConfig))
+            .setCommandWarnings(runMilieu.stdoutInterceptor.parserWarnings)
         try {
             const effects = runMilieu.getEffects();
             if (options.outputOptions.data.printRunnerDebug) {
                 process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
             }
-            return new FnRunResult(fnResult, error, durationMs, timedOut, effects, warnings);
+            return new FnRunResult(
+                fnResult, error, durationMs, timedOut, effects, warningsCollector.extractWarnings()
+            );
         } finally {
             runMilieu.restore();
-            if (options.outputOptions.data.printWarnings) {
-                warnings.print()
-            }
         }
     }
 

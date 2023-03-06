@@ -20,6 +20,11 @@ export {FakeFsOptionsInterface} from "./runOptions/FakeFsOptionsInterface";
 export {RunResultInterface} from "./runResult/RunResultInterface";
 export {ParsedCommandsInterface} from "./runResult/ParsedCommandsInterface";
 
+export {DeprecatedStdoutCommandWarning} from "./runResult/warnings/DeprecatedStdoutCommandWarning"
+export {Warning} from "./runResult/warnings/Warning"
+export {WarningsArray} from "./runResult/warnings/WarningsArray"
+export {DeprecatedNodeVersionWarning} from "./runResult/warnings/DeprecatedNodeVersionWarning"
+
 export {RunTarget} from "./runTarget/RunTarget";
 export {RunTargetInterface} from "./runTarget/RunTargetInterface";
 export {AsyncRunTargetInterface} from "./runTarget/AsyncRunTargetInterface";

@@ -1,9 +1,8 @@
 import {unescapeCommandValue, unescapePropertyValue} from "../utils/commandsEscaping";
-import {StdoutCommandInterface} from "./StdoutCommandInterface";
+import {stdoutCmdWithParamRegexp, StdoutCommandInterface} from "./stdoutCommands";
 
 export function parseStdoutCommand(str: string): StdoutCommandInterface | undefined {
-    const cmdRegexp = /^::([A-Za-z0-9\-_.]+?)(\s.+)?::(.*)?$/m;
-    const regexpResult = cmdRegexp.exec(str);
+    const regexpResult = stdoutCmdWithParamRegexp.exec(str);
     if (!regexpResult) {
         return undefined;
     }

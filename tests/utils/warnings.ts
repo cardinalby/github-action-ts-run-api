@@ -1,8 +1,8 @@
-import {WarningsArray} from "../../src/runResult/warnings/WarningsArray";
-import {DeprecatedStdoutCommandWarning} from "../../src/runResult/warnings/DeprecatedStdoutCommandWarning";
-import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
+import {WarningsArray} from "../../src";
+import {DeprecatedStdoutCommandWarning} from "../../src";
+import {StdoutCommandName} from "../../src/stdout/stdoutCommands";
 
-export function expectWarningsContains(
+export function expectDeprecatedCmdsWarnings(
     warnings: WarningsArray,
     deprecatedCommands: (string|StdoutCommandName)[]
 ) {

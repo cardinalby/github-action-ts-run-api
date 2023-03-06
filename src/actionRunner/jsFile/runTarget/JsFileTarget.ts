@@ -13,7 +13,7 @@ import path from "path";
 import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterface";
 import {JsFileRunResultInterface} from "../runResult/JsFileRunResultInterface";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {WarningsCollector} from "../../../runResult/warnings/WarningsCollector";
 
 type ScriptName = 'pre'|'main'|'post';
 
@@ -90,6 +90,7 @@ export class JsFileTarget implements AsyncRunTargetInterface {
 
     async run(options: RunOptions): Promise<JsFileRunResultInterface>
     {
+        const warningsCollector = new WarningsCollector(options, this.actionConfig)
         const runMilieu = (new ChildProcRunMilieuFactory(
             new ChildProcRunMilieuComponentsFactory(options, this.actionConfig)
         )).createMilieu(options.validate());
@@ -123,10 +124,7 @@ export class JsFileTarget implements AsyncRunTargetInterface {
             if (options.fakeFsOptions.data.fakeCommandFiles) {
                 commandsCollector.commandsStore.applyAndMerge(effects.fileCommands);
             }
-            const warnings = new WarningsArray(...commandsCollector.deprecationWarnings);
-            if (options.outputOptions.data.printWarnings) {
-                warnings.print()
-            }
+            warningsCollector.setCommandWarnings(commandsCollector.deprecationWarnings)
             return new JsFileRunResult(
                 commandsCollector.commandsStore.data,
                 spawnResult.error,
@@ -136,7 +134,7 @@ export class JsFileTarget implements AsyncRunTargetInterface {
                 durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
-                warnings,
+                warningsCollector.extractWarnings(),
                 spawnResult
             );
         } finally {

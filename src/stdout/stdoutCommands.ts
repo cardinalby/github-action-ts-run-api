@@ -13,3 +13,12 @@ export enum StdoutCommandName {
     SET_ENV = 'set-env',
     SET_OUTPUT = 'set-output'
 }
+
+export interface StdoutCommandInterface {
+    command: StdoutCommandName | string,
+    properties: { [key: string]: string },
+    message: string | undefined
+}
+
+export const stdoutCmdWithParamRegexp = /^::([A-Za-z\d\-_.]+?)(\s.+)?::(.*)?$/m;
+export const stdoutCmdRegexp = /^::([A-Za-z\d\-_.]+?)(\s.+)?::/m

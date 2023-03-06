@@ -7,7 +7,7 @@ import {AsyncRunTargetInterface} from "../../../runTarget/AsyncRunTargetInterfac
 import {ActionConfigSource, ActionConfigStore} from "../../../runOptions/ActionConfigStore";
 import {FnRunResultInterface} from "../runResult/FnRunResultInterface";
 import os from "os";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {WarningsCollector} from "../../../runResult/warnings/WarningsCollector";
 
 export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements AsyncRunTargetInterface {
     static create<R>(fn: () => Promise<R>, actionConfig?: ActionConfigInterface): AsyncFnTarget<R>;
@@ -25,18 +25,18 @@ export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements As
     async run(options: RunOptions): Promise<FnRunResultInterface<R>> {
         const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut, durationMs} = await runAsyncFn(this.fn, options.timeoutMs);
-        const warnings = new WarningsArray(...runMilieu.stdoutInterceptor.parserWarnings);
+        const warningsCollector = (new WarningsCollector(options, this.actionConfig))
+            .setCommandWarnings(runMilieu.stdoutInterceptor.parserWarnings)
         try {
             const effects = runMilieu.getEffects();
             if (options.outputOptions.data.printRunnerDebug) {
                 process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
             }
-            return new FnRunResult<R>(fnResult, error, durationMs, timedOut, effects, warnings);
+            return new FnRunResult<R>(
+                fnResult, error, durationMs, timedOut, effects, warningsCollector.extractWarnings()
+            );
         } finally {
             runMilieu.restore();
-            if (options.outputOptions.data.printWarnings) {
-                warnings.print()
-            }
         }
     }
 

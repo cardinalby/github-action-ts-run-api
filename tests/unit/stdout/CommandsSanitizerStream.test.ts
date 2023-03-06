@@ -2,7 +2,7 @@ import {CommandsSanitizerStream} from "../../../src/stdout/CommandsSanitizerStre
 import {WritableStreamBuffer} from "../../../src/utils/WritableStreamBuffer";
 import * as stream from "stream";
 import {Readable} from "stream";
-import os from "os";
+import * as os from "os";
 
 describe('CommandsSanitizerStream', () => {
     test.each([

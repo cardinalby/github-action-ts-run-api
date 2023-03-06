@@ -4,17 +4,17 @@ import {RunOptions} from "../../src/runOptions/RunOptions";
 import {
     DockerRunMilieuComponentsFactory
 } from "../../src/actionRunner/docker/runMilieu/DockerRunMilieuComponentsFactory";
-import tmp from "tmp";
-import fs from "fs-extra";
-import path from "path";
+import * as tmp from "tmp";
+import * as fs from "fs-extra";
+import * as path from "path";
 import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
 import * as os from "os";
 import {deleteAllFakedDirs, RunTarget} from "../../src";
 import * as http from "http";
 import {withDockerCompose} from "../../src/actionRunner/docker/utils/withDockerCompose";
 import {getDockerHostName} from "../../src/actionRunner/docker/utils/getDockerHostName";
-import {expectWarningsContains} from "../utils/warnings";
-import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
+import {expectDeprecatedCmdsWarnings} from "../utils/warnings";
+import {StdoutCommandName} from "../../src/stdout/stdoutCommands";
 
 const dockerActionDir = 'tests/integration/testActions/dockerAction/';
 const dockerActionYml = dockerActionDir + 'action.yml';
@@ -147,7 +147,7 @@ describe('DockerTarget', () => {
                 ? `${os.userInfo().uid}:${os.userInfo().gid}`
                 : '0:0';
             expect(res.commands.outputs.user_out).toEqual(expectedUser);
-            expectWarningsContains(res.warnings, [StdoutCommandName.SET_OUTPUT]);
+            expectDeprecatedCmdsWarnings(res.warnings, [StdoutCommandName.SET_OUTPUT]);
         });
 
     it('should handle build error', async () => {

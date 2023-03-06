@@ -1,7 +1,6 @@
 import {ParsedCommandsInterface, ParsedFileCommandsInterface, StdoutCommandsInterface} from "./ParsedCommandsInterface";
 import {AbstractStore} from "../utils/AbstractStore";
-import {StdoutCommandInterface} from "../stdout/StdoutCommandInterface";
-import {StdoutCommandName} from "../stdout/StdoutCommandName";
+import {StdoutCommandInterface, StdoutCommandName} from "../stdout/stdoutCommands";
 
 export class CommandsStore extends AbstractStore<ParsedCommandsInterface> {
     static create(stdoutCommands: StdoutCommandsInterface, fileCommands: ParsedFileCommandsInterface) {

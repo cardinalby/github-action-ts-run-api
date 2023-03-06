@@ -51,13 +51,6 @@ Install for use in tests
 ```
 npm i github-action-ts-run-api --save-dev
 ```
-## News
-Starting from release **2.3.0** the library will produce **warnings** regarding **deprecation of some commands**
-([1](https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/),
-[2](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/)) 
-like GitHub Runner does. By default, warnings are printed to stderr and are accessible via `runResult.warnings` field.
-
-Pay attention and update your actions!
 
 ## Documentation
 
@@ -67,6 +60,7 @@ Pay attention and update your actions!
   * [Docker target](./docs/run-targets/docker.md)
 - [Run options](./docs/run-options.md)
 - [Run result](./docs/run-result.md)
+- [Run result warnings](./docs/run-result-warnings.md) (**new**! starting from **2.3.0**)
 
 
 ### Other information:
@@ -210,13 +204,14 @@ console.log(
 );
 ```
 
-### Integration tests in this repo:
+### Integration tests examples:
 
+You can find **examples** for the complicated cases in the **library** integration **tests**:
 * [Docker target test](./tests/integration/DockerTarget.test.ts)
 * [JS file target test](./tests/integration/JsFileTarget.test.ts)
 * [Function target test](./tests/integration/FnTarget.test.ts)
 
-### Integration tests of the real actions:
+Also, check out **real actions** integration **tests**:
 
 * [git-get-release-action](https://github.com/cardinalby/git-get-release-action/blob/master/tests/integration/action.test.ts)
 * [schema-validator-action](https://github.com/cardinalby/schema-validator-action/blob/master/tests/integration/main.test.ts)

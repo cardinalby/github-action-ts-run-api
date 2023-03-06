@@ -3,15 +3,18 @@
 import * as inspector from "inspector";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
-import {deleteAllFakedDirs, JsFileRunResultInterface, RunTarget} from "../../src";
-import http from "http";
+import {deleteAllFakedDirs, DeprecatedNodeVersionWarning, JsFileRunResultInterface, RunTarget} from "../../src";
+import * as http from "http";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
-import {expectWarningsContains} from "../utils/warnings";
-import {StdoutCommandName} from "../../src/stdout/StdoutCommandName";
+import {expectDeprecatedCmdsWarnings} from "../utils/warnings";
+import {StdoutCommandName} from "../../src/stdout/stdoutCommands";
 
+const actionYml = 'action.yml'
 const complexActionDir = 'tests/integration/testActions/complex/';
-const complexActionActionYml = complexActionDir + 'action.yml';
+const complexActionActionYml = complexActionDir + actionYml;
+const node12ActionDir = 'tests/integration/testActions/node12/';
+const node12ActionActionYml = node12ActionDir + actionYml
 
 describe('JsActionScriptTarget', () => {
     afterEach(() => {
@@ -57,7 +60,11 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false)
         expect(res.isSuccess).toEqual(true);
-        expectWarningsContains(res.warnings, [StdoutCommandName.SAVE_STATE, StdoutCommandName.SET_OUTPUT]);
+
+        const expectedDeprecatedCmds =
+            [StdoutCommandName.SAVE_STATE, StdoutCommandName.SET_OUTPUT]
+        expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
+        expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
 
         expect(interceptor.interceptedStdout.includes('::')).toEqual(false);
         expect(interceptor.interceptedStdout.includes('⦂⦂')).toEqual(true);
@@ -121,10 +128,11 @@ describe('JsActionScriptTarget', () => {
         expect(res.isSuccess).toEqual(false);
         expect(res.exitCode).toEqual(1);
         expect(res.spawnResult.status).toEqual(1);
-        expectWarningsContains(
-            res.warnings,
+
+        const expectedDeprecatedCmds =
             [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_OUTPUT, StdoutCommandName.SET_ENV]
-        );
+        expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
+        expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
     });
 
     it('should run post script', async () => {
@@ -203,10 +211,12 @@ describe('JsFilePathTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
-            expectWarningsContains(
-                res.warnings,
-                fakeFileCommands ? [] : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV]
-            );
+
+            const expectedDeprecatedCmds = fakeFileCommands
+                ? []
+                : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV];
+            expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
+            expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
         });
 
     test.each([
@@ -232,10 +242,11 @@ describe('JsFilePathTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
-            expectWarningsContains(res.warnings, fakeFileCommands || !parseStdoutCommands
+            const expectedDeprecatedCmds = fakeFileCommands || !parseStdoutCommands
                 ? []
-                : [StdoutCommandName.ADD_PATH]
-            );
+                : [StdoutCommandName.ADD_PATH];
+            expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
+            expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
         }
     );
 
@@ -257,4 +268,21 @@ describe('JsFilePathTarget', () => {
             expect(res.isSuccess).toEqual(true);
             expect(res.warnings).toHaveLength(0);
         });
+
+    it('should run node12 action main script', async () => {
+        const res = await RunTarget.mainJs(node12ActionActionYml)
+            .run(RunOptions.create()
+                .setInputs({setState: 'stateVal'})
+                .setOutputOptions({
+                    printWarnings: false
+                })
+            );
+        expect(res.commands.warnings).toEqual([]);
+        expect(res.commands.savedState).toEqual({my_state: 'stateVal'});
+        expect(res.error).toBeUndefined();
+        expect(res.isTimedOut).toEqual(false)
+        expect(res.isSuccess).toEqual(true);
+        expect(res.warnings).toHaveLength(1);
+        expect(res.warnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning);
+    });
 });

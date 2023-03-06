@@ -1,0 +1,9 @@
+name: 'node12testAction'
+description: 'node12testAction'
+inputs:
+  setState:
+    description: 'value to set to "my_state"'
+    required: false
+runs:
+  using: 'node12'
+  main: 'main.js'

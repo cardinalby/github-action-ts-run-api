@@ -21,7 +21,7 @@ import {SpawnProc} from "../../../utils/spawnProc";
 import {DockerOptionsStore} from "./DockerOptionsStore";
 import {ActionConfigInterface} from "../../../types/ActionConfigInterface";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {WarningsCollector} from "../../../runResult/warnings/WarningsCollector";
 
 export class DockerTarget implements AsyncRunTargetInterface {
     static readonly DEFAULT_WORKING_DIR = '/github/workspace';
@@ -101,6 +101,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
 
     async run(options: RunOptions): Promise<DockerRunResult>
     {
+        const warningsCollector = new WarningsCollector(options, this.actionConfig)
         let buildSpawnResult: SpawnAsyncResult|undefined = undefined;
         if (!this.imageId) {
             const buildDuration = Duration.startMeasuring();
@@ -122,7 +123,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
                     options.workspaceDir
                         ? new ExternalRunnerDir(options.workspaceDir)
                         : { existingDirPath: undefined },
-                    new WarningsArray(),
+                    warningsCollector.extractWarnings(),
                     buildSpawnResult,
                     undefined,
                     false
@@ -179,10 +180,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
             if (options.fakeFsOptions.data.fakeCommandFiles) {
                 commandsCollector.commandsStore.applyAndMerge(effects.fileCommands);
             }
-            const warnings = new WarningsArray(...commandsCollector.deprecationWarnings)
-            if (options.outputOptions.data.printWarnings) {
-                warnings.print()
-            }
+            warningsCollector.setCommandWarnings(commandsCollector.deprecationWarnings)
             return new DockerRunResult(
                 commandsCollector.commandsStore.data,
                 spawnResult.error,
@@ -192,7 +190,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
                 durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
-                warnings,
+                warningsCollector.extractWarnings(),
                 buildSpawnResult,
                 spawnResult,
                 true
