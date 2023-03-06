@@ -15,7 +15,7 @@
 
 ✅ Supports executing JavaScript and Docker actions.
 
-✅ Tested under Windows, Linux and macOS (NodeJS >= 12) locally and on GitHub hosted runners.
+✅ Tested under Windows, Linux and macOS (Intel + Apple Silicon), NodeJS >= 12 locally and on GitHub hosted runners.
 
 ✅ Works well with Docker Desktop under Windows and macOS.
 
@@ -69,55 +69,7 @@ npm i github-action-ts-run-api --save-dev
 
 ## Quick examples
 
-The following examples show using the library with TypeScript.
-
-### Testing isolated JavaScript function
-<details>
-<summary>main.js</summary>
-    
-```js
-const core = require("@actions/core");
-
-export async function actionMainFn() {
-core.setOutput('out1', core.getInput('in1'));
-core.setOutput('out2', process.env.ENV2);
-core.exportVariable('v3', core.getState('my_state'));
-// writes to errors and sets process.exitCode to 1
-return new Promise(resolve => setTimeout(() => {
-    core.setFailed('err1');
-    resolve();
-    }, 1000));    
-}
-```
-
-</details>
-
-main.test.ts:
-```ts
-import {RunOptions, RunTarget} from 'github-action-ts-run-api';
-import {actionMainFn} from './main.js';
-
-// Will wait until returned promise fulfills. 
-// Use RunTarget.syncFn() for regular functions
-const target = RunTarget.asyncFn(actionMainFn);
-const options = RunOptions.create()
-    .setInputs({in1: 'abc'})
-    .setEnv({ENV2: 'def'})
-    .setState({my_state: 'ghi'});
-
-const result = await target.run(options);
-
-assert(result.durationMs >= 1000);
-assert(result.commands.outputs === {out1: 'abc', out2: 'def'});
-assert(result.commands.exportedVars === {v3: 'ghi'});
-assert(result.exitCode === 1);
-assert(result.warnings.length === 0);
-// changes were isolated inside a function run
-assert(process.exitCode !== 1);
-assert(result.commands.errors === ['err1']);
-```
-
-### Testing JS file in a child node process
+### Test JS action in a child node process
 <details>
 <summary>action.yml</summary>
 
@@ -152,7 +104,7 @@ action.test.ts:
 ```ts
 import {RunOptions, RunTarget} from 'github-action-ts-run-api';
 
-// RunTarget.preJsScript() and RunTarget.postJsScript() are also available
+// You can also test "pre" and "post" scripts
 const target = RunTarget.mainJsScript('action.yml');
 const options = RunOptions.create()
     // Internally, runner will fake a json file to be picked by @actions/github
@@ -166,7 +118,7 @@ try {
     assert(res.commands.addedPaths === ['newPath']);
     // somewhere in system temp dir
     const pathOfCreatedFile = path.join(res.tempDirPath, 'f.txt');
-    // check what action saved
+    // check the contents of a file saved by tested action
     assert(fs.readFileSync(pathOfCreatedFile).toString() === '123');
 } finally {
     // we should do it manually because we set rmFakedTempDirAfterRun: false
@@ -181,7 +133,53 @@ try {
 }
 ```
 
-### Testing Docker action
+### Test JavaScript function in isolated Action environment
+<details>
+<summary>main.js</summary>
+
+```js
+const core = require("@actions/core");
+
+export async function actionMainFn() {
+    core.setOutput('out1', core.getInput('in1'));
+    core.setOutput('out2', process.env.ENV2);
+    core.exportVariable('v3', core.getState('my_state'));
+    // writes to errors and sets process.exitCode to 1
+    return new Promise(resolve => setTimeout(() => {
+        core.setFailed('err1');
+        resolve();
+        }, 1000));    
+}
+```
+
+</details>
+
+main.test.ts:
+```ts
+import {RunOptions, RunTarget} from 'github-action-ts-run-api';
+import {actionMainFn} from './main.js';
+
+// Will wait until returned promise fulfills. 
+// Use RunTarget.syncFn() for regular functions
+const target = RunTarget.asyncFn(actionMainFn);
+const options = RunOptions.create()
+    .setInputs({in1: 'abc'})
+    .setEnv({ENV2: 'def'})
+    .setState({my_state: 'ghi'});
+
+const result = await target.run(options);
+
+assert(result.durationMs >= 1000);
+assert(result.commands.outputs === {out1: 'abc', out2: 'def'});
+assert(result.commands.exportedVars === {v3: 'ghi'});
+assert(result.exitCode === 1);
+assert(result.warnings.length === 0);
+// changes were isolated inside a function run
+assert(process.exitCode !== 1);
+assert(result.commands.errors === ['err1']);
+```
+
+### Test Docker action
 
 ```ts
 import {RunOptions, RunTarget} from 'github-action-ts-run-api';
