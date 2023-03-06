@@ -1,6 +1,8 @@
 export type RunnerOs = 'Linux' | 'Windows' | 'macOS';
 export type RunnerArch = 'X86' | 'X64' | 'ARM' | 'ARM64';
 
+export const runnerArchs: RunnerArch[] = ['X86', 'X64', 'ARM', 'ARM64']
+
 export interface GithubServiceEnvInterface {
     /**
      * @description Always set to true.

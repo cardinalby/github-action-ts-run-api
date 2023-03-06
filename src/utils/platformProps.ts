@@ -18,7 +18,7 @@ export function getRunnerArch(): RunnerArch | undefined {
     switch (process.arch) {
         case 'arm':
             return 'ARM';
-        case 'arm65':
+        case 'arm64':
             return 'ARM64';
         case 'x32':
             return 'X86';
