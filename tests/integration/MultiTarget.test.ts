@@ -40,7 +40,7 @@ describe('MultiTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
-            expect(res.warnings).toHaveLength(0);
+            expect(res.runnerWarnings).toHaveLength(0);
         });
 
     const mixedTargets: RunTargetInterface[] = [
@@ -60,7 +60,7 @@ describe('MultiTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
-            expect(res.warnings).toHaveLength(0);
+            expect(res.runnerWarnings).toHaveLength(0);
         });
 
     const serviceEnvTestTargets: AsyncRunTargetInterface[] = [
@@ -98,7 +98,7 @@ describe('MultiTarget', () => {
                 expect(out.github_actions_env).toEqual(GithubServiceEnvStore.GITHUB_ACTIONS_DEFAULT);
                 expect(out.github_ref_name_env).toEqual('ttt');
                 expect(out.runner_os).toEqual(getRunnerOs());
-                expect(res.warnings).toHaveLength(0);
+                expect(res.runnerWarnings).toHaveLength(0);
             } finally {
                 res.cleanUpFakedDirs();
                 tempDirPath && expect(fs.existsSync(tempDirPath)).toEqual(false);

@@ -2,7 +2,7 @@ import {AbstractRunResult} from "../../../runResult/AbstractRunResult";
 import {ParsedCommandsInterface} from "../../../runResult/ParsedCommandsInterface";
 import {RunnerDirInterface} from "../../../githubServiceFiles/runnerDir/RunnerDirInterface";
 import {SpawnAsyncResult} from "../../../utils/spawnAsync";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {RunnerWarning} from "../../../runResult/warnings/RunnerWarning";
 
 export class JsFileRunResult extends AbstractRunResult
 {
@@ -15,7 +15,7 @@ export class JsFileRunResult extends AbstractRunResult
         durationMs: number,
         tempDir: RunnerDirInterface,
         workspaceDir: RunnerDirInterface,
-        warnings: WarningsArray,
+        runnerWarnings: RunnerWarning[],
         public readonly spawnResult: SpawnAsyncResult,
     ) {
         super(
@@ -26,7 +26,7 @@ export class JsFileRunResult extends AbstractRunResult
             exitCode,
             stdout,
             stderr,
-            warnings,
+            runnerWarnings,
             tempDir,
             workspaceDir
         );

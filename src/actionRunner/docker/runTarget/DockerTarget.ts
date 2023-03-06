@@ -123,7 +123,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
                     options.workspaceDir
                         ? new ExternalRunnerDir(options.workspaceDir)
                         : { existingDirPath: undefined },
-                    warningsCollector.extractWarnings(),
+                    warningsCollector.getAndPrint(),
                     buildSpawnResult,
                     undefined,
                     false
@@ -180,7 +180,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
             if (options.fakeFsOptions.data.fakeCommandFiles) {
                 commandsCollector.commandsStore.applyAndMerge(effects.fileCommands);
             }
-            warningsCollector.setCommandWarnings(commandsCollector.deprecationWarnings)
+            warningsCollector.setCommandWarnings(commandsCollector.commandWarnings)
             return new DockerRunResult(
                 commandsCollector.commandsStore.data,
                 spawnResult.error,
@@ -190,7 +190,7 @@ export class DockerTarget implements AsyncRunTargetInterface {
                 durationMs,
                 effects.runnerDirs.data.temp,
                 effects.runnerDirs.data.workspace,
-                warningsCollector.extractWarnings(),
+                warningsCollector.getAndPrint(),
                 buildSpawnResult,
                 spawnResult,
                 true

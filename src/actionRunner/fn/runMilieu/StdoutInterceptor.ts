@@ -3,7 +3,7 @@ import {getTransformStream, OutputTransform} from "../../../runOptions/OutputTra
 import {Duplex} from "stream";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
 import {CommandsStore} from "../../../runResult/CommandsStore";
-import {Warning} from "../../../runResult/warnings/Warning";
+import {CommandWarning} from "../../../runResult/warnings/RunnerWarning";
 
 export class StdoutInterceptor {
     private readonly _printStdout: boolean;
@@ -106,8 +106,8 @@ export class StdoutInterceptor {
         return this._commandsCollector.commandsStore;
     }
 
-    get parserWarnings(): Warning[] {
-        return this._commandsCollector.deprecationWarnings;
+    get parserWarnings(): CommandWarning[] {
+        return this._commandsCollector.commandWarnings;
     }
 
     private onStdoutData(str: string): string|undefined {

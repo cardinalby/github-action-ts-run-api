@@ -21,8 +21,7 @@ export {RunResultInterface} from "./runResult/RunResultInterface";
 export {ParsedCommandsInterface} from "./runResult/ParsedCommandsInterface";
 
 export {DeprecatedStdoutCommandWarning} from "./runResult/warnings/DeprecatedStdoutCommandWarning"
-export {Warning} from "./runResult/warnings/Warning"
-export {WarningsArray} from "./runResult/warnings/WarningsArray"
+export {RunnerWarning} from "./runResult/warnings/RunnerWarning"
 export {DeprecatedNodeVersionWarning} from "./runResult/warnings/DeprecatedNodeVersionWarning"
 
 export {RunTarget} from "./runTarget/RunTarget";

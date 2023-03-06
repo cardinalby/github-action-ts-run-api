@@ -290,9 +290,8 @@ Can have value in case of:
 
 ### 🔹 `warnings`
 
-The property has type [`WarningsArray`](../src/runResult/warnings/WarningsArray.ts) (array of 
-[`Warning`](../src/runResult/warnings/Warning.ts)) and contains warnings similar to ones produced by 
-GitHub Runner. 
+The property is an array of [`Warning`](../src/runResult/warnings/RunnerWarning.ts)) objects 
+and contains warnings similar to ones produced by GitHub Runner. 
 
 By default, warning messages are printed to stderr at the end of the run.
 If you want to check them by yourself, you can disable this behavior by

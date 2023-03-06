@@ -1,6 +1,6 @@
 import {CommandsStore} from "../runResult/CommandsStore";
 import {CommandsParsingStream} from "./CommandsParsingStream";
-import {Warning} from "../runResult/warnings/Warning";
+import {CommandWarning} from "../runResult/warnings/RunnerWarning";
 import {DeprecatedStdoutCommandWarning} from "../runResult/warnings/DeprecatedStdoutCommandWarning";
 import {StdoutCommandInterface, StdoutCommandName} from "./stdoutCommands";
 
@@ -11,7 +11,7 @@ export class OutputsCommandsCollector {
     public readonly commandsStore = new CommandsStore();
     public readonly stdoutParsingStream?: CommandsParsingStream;
     public readonly stderrParsingStream?: CommandsParsingStream;
-    public readonly commandsWarnings = new Map<StdoutCommandName|string, Warning>()
+    public readonly commandsWarnings = new Map<StdoutCommandName|string, CommandWarning>()
 
     public constructor(
         private parseStdout: boolean,
@@ -41,7 +41,7 @@ export class OutputsCommandsCollector {
         }
     }
 
-    get deprecationWarnings(): Warning[] {
+    get commandWarnings(): CommandWarning[] {
         return [...this.commandsWarnings.values()]
     }
 

@@ -6,8 +6,8 @@ import * as yaml from "yaml";
 import fs from "fs-extra";
 import structuredClone from "realistic-structured-clone";
 import assert from "assert";
-import {WarningsArray} from "../runResult/warnings/WarningsArray";
 import {DeprecatedNodeVersionWarning} from "../runResult/warnings/DeprecatedNodeVersionWarning";
+import {RunnerWarning} from "../runResult/warnings/RunnerWarning";
 
 const actionConfigSchema = require("../../declarations/github-action-config-schema.json");
 
@@ -88,8 +88,8 @@ export class ActionConfigStore<D extends ActionConfigInterface|undefined> {
         return new InputsStore();
     }
 
-    getWarnings(): WarningsArray {
-        const warnings = new WarningsArray()
+    getWarnings(): RunnerWarning[] {
+        const warnings: RunnerWarning[] = []
         if (this._data && this._data.runs.using === ActionRunsUsingNode12) {
             warnings.push(new DeprecatedNodeVersionWarning(
                 'Node.js 12 actions are deprecated. For more information see: ' +

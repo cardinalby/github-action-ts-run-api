@@ -33,10 +33,11 @@ export class AsyncFnTarget<R> extends AbstractFnTarget<Promise<R>> implements As
                 process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
             }
             return new FnRunResult<R>(
-                fnResult, error, durationMs, timedOut, effects, warningsCollector.extractWarnings()
+                fnResult, error, durationMs, timedOut, effects, warningsCollector.get()
             );
         } finally {
             runMilieu.restore();
+            warningsCollector.print()
         }
     }
 

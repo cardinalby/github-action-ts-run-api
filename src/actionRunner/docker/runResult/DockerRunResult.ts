@@ -3,7 +3,7 @@ import {ParsedCommandsInterface} from "../../../runResult/ParsedCommandsInterfac
 import {OptionalRunnerDirInterface} from "../../../githubServiceFiles/runnerDir/RunnerDirInterface";
 import {SpawnAsyncResult} from "../../../utils/spawnAsync";
 import {DockerRunResultInterface} from "./DockerRunResultInterface";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {RunnerWarning} from "../../../runResult/warnings/RunnerWarning";
 
 export class DockerRunResult extends AbstractRunResult implements DockerRunResultInterface
 {
@@ -16,7 +16,7 @@ export class DockerRunResult extends AbstractRunResult implements DockerRunResul
         durationMs: number,
         tempDir: OptionalRunnerDirInterface,
         workspaceDir: OptionalRunnerDirInterface,
-        warnings: WarningsArray,
+        runnerWarnings: RunnerWarning[],
         public readonly buildSpawnResult: SpawnAsyncResult|undefined,
         public readonly spawnResult: SpawnAsyncResult|undefined,
         public readonly isSuccessBuild: boolean
@@ -29,7 +29,7 @@ export class DockerRunResult extends AbstractRunResult implements DockerRunResul
             exitCode,
             stdout,
             stderr,
-            warnings,
+            runnerWarnings,
             tempDir,
             workspaceDir
         );

@@ -27,17 +27,18 @@ export class SyncFnTarget<R> extends AbstractFnTarget<R> implements SyncRunTarge
         const runMilieu = this.createMilieu(options.validate());
         const {fnResult, error, timedOut, durationMs} = runSyncFn(this.fn, options.timeoutMs);
         const warningsCollector = (new WarningsCollector(options, this.actionConfig))
-            .setCommandWarnings(runMilieu.stdoutInterceptor.parserWarnings)
         try {
             const effects = runMilieu.getEffects();
+            warningsCollector.setCommandWarnings(runMilieu.stdoutInterceptor.parserWarnings)
             if (options.outputOptions.data.printRunnerDebug) {
                 process.stdout.write(`Finished with status code = ${effects.exitCode}` + os.EOL);
             }
             return new FnRunResult(
-                fnResult, error, durationMs, timedOut, effects, warningsCollector.extractWarnings()
+                fnResult, error, durationMs, timedOut, effects, warningsCollector.get()
             );
         } finally {
             runMilieu.restore();
+            warningsCollector.print()
         }
     }
 

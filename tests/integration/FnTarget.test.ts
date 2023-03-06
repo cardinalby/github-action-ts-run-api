@@ -17,7 +17,7 @@ import {DeprecatedNodeVersionWarning, RunTarget} from "../../src";
 import {waitFor} from "../utils/waitFor";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
-import {expectDeprecatedCmdsWarnings} from "../utils/warnings";
+import {expectDeprecatedCmdsWarnings} from "../utils/runnerWarnings";
 import {StdoutCommandName} from "../../src/stdout/stdoutCommands";
 
 const actionYml = 'action.yml'
@@ -57,7 +57,7 @@ describe('SyncFnTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(false);
-            expect(res.warnings).toHaveLength(0);
+            expect(res.runnerWarnings).toHaveLength(0);
         } finally {
             envBackup.restore();
         }
@@ -103,8 +103,8 @@ describe('SyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
-        expect(res.warnings).toHaveLength(1);
-        expectDeprecatedCmdsWarnings(res.warnings, [StdoutCommandName.SET_OUTPUT]);
+        expect(res.runnerWarnings).toHaveLength(1);
+        expectDeprecatedCmdsWarnings(res.runnerWarnings, [StdoutCommandName.SET_OUTPUT]);
     });
 
     it('should transform stdout and stderr', async () => {
@@ -125,7 +125,6 @@ describe('SyncFnTarget', () => {
                 process.stdout.write('me=out3::out3_val' + os.EOL);
                 process.stderr.write('::set-output name=out4::out4_val' + os.EOL);
             }).run(options);
-            await new Promise(resolve => setTimeout(resolve, 0));
             expect(interceptor.interceptedStdout).toEqual(
                 '⦂⦂error⦂⦂err%25msg1' + os.EOL +
                 'info_msg' + os.EOL +
@@ -229,8 +228,8 @@ describe('SyncFnTarget', () => {
             const expectedDeprecatedCmds =fakeFileCommands || !parseStdoutCommands
                 ? []
                 : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV];
-            expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
-            expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
+            expect(res.runnerWarnings).toHaveLength(expectedDeprecatedCmds.length);
+            expectDeprecatedCmdsWarnings(res.runnerWarnings, expectedDeprecatedCmds);
         }
     );
 
@@ -282,7 +281,7 @@ describe('SyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     test.each([
@@ -406,7 +405,7 @@ describe('SyncFnTarget', () => {
         expect(res.error?.message).toEqual('abc');
         expect(res.isSuccess).toEqual(false);
         expect(res.isTimedOut).toEqual(false);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     it('should produce warning about deprecated node12 version', async () => {
@@ -421,8 +420,8 @@ describe('SyncFnTarget', () => {
         expect(res.fnResult).toEqual(5);
         expect(res.error).toBeUndefined();
         expect(res.isSuccess).toEqual(true);
-        expect(res.warnings).toHaveLength(1);
-        expect(res.warnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
+        expect(res.runnerWarnings).toHaveLength(1);
+        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
     });
 });
 
@@ -461,7 +460,7 @@ describe('AsyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(false);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     it('should handle async fn error', async () => {
@@ -483,7 +482,7 @@ describe('AsyncFnTarget', () => {
         expect(res.error?.message).toEqual('abc');
         expect(res.isSuccess).toEqual(false);
         expect(res.isTimedOut).toEqual(false);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     it('should handle async fn timeout', async () => {
@@ -500,7 +499,7 @@ describe('AsyncFnTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isSuccess).toEqual(true);
         expect(res.isTimedOut).toEqual(true);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     it('should produce warning about deprecated node12 version', async () => {
@@ -515,7 +514,7 @@ describe('AsyncFnTarget', () => {
         expect(res.fnResult).toEqual(5);
         expect(res.error).toBeUndefined();
         expect(res.isSuccess).toEqual(true);
-        expect(res.warnings).toHaveLength(1);
-        expect(res.warnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
+        expect(res.runnerWarnings).toHaveLength(1);
+        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
     });
 });

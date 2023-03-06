@@ -1,10 +1,5 @@
-import {Warning} from "./Warning";
+import {CommandWarning} from "./RunnerWarning";
 
-export class DeprecatedStdoutCommandWarning extends Warning {
-    constructor(
-        message: string,
-        public readonly command: string
-    ) {
-        super(message);
-    }
+export class DeprecatedStdoutCommandWarning extends CommandWarning {
+
 }

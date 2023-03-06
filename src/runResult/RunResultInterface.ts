@@ -1,5 +1,5 @@
 import {ParsedCommandsInterface} from "./ParsedCommandsInterface";
-import {WarningsArray} from "./warnings/WarningsArray";
+import {RunnerWarning} from "./warnings/RunnerWarning";
 
 /**
  * Read more in docs/run-result.md
@@ -92,7 +92,7 @@ export interface RunResultInterface {
      * If you want to check them by yourself, you can disable this behavior by
      * `options.setOutputOptions({printWarnings: false})`
      **/
-    readonly warnings: WarningsArray;
+    readonly runnerWarnings: RunnerWarning[];
     /**
      * @description
      * Delete faked directories that still exist after run. It will not delete existing dirs set explicitly by

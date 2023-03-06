@@ -1,33 +1,44 @@
 import {RunOptions} from "../../runOptions/RunOptions";
 import {ActionConfigStoreOptional} from "../../runOptions/ActionConfigStore";
-import {WarningsArray} from "./WarningsArray";
-import {Warning} from "./Warning";
+import {CommandWarning, RunnerWarning} from "./RunnerWarning";
+import os from "os";
 
 export class WarningsCollector {
-    private commandWarnings: Warning[] = []
+    private warnings: RunnerWarning[] = []
 
     constructor(
         private readonly runOptions: RunOptions,
         private readonly actionConfig: ActionConfigStoreOptional
     ) {
+        this.warnings.push(...this.actionConfig.getWarnings())
     }
 
-    setCommandWarnings(warnings: Warning[]): WarningsCollector {
-        this.commandWarnings = warnings
+    setCommandWarnings(warnings: CommandWarning[]): WarningsCollector {
+        this.warnings.push(...warnings)
         return this
     }
 
     /**
-     * Collect warnings and print if options.outputOptions.data.printWarnings is set
+     * Get collected warnings and print if options.outputOptions.data.printWarnings is set
      */
-    extractWarnings(): WarningsArray {
-        const warnings = new WarningsArray(
-            ...this.actionConfig.getWarnings(),
-            ...this.commandWarnings
-        )
+    getAndPrint(): RunnerWarning[] {
+        this.print()
+        return this.get()
+    }
+
+    /**
+     * Get collected warnings
+     */
+    get(): RunnerWarning[] {
+        return this.warnings
+    }
+
+    /**
+     * Print if options.outputOptions.data.printWarnings is set
+     */
+    print(): void {
         if (this.runOptions.outputOptions.data.printWarnings) {
-            warnings.print()
+            this.warnings.forEach(warning => process.stderr.write(os.EOL + warning.message))
         }
-        return warnings
     }
 }

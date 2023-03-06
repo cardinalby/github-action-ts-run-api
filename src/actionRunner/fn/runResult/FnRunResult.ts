@@ -2,7 +2,7 @@ import {AbstractRunResult} from "../../../runResult/AbstractRunResult";
 import {CommandsStore} from "../../../runResult/CommandsStore";
 import {FnExecutionEffectsInterface} from "../runMilieu/FnExecutionEffectsInterface";
 import {FnRunResultInterface} from "./FnRunResultInterface";
-import {WarningsArray} from "../../../runResult/warnings/WarningsArray";
+import {RunnerWarning} from "../../../runResult/warnings/RunnerWarning";
 
 export class FnRunResult<R> extends AbstractRunResult implements FnRunResultInterface<R>
 {
@@ -13,7 +13,7 @@ export class FnRunResult<R> extends AbstractRunResult implements FnRunResultInte
         durationMs: number,
         isTimedOut: boolean,
         executionEffects: FnExecutionEffectsInterface,
-        warnings: WarningsArray
+        runnerWarnings: RunnerWarning[]
     ) {
         super(
             CommandsStore.create(executionEffects.stdoutCommands, executionEffects.fileCommands).data,
@@ -23,7 +23,7 @@ export class FnRunResult<R> extends AbstractRunResult implements FnRunResultInte
             executionEffects.exitCode,
             executionEffects.stdout,
             executionEffects.stderr,
-            warnings,
+            runnerWarnings,
             executionEffects.runnerDirs.data.temp,
             executionEffects.runnerDirs.data.workspace
         );

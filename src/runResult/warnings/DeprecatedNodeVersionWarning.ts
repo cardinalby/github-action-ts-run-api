@@ -1,6 +1,6 @@
-import {Warning} from "./Warning";
+import {ActionConfigWarning} from "./RunnerWarning";
 
-export class DeprecatedNodeVersionWarning extends Warning {
+export class DeprecatedNodeVersionWarning extends ActionConfigWarning {
     constructor(
         message: string,
         public readonly version: string

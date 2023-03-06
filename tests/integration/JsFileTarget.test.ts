@@ -7,7 +7,7 @@ import {deleteAllFakedDirs, DeprecatedNodeVersionWarning, JsFileRunResultInterfa
 import * as http from "http";
 import {OutputTransform} from "../../src/runOptions/OutputTransform";
 import {StdoutInterceptor} from "../../src/actionRunner/fn/runMilieu/StdoutInterceptor";
-import {expectDeprecatedCmdsWarnings} from "../utils/warnings";
+import {expectDeprecatedCmdsWarnings} from "../utils/runnerWarnings";
 import {StdoutCommandName} from "../../src/stdout/stdoutCommands";
 
 const actionYml = 'action.yml'
@@ -38,7 +38,6 @@ describe('JsActionScriptTarget', () => {
                         printWarnings: false
                     })
                 );
-            await new Promise(resolve => setTimeout(resolve, 0));
         } finally {
             interceptor.unHook();
         }
@@ -63,8 +62,8 @@ describe('JsActionScriptTarget', () => {
 
         const expectedDeprecatedCmds =
             [StdoutCommandName.SAVE_STATE, StdoutCommandName.SET_OUTPUT]
-        expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
-        expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
+        expect(res.runnerWarnings).toHaveLength(expectedDeprecatedCmds.length);
+        expectDeprecatedCmdsWarnings(res.runnerWarnings, expectedDeprecatedCmds);
 
         expect(interceptor.interceptedStdout.includes('::')).toEqual(false);
         expect(interceptor.interceptedStdout.includes('⦂⦂')).toEqual(true);
@@ -95,7 +94,7 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).not.toBeUndefined();
         expect(res.isTimedOut).toEqual(true);
         expect(res.isSuccess).toEqual(false);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     it('should handle fail', async () => {
@@ -131,8 +130,8 @@ describe('JsActionScriptTarget', () => {
 
         const expectedDeprecatedCmds =
             [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_OUTPUT, StdoutCommandName.SET_ENV]
-        expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
-        expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
+        expect(res.runnerWarnings).toHaveLength(expectedDeprecatedCmds.length);
+        expectDeprecatedCmdsWarnings(res.runnerWarnings, expectedDeprecatedCmds);
     });
 
     it('should run post script', async () => {
@@ -151,7 +150,7 @@ describe('JsActionScriptTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false);
         expect(res.isSuccess).toEqual(true);
-        expect(res.warnings).toHaveLength(0);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 
     it('should mock octokit', async () => {
@@ -175,7 +174,7 @@ describe('JsActionScriptTarget', () => {
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
             expect(res.commands.outputs).toEqual({resp: '{"name":"x"}'});
-            expect(res.warnings).toHaveLength(0);
+            expect(res.runnerWarnings).toHaveLength(0);
         } finally {
             server.close();
         }
@@ -215,8 +214,8 @@ describe('JsFilePathTarget', () => {
             const expectedDeprecatedCmds = fakeFileCommands
                 ? []
                 : [StdoutCommandName.ADD_PATH, StdoutCommandName.SET_ENV];
-            expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
-            expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
+            expect(res.runnerWarnings).toHaveLength(expectedDeprecatedCmds.length);
+            expectDeprecatedCmdsWarnings(res.runnerWarnings, expectedDeprecatedCmds);
         });
 
     test.each([
@@ -245,8 +244,8 @@ describe('JsFilePathTarget', () => {
             const expectedDeprecatedCmds = fakeFileCommands || !parseStdoutCommands
                 ? []
                 : [StdoutCommandName.ADD_PATH];
-            expect(res.warnings).toHaveLength(expectedDeprecatedCmds.length);
-            expectDeprecatedCmdsWarnings(res.warnings, expectedDeprecatedCmds);
+            expect(res.runnerWarnings).toHaveLength(expectedDeprecatedCmds.length);
+            expectDeprecatedCmdsWarnings(res.runnerWarnings, expectedDeprecatedCmds);
         }
     );
 
@@ -266,7 +265,7 @@ describe('JsFilePathTarget', () => {
             expect(res.error).toBeUndefined();
             expect(res.isTimedOut).toEqual(false);
             expect(res.isSuccess).toEqual(true);
-            expect(res.warnings).toHaveLength(0);
+            expect(res.runnerWarnings).toHaveLength(0);
         });
 
     it('should run node12 action main script', async () => {
@@ -282,7 +281,7 @@ describe('JsFilePathTarget', () => {
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false)
         expect(res.isSuccess).toEqual(true);
-        expect(res.warnings).toHaveLength(1);
-        expect(res.warnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning);
+        expect(res.runnerWarnings).toHaveLength(1);
+        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning);
     });
 });
