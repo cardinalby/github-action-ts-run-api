@@ -3,6 +3,7 @@ import {StringKeyValueObj} from "../../../types/StringKeyValueObj";
 import {spawnAsync, SpawnAsyncResult} from "../../../utils/spawnAsync";
 import {OutputTransform} from "../../../runOptions/OutputTransform";
 import {OutputsCommandsCollector} from "../../../stdout/OutputsCommandsCollector";
+import * as path from "path";
 
 export async function spawnChildProc(
     jsFilePath: string,
@@ -17,7 +18,7 @@ export async function spawnChildProc(
     const resultEnv = {...spawnEnv, PATH: process.env.PATH};
     const res = await spawnAsync(
         'node',
-        [jsFilePath],
+        [path.resolve(jsFilePath)],
         {
             timeout: options.timeoutMs,
             env: resultEnv,

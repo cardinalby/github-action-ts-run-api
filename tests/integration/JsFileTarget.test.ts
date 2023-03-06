@@ -240,8 +240,8 @@ describe('JsFilePathTarget', () => {
     );
 
     test.each([
-        [undefined, path.resolve(process.cwd()), complexActionDir + 'post.js'],
-        [path.resolve(complexActionDir), path.resolve(complexActionDir), 'post.js']
+        [undefined,            path.resolve(process.cwd()), complexActionDir + 'post.js'],
+        [path.resolve('docs'), path.resolve('docs'),        complexActionDir + 'post.js']
     ])(
         'should set working directory %s',
         async (workingDir, resultCwd, jsFilePath) => {
