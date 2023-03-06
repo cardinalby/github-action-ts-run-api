@@ -90,7 +90,7 @@ export interface RunResultInterface {
      * Array of structured Warnings, similar messages produced by GitHub Runner
      * By default these warnings are printed to stderr at the end of the run.
      * If you want to check them by yourself, you can disable this behavior by
-     * `options.setOutputOptions({printWarnings: false})`
+     * `options.setOutputOptions({printRunnerWarnings: false})`
      **/
     readonly runnerWarnings: RunnerWarning[];
     /**

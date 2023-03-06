@@ -5,10 +5,10 @@ Starting from release **2.3.0** the library produces **warnings** emulating the 
 **By default**, warnings are **printed to stderr** at the end of the run.
 
 If you want to check them by yourself, you can **disable** this behavior by 
-passing `{printWarnings: false}` to [`RunOptions.setOutputOptions()`](./run-options.md#-setoutputoptions).
+passing `{printRunnerWarnings: false}` to [`RunOptions.setOutputOptions()`](./run-options.md#-setoutputoptions).
 
-You can **access** the produced warnings via [`runResult.warnings`](./run-result.md#-warnings) field.
-The property is an array of [`Warning`](../src/runResult/warnings/RunnerWarning.ts)) objects
+You can **access** the produced warnings via [`runResult.runnerWarnings`](./run-result.md#-runnerwarnings) field.
+The property is an array of [`RunnerWarning`](../src/runResult/warnings/RunnerWarning.ts)) objects
 and contains typed warnings so that you can handle them selectively.
 
 Pay attention and update your actions!

@@ -173,7 +173,7 @@ assert(result.durationMs >= 1000);
 assert(result.commands.outputs === {out1: 'abc', out2: 'def'});
 assert(result.commands.exportedVars === {v3: 'ghi'});
 assert(result.exitCode === 1);
-assert(result.warnings.length === 0);
+assert(result.runnerWarnings.length === 0);
 // changes were isolated inside a function run
 assert(process.exitCode !== 1);
 assert(result.commands.errors === ['err1']);

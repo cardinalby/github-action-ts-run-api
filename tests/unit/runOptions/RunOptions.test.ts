@@ -47,7 +47,7 @@ describe('RunOptions', () => {
                 stderrTransform: undefined,
                 printStderr: true,
                 printRunnerDebug: false,
-                printWarnings: true
+                printRunnerWarnings: true
             } as OutputOptionsInterface);
             expect(o.timeoutMs).toEqual(123);
             expect(o.env.data).toEqual({e1: 'v1'});
@@ -71,7 +71,7 @@ describe('RunOptions', () => {
             parseStdoutCommands: true,
             parseStderrCommands: true,
             printRunnerDebug: false,
-            printWarnings: false
+            printRunnerWarnings: false
         }, false);
 
         expect(cloned.fakeFsOptions.data).toEqual({
@@ -93,7 +93,7 @@ describe('RunOptions', () => {
             parseStdoutCommands: true,
             parseStderrCommands: true,
             printRunnerDebug: false,
-            printWarnings: false
+            printRunnerWarnings: false
         });
 
         expect(options.shouldAddProcessEnv).toEqual(false);
@@ -108,7 +108,7 @@ describe('RunOptions', () => {
             stderrTransform: undefined,
             printStderr: true,
             printRunnerDebug: false,
-            printWarnings: true
+            printRunnerWarnings: true
         } as OutputOptionsInterface);
         expect(options.fakeFsOptions.data).toEqual({
             fakeCommandFiles: false,
@@ -130,7 +130,7 @@ describe('RunOptions', () => {
             parseStdoutCommands: true,
             parseStderrCommands: true,
             printRunnerDebug: false,
-            printWarnings: true
+            printRunnerWarnings: true
         } as OutputOptionsInterface);
         expect(options.timeoutMs).toEqual(undefined);
         expect(options.env.data).toEqual({});

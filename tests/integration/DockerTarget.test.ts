@@ -140,7 +140,7 @@ describe('DockerTarget', () => {
                 dockerActionYml, { runUnderCurrentLinuxUser: runUnderCurrentLinuxUser }
             ).run(RunOptions.create()
                 .setInputs({input1: 'abc', action: 'user_out'})
-                .setOutputOptions({printWarnings: false})
+                .setOutputOptions({printRunnerWarnings: false})
             );
             expect(res.isSuccess).toEqual(true);
             const expectedUser = runUnderCurrentLinuxUser

@@ -44,7 +44,7 @@ describe('SyncFnTarget', () => {
                 return 32;
             }).run(RunOptions.create({
                 env: {CCC: 'x'},
-                outputOptions: {printWarnings: false}
+                outputOptions: {printRunnerWarnings: false}
             }));
             expect(process.cwd()).toEqual(initialProcessCwd);
             expect(process.env.AAA).toEqual('aaa');
@@ -64,7 +64,7 @@ describe('SyncFnTarget', () => {
     });
 
     it('should parse stdout commands', () => {
-        const options = RunOptions.create({outputOptions: {printWarnings: false}});
+        const options = RunOptions.create({outputOptions: {printRunnerWarnings: false}});
         const res = RunTarget.syncFn(() => {
             core.error('err%msg1');
             core.error('err%msg2');
@@ -139,7 +139,7 @@ describe('SyncFnTarget', () => {
 
     test.each([5, 6])('should set github service envs', async runNumber => {
         jest.resetModules();
-        const options = RunOptions.create({outputOptions: {printWarnings: false}});
+        const options = RunOptions.create({outputOptions: {printRunnerWarnings: false}});
         let fnContext: Context = new Context();
         let fnRepo: any = undefined;
         const res = await RunTarget.asyncFn(async () => {
@@ -158,7 +158,7 @@ describe('SyncFnTarget', () => {
 
     it('should fake github service envs', async () => {
         jest.resetModules();
-        const options = RunOptions.create({outputOptions: {printWarnings: false}});
+        const options = RunOptions.create({outputOptions: {printRunnerWarnings: false}});
         let fnEnv: EnvInterface = {};
         let fnContext: Context = new Context();
         const res = await RunTarget.asyncFn(async () => {
@@ -212,7 +212,7 @@ describe('SyncFnTarget', () => {
             }).run(RunOptions.create()
                 .setOutputOptions({
                     parseStdoutCommands: parseStdoutCommands,
-                    printWarnings: fakeFileCommands || !parseStdoutCommands
+                    printRunnerWarnings: fakeFileCommands || !parseStdoutCommands
                 })
                 .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
             );
@@ -413,7 +413,7 @@ describe('SyncFnTarget', () => {
             .syncFn(() => { return 5; }, node12ActionActionYml)
             .run(RunOptions.create({
                 outputOptions: {
-                    printWarnings: false
+                    printRunnerWarnings: false
                 }
             }));
         expect(res.exitCode).toBeUndefined();
@@ -507,7 +507,7 @@ describe('AsyncFnTarget', () => {
             .asyncFn(async () => { return 5; }, node12ActionActionYml)
             .run(RunOptions.create({
                 outputOptions: {
-                    printWarnings: false
+                    printRunnerWarnings: false
                 }
             }));
         expect(res.exitCode).toBeUndefined();

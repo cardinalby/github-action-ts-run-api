@@ -35,7 +35,7 @@ describe('JsActionScriptTarget', () => {
                         printStderr: true,
                         stdoutTransform: OutputTransform.SANITIZE_COMMANDS,
                         stderrTransform: OutputTransform.SANITIZE_COMMANDS,
-                        printWarnings: false
+                        printRunnerWarnings: false
                     })
                 );
         } finally {
@@ -102,7 +102,7 @@ describe('JsActionScriptTarget', () => {
             RunOptions.create()
                 .setInputs({sendStdoutCommands: 'true', sendFileCommands: 'true', failAtTheEnd: 'true'})
                 .setFakeFsOptions({fakeCommandFiles: false})
-                .setOutputOptions({printWarnings: false})
+                .setOutputOptions({printRunnerWarnings: false})
         );
         expect(res.commands.errors).toEqual(['err%msg1', 'err%msg2', 'failed_msg']);
         expect(res.commands.warnings).toEqual(["warning\rmsg"]);
@@ -193,7 +193,7 @@ describe('JsFilePathTarget', () => {
                 RunOptions.create()
                     .setInputs({sendFileCommands: 'true', sendStdoutCommands: 'false', failAtTheEnd: 'false'})
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
-                    .setOutputOptions({printWarnings: fakeFileCommands})
+                    .setOutputOptions({printRunnerWarnings: fakeFileCommands})
             );
             expect(res.commands.errors).toEqual([]);
             expect(res.commands.warnings).toEqual([]);
@@ -232,7 +232,7 @@ describe('JsFilePathTarget', () => {
                     .setFakeFsOptions({fakeCommandFiles: fakeFileCommands})
                     .setOutputOptions({
                         parseStdoutCommands: parseStdoutCommands,
-                        printWarnings: fakeFileCommands || !parseStdoutCommands
+                        printRunnerWarnings: fakeFileCommands || !parseStdoutCommands
                     })
             );
             expect(res.commands.warnings).toEqual(expectedWarnings);
@@ -273,7 +273,7 @@ describe('JsFilePathTarget', () => {
             .run(RunOptions.create()
                 .setInputs({setState: 'stateVal'})
                 .setOutputOptions({
-                    printWarnings: false
+                    printRunnerWarnings: false
                 })
             );
         expect(res.commands.warnings).toEqual([]);

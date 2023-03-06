@@ -56,5 +56,5 @@ export interface OutputOptionsInterface {
     /**
      * Print warnings to stderr (similar to GitHub Runner) at the end of an action run
      */
-    printWarnings: boolean;
+    printRunnerWarnings: boolean;
 }

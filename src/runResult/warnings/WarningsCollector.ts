@@ -19,7 +19,7 @@ export class WarningsCollector {
     }
 
     /**
-     * Get collected warnings and print if options.outputOptions.data.printWarnings is set
+     * Get collected warnings and print if options.outputOptions.data.printRunnerWarnings is set
      */
     getAndPrint(): RunnerWarning[] {
         this.print()
@@ -34,10 +34,10 @@ export class WarningsCollector {
     }
 
     /**
-     * Print if options.outputOptions.data.printWarnings is set
+     * Print if options.outputOptions.data.printRunnerWarnings is set
      */
     print(): void {
-        if (this.runOptions.outputOptions.data.printWarnings) {
+        if (this.runOptions.outputOptions.data.printRunnerWarnings) {
             this.warnings.forEach(warning => process.stderr.write(os.EOL + warning.message))
         }
     }

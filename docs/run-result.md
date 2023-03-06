@@ -288,14 +288,14 @@ Can have value in case of:
    You are supposed to call `result.cleanUpFakedDirs()` at the end of a test by yourself.
 2. You set existing directory as action temp dir: `options.setWorkspaceDir('existing/path')`.
 
-### 🔹 `warnings`
+### 🔹 `runnerWarnings`
 
-The property is an array of [`Warning`](../src/runResult/warnings/RunnerWarning.ts)) objects 
+The property is an array of [`RunnerWarning`](../src/runResult/warnings/RunnerWarning.ts)) objects 
 and contains warnings similar to ones produced by GitHub Runner. 
 
 By default, warning messages are printed to stderr at the end of the run.
 If you want to check them by yourself, you can disable this behavior by
-`options.setOutputOptions({printWarnings: false})`. 
+`options.setOutputOptions({printRunnerWarnings: false})`. 
 
 Read detailed description [here](./run-result-warnings.md).  
 
