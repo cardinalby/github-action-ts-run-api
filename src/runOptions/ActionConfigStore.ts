@@ -80,9 +80,13 @@ export class ActionConfigStore<D extends ActionConfigInterface|undefined> {
     getDefaultInputs(): InputsStore {
         if (this._data && this._data.inputs) {
             return new InputsStore(Object.fromEntries(
+                // return empty string for inputs without default value to correspond GitHub Runners behaviour:
+                // https://github.com/actions/runner/issues/924
                 Object.entries(this._data.inputs)
-                    .filter(entry => entry[1].default !== undefined)
-                    .map(entry => [entry[0], entry[1].default as string])
+                    .map(entry => entry[1].default !== undefined
+                        ? [entry[0], entry[1].default as string]
+                        : [entry[0], ""]
+                    )
             ));
         }
         return new InputsStore();

@@ -59,10 +59,10 @@ export class BaseRunMilieuComponentsFactory implements BaseRunMilieuComponentsFa
     }
 
     addInputsToEnv(envStore: EnvStore) {
-        if (!this.actionConfig.isEmpty()) {
-            envStore.apply(this.actionConfig.getDefaultInputs().toEnvVariables());
-        }
-        envStore.apply(this.options.inputs.toEnvVariables());
+        const inputEnvs = this.actionConfig.getDefaultInputs()
+            .apply(this.options.inputs.data)
+            .toEnvVariables()
+        envStore.apply(inputEnvs);
     }
 
     addStateToEnv(envStore: EnvStore) {

@@ -4,6 +4,7 @@ inputs:
   setState:
     description: 'value to set to "my_state"'
     required: false
+    default: stateVal
 runs:
   using: 'node12'
   main: 'main.js'

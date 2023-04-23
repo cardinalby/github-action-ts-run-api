@@ -271,7 +271,7 @@ describe('JsFilePathTarget', () => {
     it('should run node12 action main script', async () => {
         const res = await RunTarget.mainJs(node12ActionActionYml)
             .run(RunOptions.create()
-                .setInputs({setState: 'stateVal'})
+                .setInputs({setState: ''})
                 .setOutputOptions({
                     printRunnerWarnings: false
                 })
