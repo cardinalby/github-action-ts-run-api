@@ -18,7 +18,9 @@ Pay attention and update your actions!
 The following warning classes are exported by the library and can be used to check `runResult.warnings` items:
 
 ### 🔻 [`DeprecatedNodeVersionWarning`](../src/runResult/warnings/DeprecatedNodeVersionWarning.ts)
-Node 12 version actions are deprecated since April 2022 ([Source](https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/)).
+Being produced if an action defines a deprecated Node.js version in `runs.using` field.
+- Node 12 version actions are deprecated since April 2022 ([Source](https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/)).
+- Node 16 actions are deprecated since October 2023 ([Source](https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/)).
 
 ### 🔻 [`DeprecatedStdoutCommandWarning`](../src/runResult/warnings/DeprecatedStdoutCommandWarning.ts)
 Being produced if a deprecated stdout command was issued:

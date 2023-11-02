@@ -97,14 +97,14 @@ export class ActionConfigStore<D extends ActionConfigInterface|undefined> {
         if (this._data && this._data.runs.using === ActionRunsUsingNode12) {
             warnings.push(new DeprecatedNodeVersionWarning(
                 'Node.js 12 actions are deprecated. For more information see: ' +
-                'https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/.',
+                'https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/',
                 '12'
             ));
         }
         if (this._data && this._data.runs.using === ActionRunsUsingNode16) {
             warnings.push(new DeprecatedNodeVersionWarning(
                 'Node.js 16 actions are deprecated. For more information see: ' +
-                'https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/.',
+                'https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/',
                 '16'
             ));
         }
