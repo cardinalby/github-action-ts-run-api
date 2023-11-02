@@ -25,6 +25,8 @@ const complexActionDir = 'tests/integration/testActions/complex/';
 const complexActionActionYml = complexActionDir + actionYml;
 const node12ActionDir = 'tests/integration/testActions/node12/';
 const node12ActionActionYml = node12ActionDir + actionYml
+const node16ActionDir = 'tests/integration/testActions/node16/';
+const node16ActionActionYml = node16ActionDir + actionYml
 
 describe('SyncFnTarget', () => {
     afterEach(() => {
@@ -258,7 +260,7 @@ describe('SyncFnTarget', () => {
                 }
             },
             runs: {
-                using: 'node16',
+                using: 'node20',
                 main: 'main.js',
             }
         }
@@ -409,8 +411,24 @@ describe('SyncFnTarget', () => {
     });
 
     it('should produce warning about deprecated node12 version', async () => {
-        const res = await RunTarget
+        const res = RunTarget
             .syncFn(() => { return 5; }, node12ActionActionYml)
+            .run(RunOptions.create({
+                outputOptions: {
+                    printRunnerWarnings: false
+                }
+            }));
+        expect(res.exitCode).toBeUndefined();
+        expect(res.fnResult).toEqual(5);
+        expect(res.error).toBeUndefined();
+        expect(res.isSuccess).toEqual(true);
+        expect(res.runnerWarnings).toHaveLength(1);
+        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
+    });
+
+    it('should produce warning about deprecated node16 version', async () => {
+        const res = RunTarget
+            .syncFn(() => { return 5; }, node16ActionActionYml)
             .run(RunOptions.create({
                 outputOptions: {
                     printRunnerWarnings: false
