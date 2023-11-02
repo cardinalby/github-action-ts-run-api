@@ -16,7 +16,7 @@ const complexActionActionYml = complexActionDir + actionYml;
 const node12ActionDir = 'tests/integration/testActions/node12/';
 const node12ActionActionYml = node12ActionDir + actionYml;
 const node20ActionDir = 'tests/integration/testActions/node20/';
-const node20ActionActionYml = node12ActionDir + actionYml;
+const node20ActionActionYml = node20ActionDir + actionYml;
 
 describe('JsActionScriptTarget', () => {
     afterEach(() => {
@@ -296,11 +296,10 @@ describe('JsFilePathTarget', () => {
                 })
             );
         expect(res.commands.warnings).toEqual([]);
-        expect(res.commands.savedState).toEqual({my_state: 'stateVal'});
+        expect(res.commands.savedState).toEqual({my_state: 'stateVal20'});
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false)
         expect(res.isSuccess).toEqual(true);
-        expect(res.runnerWarnings).toHaveLength(1);
-        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 });
