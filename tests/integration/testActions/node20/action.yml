@@ -1,0 +1,10 @@
+name: 'node20testAction'
+description: 'node20testAction'
+inputs:
+  setState:
+    description: 'value to set to "my_state"'
+    required: false
+    default: stateVal
+runs:
+  using: 'node20'
+  main: 'main.js'
