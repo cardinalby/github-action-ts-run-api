@@ -20,7 +20,7 @@ inputs:
     description: 'value to set to "my_state"'
     required: false
 runs:
-  using: 'node16'
+  using: 'node20'
   pre: 'pre.js'
   main: 'main.js'
   post: 'post.js'

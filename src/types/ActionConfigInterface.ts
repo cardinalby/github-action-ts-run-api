@@ -9,6 +9,7 @@ export interface ActionInputsConfigInterface {
 }
 
 export const ActionRunsUsingNode12 = 'node12'
+export const ActionRunsUsingNode16 = 'node16'
 
 export interface ActionConfigInterface {
     name: string,
