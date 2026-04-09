@@ -10,12 +10,13 @@ export interface ActionInputsConfigInterface {
 
 export const ActionRunsUsingNode12 = 'node12'
 export const ActionRunsUsingNode16 = 'node16'
+export const ActionRunsUsingNode20 = 'node20'
 
 export interface ActionConfigInterface {
     name: string,
     inputs?: ActionInputsConfigInterface;
     runs: {
-        using: "node12"|"node16"|"node20"|"composite"|"docker";
+        using: "node12"|"node16"|"node20"|"node24"|"composite"|"docker";
         image?: string;
         main?: string;
         pre?: string;

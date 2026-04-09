@@ -20,7 +20,7 @@ export function getRunnerArch(): RunnerArch | undefined {
             return 'ARM';
         case 'arm64':
             return 'ARM64';
-        case 'x32':
+        case 'ia32':
             return 'X86';
         case 'x64':
             return 'X64';

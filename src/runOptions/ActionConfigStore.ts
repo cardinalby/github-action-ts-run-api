@@ -1,4 +1,4 @@
-import {ActionConfigInterface, ActionRunsUsingNode12, ActionRunsUsingNode16} from "../types/ActionConfigInterface";
+import {ActionConfigInterface, ActionRunsUsingNode12, ActionRunsUsingNode16, ActionRunsUsingNode20} from "../types/ActionConfigInterface";
 import {Schema, Validator} from "jsonschema";
 import {InputsStore} from "./InputsStore";
 import {PathLike} from "fs";
@@ -106,6 +106,12 @@ export class ActionConfigStore<D extends ActionConfigInterface|undefined> {
                 'Node.js 16 actions are deprecated. For more information see: ' +
                 'https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/',
                 '16'
+            ));
+        }
+        if (this._data && this._data.runs.using === ActionRunsUsingNode20) {
+            warnings.push(new DeprecatedNodeVersionWarning(
+                'Node.js 20 actions are deprecated. GitHub Actions now runs on Node.js 24.',
+                '20'
             ));
         }
         return warnings;

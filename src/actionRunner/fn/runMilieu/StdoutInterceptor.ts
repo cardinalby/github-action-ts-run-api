@@ -92,11 +92,11 @@ export class StdoutInterceptor {
     }
 
     finishCommandsParsing() {
-        if (this._commandsCollector.stdoutParsingStream && !this._commandsCollector.stdoutParsingStream.closed) {
+        if (this._commandsCollector.stdoutParsingStream && !this._commandsCollector.stdoutParsingStream.isClosed) {
             this._commandsCollector.stdoutParsingStream.end();
             this._commandsCollector.stdoutParsingStream.destroy();
         }
-        if (this._commandsCollector.stderrParsingStream && !this._commandsCollector.stderrParsingStream.closed) {
+        if (this._commandsCollector.stderrParsingStream && !this._commandsCollector.stderrParsingStream.isClosed) {
             this._commandsCollector.stderrParsingStream.end();
             this._commandsCollector.stderrParsingStream.destroy();
         }

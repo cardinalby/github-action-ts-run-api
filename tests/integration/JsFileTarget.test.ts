@@ -19,6 +19,8 @@ const node16ActionDir = 'tests/integration/testActions/node16/';
 const node16ActionActionYml = node16ActionDir + actionYml;
 const node20ActionDir = 'tests/integration/testActions/node20/';
 const node20ActionActionYml = node20ActionDir + actionYml;
+const node24ActionDir = 'tests/integration/testActions/node24/';
+const node24ActionActionYml = node24ActionDir + actionYml;
 
 describe('JsActionScriptTarget', () => {
     afterEach(() => {
@@ -315,6 +317,22 @@ describe('JsFilePathTarget', () => {
             );
         expect(res.commands.warnings).toEqual([]);
         expect(res.commands.savedState).toEqual({my_state: 'stateVal20'});
+        expect(res.error).toBeUndefined();
+        expect(res.isTimedOut).toEqual(false)
+        expect(res.isSuccess).toEqual(true);
+        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning);
+    });
+
+    it('should run node24 action main script', async () => {
+        const res = await RunTarget.mainJs(node24ActionActionYml)
+            .run(RunOptions.create()
+                .setInputs({setState: ''})
+                .setOutputOptions({
+                    printRunnerWarnings: false
+                })
+            );
+        expect(res.commands.warnings).toEqual([]);
+        expect(res.commands.savedState).toEqual({my_state: 'stateVal24'});
         expect(res.error).toBeUndefined();
         expect(res.isTimedOut).toEqual(false)
         expect(res.isSuccess).toEqual(true);

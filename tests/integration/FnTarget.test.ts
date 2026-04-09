@@ -260,7 +260,7 @@ describe('SyncFnTarget', () => {
                 }
             },
             runs: {
-                using: 'node20',
+                using: 'node24',
                 main: 'main.js',
             }
         }

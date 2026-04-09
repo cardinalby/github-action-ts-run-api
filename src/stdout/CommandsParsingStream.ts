@@ -21,7 +21,7 @@ export class CommandsParsingStream extends Transform {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    get closed() {
+    get isClosed(): boolean {
         return this._isClosed;
     }
 
