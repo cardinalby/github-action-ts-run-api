@@ -5,7 +5,7 @@ import {
     DockerRunMilieuComponentsFactory
 } from "../../src/actionRunner/docker/runMilieu/DockerRunMilieuComponentsFactory";
 import * as tmp from "tmp";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 import {DockerCli} from "../../src/actionRunner/docker/runTarget/dockerCli";
 import * as os from "os";
@@ -76,7 +76,7 @@ describe('DockerTarget', () => {
             } finally {
                 for (let d of [tempExternalDir, wsExternalDir, res.workspaceDirPath, res.tempDirPath]) {
                     if (d && fs.existsSync(d)) {
-                        fs.removeSync(d);
+                        fs.rmSync(d, { recursive: true, force: true });
                     }
                 }
             }

@@ -3,14 +3,17 @@
 import * as core from "@actions/core";
 import * as os from "os";
 import {ProcessEnvVarsBackup} from "../utils/ProcessEnvVarsBackup";
-import {ActionConfigInterface} from "../../src/types/ActionConfigInterface";
+import {
+    ActionConfigInterface,
+    ActionRunsUsingNode24
+} from "../../src/types/ActionConfigInterface";
 import {RunOptions} from "../../src/runOptions/RunOptions";
 import * as path from "path";
 import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {EnvInterface} from "../../src/types/EnvInterface";
 import {Context} from "@actions/github/lib/context";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as tmp from "tmp";
 import {deleteAllFakedDirs} from "../../src/githubServiceFiles/runnerDir/FakeRunnerDir";
 import {DeprecatedNodeVersionWarning, RunTarget} from "../../src";
@@ -27,6 +30,10 @@ const node12ActionDir = 'tests/integration/testActions/node12/';
 const node12ActionActionYml = node12ActionDir + actionYml
 const node16ActionDir = 'tests/integration/testActions/node16/';
 const node16ActionActionYml = node16ActionDir + actionYml
+const node20ActionDir = 'tests/integration/testActions/node20/';
+const node20ActionActionYml = node20ActionDir + actionYml
+const node22ActionDir = 'tests/integration/testActions/node22/';
+const node22ActionActionYml = node22ActionDir + actionYml
 
 describe('SyncFnTarget', () => {
     afterEach(() => {
@@ -260,7 +267,7 @@ describe('SyncFnTarget', () => {
                 }
             },
             runs: {
-                using: 'node20',
+                using: ActionRunsUsingNode24,
                 main: 'main.js',
             }
         }
@@ -365,7 +372,7 @@ describe('SyncFnTarget', () => {
             } finally {
                 for (let d of [tempExternalDir, wsExternalDir, res.workspaceDirPath, res.tempDirPath]) {
                     if (d && fs.existsSync(d)) {
-                        fs.removeSync(d);
+                        fs.rmSync(d, { recursive: true, force: true });
                     }
                 }
             }
@@ -424,6 +431,7 @@ describe('SyncFnTarget', () => {
         expect(res.isSuccess).toEqual(true);
         expect(res.runnerWarnings).toHaveLength(1);
         expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
+        expect((res.runnerWarnings[0] as DeprecatedNodeVersionWarning).version).toBe("12")
     });
 
     it('should produce warning about deprecated node16 version', async () => {
@@ -440,6 +448,38 @@ describe('SyncFnTarget', () => {
         expect(res.isSuccess).toEqual(true);
         expect(res.runnerWarnings).toHaveLength(1);
         expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning)
+    });
+
+    it('should produce warning about deprecated node20 version', async () => {
+        const res = RunTarget
+            .syncFn(() => { return 5; }, node20ActionActionYml)
+            .run(RunOptions.create({
+                outputOptions: {
+                    printRunnerWarnings: false
+                }
+            }));
+        expect(res.exitCode).toBeUndefined();
+        expect(res.fnResult).toEqual(5);
+        expect(res.error).toBeUndefined();
+        expect(res.isSuccess).toEqual(true);
+        expect(res.runnerWarnings).toHaveLength(1);
+        expect(res.runnerWarnings[0]).toBeInstanceOf(DeprecatedNodeVersionWarning);
+        expect((res.runnerWarnings[0] as DeprecatedNodeVersionWarning).version).toBe("20");
+    });
+
+    it('should not produce deprecation warning for node22 version', async () => {
+        const res = RunTarget
+            .syncFn(() => { return 5; }, node22ActionActionYml)
+            .run(RunOptions.create({
+                outputOptions: {
+                    printRunnerWarnings: false
+                }
+            }));
+        expect(res.exitCode).toBeUndefined();
+        expect(res.fnResult).toEqual(5);
+        expect(res.error).toBeUndefined();
+        expect(res.isSuccess).toEqual(true);
+        expect(res.runnerWarnings).toHaveLength(0);
     });
 });
 

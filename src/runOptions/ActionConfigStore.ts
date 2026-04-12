@@ -1,9 +1,16 @@
-import {ActionConfigInterface, ActionRunsUsingNode12, ActionRunsUsingNode16} from "../types/ActionConfigInterface";
+import {
+    ActionConfigInterface,
+    ActionRunsUsingNode12,
+    ActionRunsUsingNode16,
+    ActionRunsUsingNode20,
+    ActionRunsUsingNode22,
+    ActionRunsUsingNode24
+} from "../types/ActionConfigInterface";
 import {Schema, Validator} from "jsonschema";
 import {InputsStore} from "./InputsStore";
 import {PathLike} from "fs";
 import * as yaml from "yaml";
-import fs from "fs-extra";
+import * as fs from "fs";
 import structuredClone from "realistic-structured-clone";
 import assert from "assert";
 import {DeprecatedNodeVersionWarning} from "../runResult/warnings/DeprecatedNodeVersionWarning";
@@ -94,20 +101,40 @@ export class ActionConfigStore<D extends ActionConfigInterface|undefined> {
 
     getWarnings(): RunnerWarning[] {
         const warnings: RunnerWarning[] = []
-        if (this._data && this._data.runs.using === ActionRunsUsingNode12) {
-            warnings.push(new DeprecatedNodeVersionWarning(
-                'Node.js 12 actions are deprecated. For more information see: ' +
-                'https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/',
-                '12'
-            ));
-        }
-        if (this._data && this._data.runs.using === ActionRunsUsingNode16) {
-            warnings.push(new DeprecatedNodeVersionWarning(
-                'Node.js 16 actions are deprecated. For more information see: ' +
-                'https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/',
-                '16'
-            ));
+        const nodeVersion = this._data?.runs?.using
+        if (nodeVersion) {
+            const nodeVersionWarning = this.getNodeVersionWarning(nodeVersion)
+            if (nodeVersionWarning) {
+                warnings.push(nodeVersionWarning)
+            }
         }
         return warnings;
+    }
+
+    private getNodeVersionWarning(nodeVersion: string): RunnerWarning|undefined {
+        switch (nodeVersion) {
+            case ActionRunsUsingNode12:
+                return new DeprecatedNodeVersionWarning(
+                    'Node.js 12 actions are deprecated. For more information see: ' +
+                    'https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/',
+                    '12'
+                );
+            case ActionRunsUsingNode16:
+                return new DeprecatedNodeVersionWarning(
+                    'Node.js 16 actions are deprecated. For more information see: ' +
+                    'https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/',
+                    '16'
+                );
+            case ActionRunsUsingNode20:
+                return new DeprecatedNodeVersionWarning(
+                    'Node.js 20 actions are deprecated. For more information see: ' +
+                    'https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/',
+                    '20'
+                );
+            case ActionRunsUsingNode22:
+            case ActionRunsUsingNode24:
+            default:
+                return undefined;
+        }
     }
 }

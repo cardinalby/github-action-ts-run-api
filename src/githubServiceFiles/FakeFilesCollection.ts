@@ -2,7 +2,7 @@ import {getFileCommandNames, GithubServiceFileName} from "./GithubServiceFileNam
 import {FakeFile} from "./FakeFile";
 import {readValuesFromFileCommand, readKvPairsFromFileCommand} from "./readFileCommands";
 import {ParsedFileCommandsInterface} from "../runResult/ParsedCommandsInterface";
-import fs from "fs-extra";
+import * as fs from "fs";
 import {WebhookPayload} from "@actions/github/lib/interfaces";
 
 export class FakeFilesCollection {

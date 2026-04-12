@@ -1,0 +1,10 @@
+name: 'node22testAction'
+description: 'node22testAction'
+inputs:
+  setState:
+    description: 'value to set to "my_state"'
+    required: false
+    default: stateVal20
+runs:
+  using: 'node22'
+  main: 'main.js'

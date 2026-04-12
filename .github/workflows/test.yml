@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ '12', '14', '16', '20' ]
+        node: [ '18', '20', '22', '24' ]
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
@@ -25,8 +25,6 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
-        env:
-          SKIP_DOCKER_TARGET_TEST: ${{ matrix.node == '16' && 'false' || 'true' }}
 
   windowsTest:
     runs-on: windows-latest

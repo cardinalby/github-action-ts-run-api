@@ -8,25 +8,17 @@ import {chunkToString} from "../utils/streamUtils";
  */
 export class CommandsParsingStream extends Transform {
     private _unprocessedLine = '';
-    private _isClosed: boolean = false;
 
     constructor() {
         super({
             readableObjectMode: true,
             writableObjectMode: false,
-            // For node < 14
             autoDestroy: true
         });
-        this.on('close', () => this._isClosed = true);
-    }
-
-    // noinspection JSUnusedGlobalSymbols
-    get closed() {
-        return this._isClosed;
     }
 
     async waitUntilClosed(): Promise<void> {
-        if (this._isClosed) {
+        if (this.closed) {
             return;
         }
         return new Promise(resolve => this.on('close', resolve));

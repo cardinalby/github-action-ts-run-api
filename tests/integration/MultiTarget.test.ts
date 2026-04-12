@@ -7,7 +7,7 @@ import {syncPostRun, asyncPostRun} from "./testActions/complex/postRun.js"
 import {run as githubServiceEnvImplImpl} from "./testActions/complex/githubServiceEnvImpl"
 import {AsyncRunTargetInterface} from "../../src/runTarget/AsyncRunTargetInterface";
 import { strict as assert } from 'assert';
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import {GithubContextStore} from "../../src/runOptions/GithubContextStore";
 import {GithubServiceEnvStore} from "../../src/runOptions/GithubServiceEnvStore";
 import {getRunnerOs} from "../../src/utils/platformProps";
@@ -91,7 +91,7 @@ describe('MultiTarget', () => {
                 expect(tempDirPath).not.toBeUndefined();
                 assert(tempDirPath);
                 expect(fs.existsSync(tempDirPath));
-                const out = <any>fs.readJSONSync(path.join(tempDirPath, 'out.json'));
+                const out = <any>JSON.parse(fs.readFileSync(path.join(tempDirPath, 'out.json'), 'utf-8'));
                 expect(out.pr_number).toEqual(12345);
                 expect(out.server_url).toEqual(GithubContextStore.SERVER_URL_DEFAULT);
                 expect(out.event_name).toEqual(GithubContextStore.EVENT_NAME_DEFAULT);

@@ -1,6 +1,6 @@
 import tmp from "tmp";
 import {GithubServiceFileName} from "./GithubServiceFileName";
-import fs from "fs-extra";
+import * as fs from "fs";
 import crypto from "crypto"
 import * as path from "path";
 

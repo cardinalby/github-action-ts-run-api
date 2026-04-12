@@ -1,5 +1,5 @@
 const github = require("@actions/github");
-const fs = require("fs-extra");
+const fs = require("fs");
 const path = require("path");
 const impl = require('./githubServiceEnvImpl').run;
 

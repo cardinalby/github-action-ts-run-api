@@ -29,7 +29,7 @@ export class FnRunMilieu {
         return {
             ...baseEffects,
             stdoutCommands: this.stdoutInterceptor.parsedCommands.data,
-            exitCode: process.exitCode,
+            exitCode: typeof process.exitCode === 'number' ? process.exitCode : undefined,
             stdout: this.stdoutInterceptor.interceptedStdout,
             stderr: this.stdoutInterceptor.interceptedStderr
         };

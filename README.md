@@ -77,7 +77,7 @@ npm i github-action-ts-run-api --save-dev
 name: 'test'
 # ...
 runs:
-  using: 'node16'
+  using: 'node22'
   main: 'main.js'
 ```
 

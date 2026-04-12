@@ -1,5 +1,5 @@
 import tmp from "tmp";
-import fs from "fs-extra";
+import * as fs from "fs";
 import {RunnerDirInterface} from "./RunnerDirInterface";
 
 const globalExistingFakedDirs = new Set<FakeRunnerDir>();
@@ -29,7 +29,7 @@ export class FakeRunnerDir implements RunnerDirInterface {
     delete() {
         if (!this.cleanedUp && fs.existsSync(this.dirPath)) {
             // this._createdTmp.removeCallback() fails if dir is not empty
-            fs.removeSync(this.dirPath);
+            fs.rmSync(this.dirPath, { recursive: true, force: true });
             this.cleanedUp = true;
         }
         globalExistingFakedDirs.delete(this);
