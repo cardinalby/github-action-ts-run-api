@@ -46,7 +46,7 @@
     "@types/node": "^24.12.2",
     "@types/tmp": "^0.2.6",
     "jest": "^30.3.0",
-    "ls-engines": "^0.10.0",
+    "ls-engines": "^0.9.4",
     "ts-jest": "^29.4.9",
     "typescript": "^5.9.3"
   },
